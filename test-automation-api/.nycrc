@@ -1,0 +1,17 @@
+{
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "src/channels.ts",
+    "src/services/google-auth/google-auth.class.ts",
+    "src/services/window-resources/window-resources.hook.ts",
+    "src/services/window-snapshots/window-snapshots.hook.ts",
+    "src/services/workflow-list/workflow-list.hooks.ts",
+    "src/services/recordings-list/recordings-list.service.ts",
+    "src/services/dom-list/dom-list.service.ts",
+    "src/services/resource-upload/resource-upload.service.ts"
+  ]
+}

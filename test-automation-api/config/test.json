@@ -1,0 +1,16 @@
+{
+  "host": "localhost",
+  "port": 3030,
+  "public": "../public/",
+  "paginate": {
+    "default": 1000,
+    "max": 1000
+  },
+  "postgres": {
+    "database": "unit_test_db",
+    "username": "postgres",
+    "password": "bharani",
+    "host": "localhost",
+    "port": "5432"
+  }
+}

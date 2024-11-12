@@ -1,0 +1,139 @@
+pipeline {
+    agent none
+    environment {
+        ECR_REGISTRY=credentials('ecr-registry-prod')
+    }
+    options {
+        skipDefaultCheckout(true)
+    }
+    stages {
+        stage('Build') {
+            agent {
+                docker {
+                    image 'node:14.20'
+                    label 'ec2-agent'
+                    reuseNode true
+                }
+            }
+            options {
+                skipDefaultCheckout(false)
+            }
+            steps {
+                sh 'git rev-parse --short HEAD > gitCommit.txt'
+                stash name: 'dopple-studio-ui', useDefaultExcludes: false
+                sh 'cat gitCommit.txt'
+                sh 'npm install'
+            }
+                    post {
+                        always {
+                            cleanWs()
+                        }
+                    }
+        }
+        stage('Dev Deploy') {
+            agent {
+                docker {
+                    image "${ECR_REGISTRY}/e5-fabric-ci-node-14:latest"
+                    label 'ec2-agent'
+                    reuseNode true
+                }
+            }
+            environment {
+                ENVIRONMENT = 'dev02'
+                S3_BUCKET = credentials('dopple-studio-ui-s3-dev')
+                DISTRIBUTION_ID = credentials('dopple-studio-ui-cloudfront-dev')
+                PLATFORM_ENVIRONMENT = 'development'
+                BUILD_ENVIRONMENT = 'dev'
+            }
+            steps {
+                sh 'rm -rf *'
+                unstash 'dopple-studio-ui'
+                sh 'cat gitCommit.txt'
+                sh 'npm install'
+                sh 'chmod +x ci/deploy.sh'
+                sh './ci/deploy.sh dopple-studio-ui'
+            }
+                    post {
+                        always {
+                            cleanWs()
+                        }
+                    }
+        }
+        stage('Test deployment approval') {
+            steps {
+                timeout(time: 7, unit: 'DAYS') {
+                    input(message: 'Deploy to Test?')
+                }
+            }
+        }        
+        stage('Test Deploy') {
+            agent {
+                docker {
+                    image "${ECR_REGISTRY}/e5-fabric-ci-node-14:latest"
+                    label 'ec2-agent'
+                    reuseNode true
+                }
+            }
+            environment {
+                ENVIRONMENT = 'test02'
+                S3_BUCKET = credentials('dopple-studio-ui-s3-test')
+                DISTRIBUTION_ID = credentials('dopple-studio-ui-cloudfront-test')
+                PLATFORM_ENVIRONMENT = 'test'
+                BUILD_ENVIRONMENT = 'test'
+            }
+            steps {
+                sh 'rm -rf *'
+                unstash 'dopple-studio-ui'
+                sh 'cat gitCommit.txt'
+                sh 'npm install'
+                sh 'chmod +x ci/deploy.sh'
+                sh './ci/deploy.sh dopple-studio-ui'
+            }
+                    post {
+                        always {
+                            cleanWs()
+                        }
+                    }
+        }
+                stage('PROD deployment approval') {
+                    steps {
+                        timeout(time: 7, unit: 'DAYS') {
+                            input(message: 'Deploy to Prod?', submitter: 'e5releaseadmin', submitterParameter: 'approver')
+                        }
+                    }
+                } 
+                stage('Prod Deploy') {
+                    agent {
+                        docker{
+                            image "${ECR_REGISTRY}/e5-fabric-ci-node-14:latest"
+                            label 'ec2-agent'
+                            reuseNode true
+                        }
+                    }
+                    environment {
+                        TENANT_ID=credentials('duplo-prod02-tenant-id')
+                        JENKINS_DUPLO_TOKEN=credentials('jenkins-duplo-prod-token')
+                        DUPLO_HOST=credentials('duplo-host-prod')
+                        NAMESPACE='duploservices-prod02'
+                        ENVIRONMENT='prod02'
+                        S3_BUCKET = credentials('dopple-studio-ui-s3-prod')
+                        DISTRIBUTION_ID = credentials('dopple-studio-ui-cloudfront-prod')
+                        PLATFORM_ENVIRONMENT = 'production'
+                        BUILD_ENVIRONMENT = 'prod'
+                    }
+                    steps {
+                        sh 'rm -rf *'
+                        unstash 'dopple-studio-ui'
+                        sh 'cat gitCommit.txt'
+                        sh 'npm install'
+                        sh 'chmod +x ci/deploy.sh'
+                        sh './ci/deploy.sh dopple-studio-ui'
+                    }
+                    post {
+                        always {
+                            cleanWs()
+                        }
+                    }
+        }                            
+    }
+}
