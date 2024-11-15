@@ -17,18 +17,26 @@ export default function (app: Application): typeof Model {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
-    actionId: {
+    flowActionSequenceId: {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
     inputId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    defaultInput: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
+    },
+    skip: {
+      type: DataTypes.BOOLEAN,
       allowNull: false
     }
   });
   (testCaseFlowSequenceActionInput as any).associate = function (models: any): void {
     testCaseFlowSequenceActionInput.belongsTo(models["testCaseFlowSequence"], {foreignKey: "testCaseFlowSequenceId",})
-    testCaseFlowSequenceActionInput.belongsTo(models["action"], {foreignKey: "actionId",})
+    testCaseFlowSequenceActionInput.belongsTo(models["flowActionSequence"], {foreignKey: "flowActionSequenceId",})
     testCaseFlowSequenceActionInput.belongsTo(models["input"], {foreignKey: "inputId",})
   };
   return testCaseFlowSequenceActionInput;

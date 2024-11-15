@@ -28,17 +28,17 @@ const slice = createSlice({
       state.status = null;
     },
   },
-  extraReducers: {
-    [getTestCaseById.fulfilled]: (state, action) => {
-      state.testCase = action.payload.data;
-    },
-    [getTestCaseById.rejected]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(getTestCaseById.fulfilled, (state, action) => {
+      state.testCase = action.payload;
+    })
+    builder.addCase(getTestCaseById.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while fetching testCase details",
       };
-    },
-  },
+    })
+  }
 });
 
 export const reducer = slice.reducer;

@@ -1,14 +1,15 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { Typography, Button, Box, Tooltip, TextField, IconButton } from "@mui/material";
+import { Typography, Button, Box, Tooltip, TextField, IconButton, SelectChangeEvent } from "@mui/material";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
 import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action } from "../../declarations/interface";
-import { DEFAULT_ACTION } from "./ActionContainer";
+import { ACTION_TYPES, DEFAULT_ACTION } from "./ActionContainer";
 import { createAction, updateAction } from "../../slices/project";
+import AppSelect from "../../components/AppSelect";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -19,19 +20,46 @@ const useStyles = makeStyles((theme) => ({
 }));
 const MAX_LIMIT = 250;
 type ActionErrorKey = "REQUIRED" | "MAX_LIMIT";
+type TypeErrorKey = "REQUIRED";
+type XpathErrorKey = "REQUIRED" | "INVALID";
+type ValueRegexErrorKey = "INVALID";
 
 type NameError = {
   [key in ActionErrorKey]?: string;
 };
 
+type TypeError = {
+  [key in TypeErrorKey]?: string;
+};
+
+type XpathError = {
+  [key in XpathErrorKey]?: string;
+};
+
+type ValueRegexError = {
+  [key in ValueRegexErrorKey]?: string;
+};
+
 type ErrorMsg = {
   name: NameError;
+  type: TypeError;
+  xpath: XpathError;
+  valueRegex: ValueRegexError;
 };
 
 const errorMsg: ErrorMsg = {
   name: {
     REQUIRED: "This field is required",
     MAX_LIMIT: `Maximum limit is ${MAX_LIMIT} characters`,
+  },
+  type: {
+    REQUIRED: "This field is required",
+  },
+  xpath: {
+    REQUIRED: "This field is required",
+  },
+  valueRegex: {
+    INVALID: `Invalid regex`,
   },
 };
 
@@ -48,6 +76,15 @@ const AddAction: React.FC<{
   const [nameError, setNameError] = useState<
     ActionErrorKey | undefined
   >();
+  const [typeError, setTypeError] = useState<
+    TypeErrorKey | undefined
+  >();
+  const [xpathError, setXpathError] = useState<
+    XpathErrorKey | undefined
+  >();
+  const [valueRegexError, setValueRegexError] = useState<
+    ValueRegexErrorKey | undefined
+  >();
   const [title, setTitle] = useState("Add Action");
 
   const dispatch = useDispatch();
@@ -58,11 +95,18 @@ const AddAction: React.FC<{
   const handleModalClose = () => {
     setModalOpen(false);
     setNameError(undefined);
+    setTypeError(undefined);
+    setXpathError(undefined);
+    setValueRegexError(undefined);
     onModalClose();
+    setData(undefined)
     dispatch(actions.clearStatus());
   };
   const handleSubmit = () => {
-    handleFieldChange({target:{value: data?.name}}, "name")
+    handleFieldChange({ target: { value: data?.name ?? "" } }, "name")
+    handleFieldChange({ target: { value: data?.type ?? "" } }, "type")
+    handleFieldChange({ target: { value: data?.xpath ?? "" } }, "xpath")
+    handleFieldChange({ target: { value: data?.valueRegex ?? "" } }, "valueRegex")
     setSubmitted(true);
   };
   const submitData = () => {
@@ -75,12 +119,22 @@ const AddAction: React.FC<{
     }
   };
   const handleFieldChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent | any,
     field: keyof Action
   ) => {
     const value = event.target.value;
     if (field === "name") {
       validateName(value);
+    }
+    if (field === "type") {
+      validateType(value);
+      if(data) validateXpath(data.xpath, value);
+    }
+    if (field === "xpath") {
+      validateXpath(value, data?.type ?? "");
+    }
+    if (field === "valueRegex") {
+      validateValueRegex(value);
     }
     setData((prev) => {
       if (prev)
@@ -91,8 +145,52 @@ const AddAction: React.FC<{
     });
   };
 
+  const isValidXpath = (xpath: string): boolean => {
+    // validate this xpath properly
+    return true;
+    try {
+      document.querySelector(xpath);
+      return true;
+    } catch (error) {
+      console.log("invalid")
+      return false;
+    }
+  };
+
+  const isValidValueRegex = (valueRegex: string): boolean => {
+    // validate this regex properly
+    return true;
+  };
+
+  const validateXpath = (xpath: string, type: string) => {
+    xpath = xpath ?? "";
+    if (xpath?.length === 0 && type !== "LAUNCH_BROWSER") {
+      setXpathError("REQUIRED");
+    } else if (!isValidXpath(xpath)) {
+      setXpathError("INVALID");
+    } else {
+      setXpathError(undefined);
+    }
+  };
+
+  const validateType = (type: string) => {
+    if (type.length === 0) {
+      setTypeError("REQUIRED");
+    } else {
+      setTypeError(undefined);
+    }
+  };
+
+  const validateValueRegex = (valueRegex: string) => {
+    if (!isValidValueRegex(valueRegex)) {
+      setValueRegexError("INVALID");
+    } else {
+      setValueRegexError(undefined);
+    }
+  };
+
   const validateName = (name: string) => {
-    if (name.length > 250) {
+    if (name.length > MAX_LIMIT) {
       setNameError("MAX_LIMIT");
     } else if (name.length === 0) {
       setNameError("REQUIRED");
@@ -120,7 +218,7 @@ const AddAction: React.FC<{
   }, [modalOpen, data]);
 
   useEffect(() => {
-    if(nameError) return
+    if(!!nameError || !!typeError || !!xpathError || !!valueRegexError) return
     if (submitted) submitData();
   }, [submitted]);
 
@@ -152,6 +250,7 @@ const AddAction: React.FC<{
           <Box mb={0.5}>
             <Box>
               <AppTextbox
+                label="Name"
                 placeholder="Enter Name"
                 value={data.name}
                 onChange={(event) => {
@@ -165,8 +264,48 @@ const AddAction: React.FC<{
               />
             </Box>
             <Box mt={2}>
-
+              <AppSelect
+                id={`action-type-dropdown`}
+                value={data.type}
+                onChange={(event) => {
+                  handleFieldChange(event, "type");
+                }}
+                error={!!typeError}
+                helperText={
+                  typeError ? errorMsg.xpath[typeError] : ""
+                }
+                options={ACTION_TYPES} label="Select Action Type" />
             </Box>
+            {data.type !== "LAUNCH_BROWSER" && <Box mt={2}>
+              <AppTextbox
+                label="Xpath"
+                placeholder="Enter Xpath"
+                value={data.xpath}
+                onChange={(event) => {
+                  handleFieldChange(event, "xpath");
+                }}
+                classes={{ root: classes.input }}
+                error={!!xpathError}
+                helperText={
+                  xpathError ? errorMsg.xpath[xpathError] : ""
+                }
+              />
+            </Box>}
+            {data.type !== "LAUNCH_BROWSER" && <Box mt={2}>
+              <AppTextbox
+                label="Value Regex"
+                placeholder="Enter Value Regex"
+                value={data.valueRegex}
+                onChange={(event) => {
+                  handleFieldChange(event, "valueRegex");
+                }}
+                classes={{ root: classes.input }}
+                error={!!valueRegexError}
+                helperText={
+                  valueRegexError ? errorMsg.valueRegex[valueRegexError] : ""
+                }
+              />
+            </Box>}
             <Box mt={2.75}>
               <Button
                 variant="contained"
@@ -177,8 +316,7 @@ const AddAction: React.FC<{
                 onClick={handleSubmit}
                 fullWidth
                 aria-label={title}
-                disabled={!!nameError}
-              // disabled={!!nameError || !!selectorError}
+                disabled={!!nameError || !!typeError || !!xpathError || !!valueRegexError}
               >
                 <Typography variant="h5" sx={{ textTransform: "capitalize" }}>
                   {title}

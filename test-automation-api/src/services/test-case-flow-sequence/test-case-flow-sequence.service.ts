@@ -20,16 +20,16 @@ export default function (app: Application): void {
 
   // Initialize our service with any options it requires
   app.use('/test-case-flow-sequence', new TestCaseFlowSequence(options, app));
-  // app.use('/test-case-flow-sequence/create-mappings', {
-  //   async create(data: any, params: any) {
-  //     return await app.service('test-case-flow-sequence').createTestCaseFlowSequences(data, params);
-  //   },
-  // });
-  // app.use('/test-case-flow-sequence/update-mappings', {
-  //   async create(data: any, params: any) {
-  //     return await app.service('test-case-flow-sequence').updateTestCaseFlowSequences(data, params);
-  //   }
-  // });
+  app.use('/test-case-flow-sequence/create-sequences', {
+    async create(data: any, params: any) {
+      return await app.service('test-case-flow-sequence').createSequences(data, params);
+    },
+  });
+  app.use('/test-case-flow-sequence/update-sequences', {
+    async create(data: any, params: any) {
+      return await app.service('test-case-flow-sequence').updateSequences(data, params);
+    }
+  });
   // Get our initialized service so that we can register hooks
   const service = app.service('test-case-flow-sequence');
 

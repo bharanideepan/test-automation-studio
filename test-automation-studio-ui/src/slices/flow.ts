@@ -28,16 +28,16 @@ const slice = createSlice({
       state.status = null;
     },
   },
-  extraReducers: {
-    [getFlowById.fulfilled]: (state, action) => {
-      state.flow = action.payload.data;
-    },
-    [getFlowById.rejected]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(getFlowById.fulfilled, (state, action) => {
+      state.flow = action.payload;
+    })
+    builder.addCase(getFlowById.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while fetching flow details",
       };
-    },
+    })
   },
 });
 

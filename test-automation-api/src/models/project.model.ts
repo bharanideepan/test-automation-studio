@@ -19,6 +19,7 @@ export default function (app: Application): any {
   (project as any).associate = function (models: any): void {
     project.hasMany(models["flow"], { foreignKey: "projectId" });
     project.hasMany(models["testCase"], { foreignKey: "projectId" });
+    project.hasMany(models["action"], { foreignKey: "projectId" });
   };
   return project;
 }

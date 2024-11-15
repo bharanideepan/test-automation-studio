@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme) => ({
     letterSpacing: "-0.02em !important",
     lineHeight: "16px !important",
     width: "100%",
+    "& label": {
+      lineHeight: "1em"
+    },
     "& input": {
       padding: `${theme.spacing(1.375)} !important`,
       height: "38px !important",

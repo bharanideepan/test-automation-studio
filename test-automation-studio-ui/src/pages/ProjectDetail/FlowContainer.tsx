@@ -16,7 +16,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
-import { Action, Flow, } from "../../declarations/interface";
+import { Action, Flow, FlowActionSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import AddFlow from "./AddFlow";
 import { getFlowById } from "../../slices/flow";
@@ -83,6 +83,7 @@ const FlowContainer: React.FC<{
 }> = ({ list, projectId }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const [count, setCount] = useState(0);
   const [selectedFlow, setSelectedFlow] = useState<Flow | undefined>(undefined);
   const { flow: fetchedFlow } = useSelector((state: RootState) => state.flow);
 
@@ -94,18 +95,27 @@ const FlowContainer: React.FC<{
     if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
   }, [list]);
 
+  useEffect(() => {
+    if(list) {
+      if(list.length !== count) {
+        setSelectedFlow(list[list.length-1])
+      }
+      setCount(list.length)
+    }
+  }, [list])
+
   return (
     <>
       {list.length === 0 && (
         <Box className={clsx(classes.contentCenter, classes.body)}>
-          <Box mr={2}>
+          <Box mr={1}>
             <AddFlow
               projectId={projectId}
-              onModalClose={() => { console.log("Add flow modal closed") }}
+              onModalClose={() => { console.log("Add/edit flow modal closed") }}
             />
           </Box>
           <Typography variant="h5" color="primary">
-            Add new flow
+            Add New Flow
           </Typography>
         </Box>
       )}
@@ -121,7 +131,7 @@ const FlowContainer: React.FC<{
             <FlowsListView projectId={projectId} flows={list} selectedFlow={list.find((flow: Flow) => flow.id == selectedFlow?.id)} setSelectedFlow={setSelectedFlow} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <ActionListView flowName={fetchedFlow?.name} actions={fetchedFlow?.actions} />
+            <ActionListView flowName={fetchedFlow?.name} actionSequences={fetchedFlow?.flowActionSequences} />
           </Grid>
         </Grid>
       )}
@@ -217,7 +227,7 @@ const FlowsListView: React.FC<{
       </>
     );
   };
-const ActionListView: React.FC<{ flowName?: string; actions?: Action[]; }> = ({ flowName, actions }) => {
+const ActionListView: React.FC<{ flowName?: string; actionSequences?: FlowActionSequence[]; }> = ({ flowName, actionSequences }) => {
   const classes = useStyles();
   return (
     <>
@@ -226,16 +236,16 @@ const ActionListView: React.FC<{ flowName?: string; actions?: Action[]; }> = ({ 
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
             <Box>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                Flow Name: {flowName}
+                {flowName}
               </Typography>
             </Box>
-            {actions &&
+            {actionSequences &&
               <Box display={"flex"} gap={2} justifyContent={"space-between"} alignItems={"center"}>
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                  Actions: {actions?.length ?? 0}
+                  Actions: {actionSequences?.length ?? 0}
                 </Typography>
               </Box>}
-            {!actions && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+            {!actionSequences && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
               Edit the flow to add actions
             </Typography>}
           </Box>
@@ -243,7 +253,7 @@ const ActionListView: React.FC<{ flowName?: string; actions?: Action[]; }> = ({ 
       </Box>
       <Box className={classes.listContainer} pt={2}>
         <Box className={classes.body} px={5}>
-          {actions && actions.map((row, index) => (
+          {actionSequences && actionSequences.map((row, index) => (
             <Box mx={5} key={index}>
               <AppCard id={`${index}`}>
                 <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5}>
@@ -254,11 +264,11 @@ const ActionListView: React.FC<{ flowName?: string; actions?: Action[]; }> = ({ 
                     textOverflow="ellipsis"
                     maxWidth="300px"
                   >
-                    {row.name}
+                    {row.action.name}
                   </Typography>
                 </Box>
               </AppCard>
-              {actions.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
+              {actionSequences.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
                 <Box className={classes.vertLine} />
               </Box>}
             </Box>

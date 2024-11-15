@@ -5,7 +5,6 @@ import { Box, Button, Tooltip, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 
 import DividerIcon from "../../assets/images/divider-vertical.svg";
-import AddIcon from "../../assets/images/add-icon-white.svg";
 import EditableTextField from "../../components/EditableTextField";
 import AppTabs, { AppTab } from "../../components/AppTabs";
 
@@ -54,40 +53,9 @@ const Header: React.FC<{
           />
         </Box>
         <Box>
-          {activeTab === "TEST_CASES" && (
-            <Tooltip title={"Create a new Test Case"}>
-              <Button
-                startIcon={
-                  <img
-                    src={AddIcon}
-                    alt="create new test case"
-                    width="14"
-                    height="14"
-                  />
-                }
-                variant="contained"
-                color="secondary"
-                sx={{
-                  padding: "10px 21px",
-                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-                  textTransform: "unset !important",
-                }}
-                to={`/project/${projectId}/new-test-case`}
-                component={RouterLink}
-                aria-label="Create New Test Case"
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 600,
-                    lineHeight: "16px",
-                  }}
-                >
-                  Create New Test Case
-                </Typography>
-              </Button>
-            </Tooltip>
-          )}
+          {/* {activeTab === "TEST_CASES" && (
+            <AddTestCase projectId={projectId} onModalClose={() => {console.log("Test case add/edit modal closed")}} />
+          )} */}
         </Box>
         {/* search component comes here */}
       </Box>

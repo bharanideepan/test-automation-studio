@@ -13,10 +13,6 @@ export default function (app: Application): typeof Model {
       primaryKey: true,
       autoIncrement: true
     },
-    flowId: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-    },
     name: {
       type: DataTypes.STRING(5000),
       allowNull: false,
@@ -33,18 +29,15 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING(5000),
       allowNull: true,
     },
-    order: {
-      type: DataTypes.INTEGER,
-      allowNull: false
+    projectId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
     }
   });
   (action as any).associate = function (models: any): void {
+    action.belongsTo(models["project"], { foreignKey: "projectId" });
     action.hasMany(models["input"], { foreignKey: "actionId" });
-    action.hasMany(models["testCaseFlowSequenceActionInput"], { 
-      as: 'actionInput', 
-      foreignKey: 'actionId' 
-    });
-    action.belongsTo(models["flow"], { foreignKey: "flowId" });
+    action.hasMany(models["flowActionSequence"], { foreignKey: "actionId" });
   };
   return action;
 }

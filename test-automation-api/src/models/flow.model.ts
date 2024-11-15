@@ -24,7 +24,7 @@ export default function (app: Application): typeof Model {
   });
   (flow as any).associate = function (models: any): void {
     flow.belongsTo(models["project"], {foreignKey: "projectId"});
-    flow.hasMany(models["action"], {foreignKey: "flowId"});
+    flow.hasMany(models["flowActionSequence"], {foreignKey: "flowId"});
     flow.hasMany(models["testCaseFlowSequence"], { foreignKey: "flowId" });
   };
   return flow;

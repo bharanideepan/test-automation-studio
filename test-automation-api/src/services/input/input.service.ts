@@ -20,6 +20,11 @@ export default function (app: Application): void {
 
   // Initialize our service with any options it requires
   app.use('/input', new Input(options, app));
+  app.use('/input/set-default', {
+    async create(data: any, params: any) {
+      return await app.service('input').setDefaultInput(data, params);
+    },
+  });
 
   // Get our initialized service so that we can register hooks
   const service = app.service('input');

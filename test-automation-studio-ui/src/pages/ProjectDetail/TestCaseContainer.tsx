@@ -14,18 +14,18 @@ import {
   Card
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import AddIcon from "../../assets/images/add-icon-white.svg";
-import { Flow, TestCase, } from "../../declarations/interface";
+import { TestCase, TestCaseFlowSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import { getTestCaseById } from "../../slices/testCase";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
+import AddTestCase from "./AddTestCase";
 
-export const DEFAULT_FLOW: TestCase = {
+export const DEFAULT_TEST_CASE: TestCase = {
   id: "",
   projectId: "",
   name: ""
@@ -84,6 +84,7 @@ const TestCaseContaier: React.FC<{
 }> = ({ list, projectId }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const [count, setCount] = useState(0);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | undefined>(undefined);
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
 
@@ -95,44 +96,27 @@ const TestCaseContaier: React.FC<{
     if (selectedTestCase) dispatch(getTestCaseById(selectedTestCase?.id))
   }, [list]);
 
+  useEffect(() => {
+    if(list) {
+      if(list.length !== count) {
+        setSelectedTestCase(list[list.length-1])
+      }
+      setCount(list.length)
+    }
+  }, [list])
+
   return (
     <>
       {list.length === 0 && (
         <Box className={clsx(classes.contentCenter, classes.body)}>
-          <Box mr={2}>
-            <Button
-                startIcon={
-                  <img
-                    src={AddIcon}
-                    alt="create new test case"
-                    width="14"
-                    height="14"
-                  />
-                }
-                variant="contained"
-                color="secondary"
-                sx={{
-                  padding: "10px 21px",
-                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-                  textTransform: "unset !important",
-                }}
-                to={`/project/${projectId}/new-test-case`}
-                component={RouterLink}
-                aria-label="Create New Test Case"
-              >
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 600,
-                    lineHeight: "16px",
-                  }}
-                >
-                  Create New Test Case
-                </Typography>
-              </Button>
+          <Box mr={1}>
+            <AddTestCase
+              projectId={projectId}
+              onModalClose={() => { console.log("Add/edit test case modal closed") }}
+            />
           </Box>
           <Typography variant="h5" color="primary">
-            Add new Test Case
+            Add New Test Case
           </Typography>
         </Box>
       )}
@@ -148,7 +132,7 @@ const TestCaseContaier: React.FC<{
             <TestCasesListView projectId={projectId} testCases={list} selectedTestCase={list.find((testCase: TestCase) => testCase.id == selectedTestCase?.id)} setSelectedTestCase={setSelectedTestCase} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <FlowListView testCaseName={fetchedTestCase?.name} flows={fetchedTestCase?.flows} />
+            <FlowListView testCaseName={fetchedTestCase?.name} testCaseFlowSequences={fetchedTestCase?.testCaseFlowSequences} />
           </Grid>
         </Grid>
       )}
@@ -172,13 +156,13 @@ const TestCasesListView: React.FC<{
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
               <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
-                {/* <AddTestCase
-                  flow={editTestCase}
+                <AddTestCase
+                  testCase={editTestCase}
                   projectId={projectId}
                   onModalClose={() => { setEditTestCase(undefined) }}
-                /> */}
+                />
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                  TestCases: {testCases.length}
+                  Test Cases: {testCases.length}
                 </Typography>
               </Box>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
@@ -221,7 +205,7 @@ const TestCasesListView: React.FC<{
                                 onClick={() => {
                                   setEditTestCase(row);
                                 }}
-                                data-testid="remove-added-replacement"
+                                data-testid="edit-testcase"
                               >
                                 <img
                                   src={EditIcon}
@@ -244,7 +228,7 @@ const TestCasesListView: React.FC<{
       </>
     );
   };
-const FlowListView: React.FC<{ testCaseName?: string; flows?: Flow[]; }> = ({ testCaseName, flows }) => {
+const FlowListView: React.FC<{ testCaseName?: string; testCaseFlowSequences?: TestCaseFlowSequence[]; }> = ({ testCaseName, testCaseFlowSequences }) => {
   const classes = useStyles();
   return (
     <>
@@ -253,24 +237,24 @@ const FlowListView: React.FC<{ testCaseName?: string; flows?: Flow[]; }> = ({ te
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
             <Box>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                Test Case Name: {testCaseName}
+                {testCaseName}
               </Typography>
             </Box>
-            {flows &&
+            {testCaseFlowSequences &&
               <Box display={"flex"} gap={2} justifyContent={"space-between"} alignItems={"center"}>
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                  Flows: {flows?.length ?? 0}
+                  Flows: {testCaseFlowSequences?.length ?? 0}
                 </Typography>
               </Box>}
-            {!flows && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-              Edit the flow to add flows
-            </Typography>}
+            {/* {!testCaseFlowSequences && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+              Edit the Test Case to add testCaseFlowSequences
+            </Typography>} */}
           </Box>
         </Box>
       </Box>
       <Box className={classes.listContainer} pt={2}>
         <Box className={classes.body} px={5}>
-          {flows && flows.map((row, index) => (
+          {testCaseFlowSequences && testCaseFlowSequences.map((row, index) => (
             <Box mx={5} key={index}>
               <AppCard id={`${index}`}>
                 <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5}>
@@ -281,11 +265,11 @@ const FlowListView: React.FC<{ testCaseName?: string; flows?: Flow[]; }> = ({ te
                     textOverflow="ellipsis"
                     maxWidth="300px"
                   >
-                    {row.name}
+                    {row.flow.name}
                   </Typography>
                 </Box>
               </AppCard>
-              {flows.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
+              {testCaseFlowSequences.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
                 <Box className={classes.vertLine} />
               </Box>}
             </Box>

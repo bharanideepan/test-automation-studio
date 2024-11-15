@@ -6,7 +6,6 @@ import { useSelector, useDispatch } from "react-redux";
 
 import Header from "./Header";
 import { RootState } from "../../store/rootReducer";
-import { Action, Input, Recording, Scrambling, Workflow } from "../../declarations/interface";
 import {
   actions,
   getProjectById,
@@ -124,7 +123,7 @@ const ProjectDetail = () => {
           )}
           {activeTab === "TEST_CASES" && (
             <TestCaseContaier
-              list={project.test_cases ?? []}
+              list={project.testCases ?? []}
               projectId={project.id}
             />
           )}

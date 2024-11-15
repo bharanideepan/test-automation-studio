@@ -3,14 +3,19 @@ import ProjectService from "../services/projectService";
 import ActionService from "../services/actionService";
 import InputService from "../services/inputService";
 import FlowService from "../services/flowService";
-import FlowActionMappingService from "../services/flowActionMappingService";
+import FlowActionSequenceService from "../services/flowActionSequenceService";
+import TestCaseFlowSequenceService from "../services/testCaseFlowSequenceService";
+import TestCaseService from "../services/testCaseService";
 import {
   Action,
   Flow,
-  FlowActionMapping,
+  FlowActionSequence,
   Input,
   Project,
+  TestCase,
+  TestCaseFlowSequence,
 } from "../declarations/interface";
+import inputService from "../services/inputService";
 
 export const getProjectById: any = createAsyncThunk(
   "project/getProjectById",
@@ -29,7 +34,15 @@ export const updateProjectName: any = createAsyncThunk(
 export const createAction: any = createAsyncThunk(
   "project/createAction",
   async (action: Action) => {
-    return ActionService.createAction(action);
+    const createdAction: any = await ActionService.createAction(action);
+    const createdInput = await inputService.createInput({
+      actionId: createdAction.id,
+      isDefault: true,
+      name: "Input 01",
+      id: "",
+      value: ""
+    })
+    return {...createdAction, inputs: [createdInput]};
   }
 );
 export const updateAction: any = createAsyncThunk(
@@ -47,32 +60,61 @@ export const deleteAction: any = createAsyncThunk(
 
 export const createInput: any = createAsyncThunk(
   "project/createInput",
-  async (action: Input) => {
-    return InputService.createInput(action);
+  async (input: Input) => {
+    return InputService.createInput(input);
   }
 );
 export const updateInput: any = createAsyncThunk(
   "project/updateInput",
-  async (action: Input) => {
-    return InputService.updateInput(action);
+  async (input: Input) => {
+    return InputService.updateInput(input);
+  }
+);
+export const setDefaultInput: any = createAsyncThunk(
+  "project/setDefaultInput",
+  async (input: Input) => {
+    return InputService.setDefaultInput(input);
   }
 );
 
 export const createFlow: any = createAsyncThunk(
   "project/createFlow",
-  async (payload: {flow: Flow, mappings: FlowActionMapping[]}) => {
-    const createdFlow = await FlowService.createFlow(payload.flow);
-    await FlowActionMappingService.createFlowActionMappings(payload.mappings.map((map: FlowActionMapping) => ({...map, flowId: createdFlow.data.id})));
+  async (payload: {flow: Flow, flowActionSequences: FlowActionSequence[]}) => {
+    const createdFlow: any = await FlowService.createFlow(payload.flow);
+    await FlowActionSequenceService.createSequences(payload.flowActionSequences.map(
+      (map: FlowActionSequence) => ({...map, flowId: createdFlow.id}))
+    );
     return createdFlow
   }
 );
 export const updateFlow: any = createAsyncThunk(
   "project/updateFlow",
-  async (payload: {flow: Flow, mappings:{
-    updatedFlowActionMappings: FlowActionMapping[], newFlowActionMappings: FlowActionMapping[], removedFlowActionMappings: string[]
+  async (payload: {flow: Flow, sequences:{
+    updatedSequences: FlowActionSequence[], newSequences: FlowActionSequence[], removedSequences: string[]
   }}) => {
-    await FlowActionMappingService.updateFlowActionMappings(payload.mappings);
+    await FlowActionSequenceService.updateSequences(payload.sequences);
     return await FlowService.updateFlow(payload.flow);
+  }
+);
+
+export const createTestCase: any = createAsyncThunk(
+  "project/createTestCase",
+  async (payload: {testCase: TestCase, sequences: TestCaseFlowSequence[]}) => {
+    const createdTestCase: any = await TestCaseService.createTestCase(payload.testCase);
+    await TestCaseFlowSequenceService.createTestCaseFlowSequences(
+      payload.sequences.map((map: TestCaseFlowSequence) => ({...map, testCaseId: createdTestCase.id}))
+    );
+    return createdTestCase
+  }
+);
+
+export const updateTestCase: any = createAsyncThunk(
+  "project/updateTestCase",
+  async (payload: {testCase: TestCase, sequences:{
+    updatedSequences: TestCaseFlowSequence[], newSequences: TestCaseFlowSequence[], removedSequences: string[]
+  }}) => {
+    await TestCaseFlowSequenceService.updateTestCaseFlowSequences(payload.sequences);
+    return await TestCaseService.updateTestCase(payload.testCase);
   }
 );
 
@@ -94,30 +136,69 @@ const slice = createSlice({
       state.status = null;
     },
   },
-  extraReducers: {
-    [getProjectById.fulfilled]: (state, action) => {
-      state.project = action.payload.data;
-    },
-    [getProjectById.rejected]: (state) => {
+  extraReducers: (builder) => {
+    builder.addCase(getProjectById.fulfilled, (state, action) => {
+      state.project = action.payload;
+    })
+    builder.addCase(getProjectById.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while fetching project details",
       };
-    },
-    [updateProjectName.fulfilled]: (state) => {
+    })
+    builder.addCase(updateProjectName.fulfilled, (state) => {
       state.status = {
         type: "SUCCESS",
         message: "Project name updated successfully",
       };
-    },
-    [updateProjectName.rejected]: (state) => {
+    })
+    builder.addCase(updateProjectName.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while updating project name",
       };
-    },
-    [createFlow.fulfilled]: (state, action) => {
-      const flowData = action.payload.data;
+    })
+    builder.addCase(createTestCase.fulfilled, (state, action) => {
+      const testCaseData = action.payload;
+      if (state.project) {
+        state.project.testCases = [...state.project.testCases, testCaseData];
+      }
+      state.status = {
+        type: "SUCCESS",
+        message: "Test Case created successfully",
+      };
+    })
+    builder.addCase(createTestCase.rejected, (state) => {
+      state.status = {
+        type: "FAILURE",
+        message: "Error while creating Test Case",
+      };
+    })
+    builder.addCase(updateTestCase.fulfilled, (state, action) => {
+      const updatedTestCase = action.payload;
+      if (state.project) {
+        state.project.testCases = state.project.testCases.map(
+          (testCase: TestCase) => {
+            if (testCase.id === updatedTestCase.id) {
+              return updatedTestCase;
+            }
+            return testCase;
+          }
+        );
+      }
+      state.status = {
+        type: "SUCCESS",
+        message: "Test Case updated successfully",
+      };
+    })
+    builder.addCase(updateTestCase.rejected, (state) => {
+      state.status = {
+        type: "FAILURE",
+        message: "Error while updating Test Case",
+      };
+    })
+    builder.addCase(createFlow.fulfilled, (state, action) => {
+      const flowData = action.payload;
       if (state.project) {
         state.project.flows = [...state.project.flows, flowData];
       }
@@ -125,15 +206,15 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Flow created successfully",
       };
-    },
-    [createFlow.rejected]: (state) => {
+    })
+    builder.addCase(createFlow.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while creating flow",
       };
-    },
-    [updateFlow.fulfilled]: (state, action) => {
-      const updatedFlow = action.payload.data;
+    })
+    builder.addCase(updateFlow.fulfilled, (state, action) => {
+      const updatedFlow = action.payload;
       if (state.project) {
         state.project.flows = state.project.flows.map(
           (flow: Flow) => {
@@ -148,15 +229,15 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Flow updated successfully",
       };
-    },
-    [updateFlow.rejected]: (state) => {
+    })
+    builder.addCase(updateFlow.rejected, (state) => {
       state.status = {
         type: "FAILURE",
-        message: "Error while updating action",
+        message: "Error while updating Flow",
       };
-    },
-    [createAction.fulfilled]: (state, action) => {
-      const actionData = action.payload.data;
+    })
+    builder.addCase(createAction.fulfilled, (state, action) => {
+      const actionData = action.payload;
       if (state.project) {
         state.project.actions = [...state.project.actions, actionData];
       }
@@ -164,15 +245,15 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Action created successfully",
       };
-    },
-    [createAction.rejected]: (state) => {
+    })
+    builder.addCase(createAction.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while creating action",
       };
-    },
-    [updateAction.fulfilled]: (state, action) => {
-      const updatedAction = action.payload.data;
+    })
+    builder.addCase(updateAction.fulfilled, (state, action) => {
+      const updatedAction = action.payload;
       if (state.project) {
         state.project.actions = state.project.actions.map(
           (action: Action) => {
@@ -187,15 +268,15 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Action updated successfully",
       };
-    },
-    [updateAction.rejected]: (state) => {
+    })
+    builder.addCase(updateAction.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while updating action",
       };
-    },
-    [deleteAction.fulfilled]: (state, action) => {
-      const { id } = action.payload.data;
+    })
+    builder.addCase(deleteAction.fulfilled, (state, action) => {
+      const { id } = action.payload;
       if (state.project) {
         state.project.actions = state.project.actions.filter(
           (action: Action) => action.id !== id
@@ -205,15 +286,15 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Action deleted successfully",
       };
-    },
-    [deleteAction.rejected]: (state) => {
+    })
+    builder.addCase(deleteAction.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while deleting action",
       };
-    },
-    [createInput.fulfilled]: (state, action) => {
-      const createdInput = action.payload.data;
+    })
+    builder.addCase(createInput.fulfilled, (state, action) => {
+      const createdInput = action.payload;
       if (state.project) {
         state.project.actions = state.project.actions.map(
           (action: Action) => {
@@ -229,15 +310,15 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Input created successfully",
       };
-    },
-    [createInput.rejected]: (state) => {
+    })
+    builder.addCase(createInput.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while creating input",
       };
-    },
-    [updateInput.fulfilled]: (state, action) => {
-      const updatedInput = action.payload.data;
+    })
+    builder.addCase(updateInput.fulfilled, (state, action) => {
+      const updatedInput = action.payload;
       if (state.project) {
         state.project.actions = state.project.actions.map(
           (action: Action) => {
@@ -258,13 +339,38 @@ const slice = createSlice({
         type: "SUCCESS",
         message: "Input updated successfully",
       };
-    },
-    [updateInput.rejected]: (state) => {
+    })
+    builder.addCase(updateInput.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while updating input",
       };
-    },
+    })
+    builder.addCase(setDefaultInput.fulfilled, (state, action) => {
+      const payload = action.payload;
+      if (state.project) {
+        state.project.actions = state.project.actions.map(
+          (action: Action) => {
+            if (action.id === payload.actionId) {
+              return {
+                ...action, inputs: payload.inputs
+              }
+            }
+            return action;
+          }
+        );
+      }
+      state.status = {
+        type: "SUCCESS",
+        message: "Default Input updated successfully",
+      };
+    })
+    builder.addCase(setDefaultInput.rejected, (state) => {
+      state.status = {
+        type: "FAILURE",
+        message: "Error while updating default input",
+      };
+    })
   },
 });
 

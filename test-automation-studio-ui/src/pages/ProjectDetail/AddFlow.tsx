@@ -12,7 +12,7 @@ import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
-import { Action, Flow, FlowActionMapping } from "../../declarations/interface";
+import { Action, Flow, FlowActionSequence } from "../../declarations/interface";
 import { DEFAULT_FLOW } from "./FlowContainer";
 import { createFlow, updateFlow } from "../../slices/project";
 import { RootState } from "../../store/rootReducer";
@@ -20,6 +20,7 @@ import { getFlowById } from "../../slices/flow";
 import AppCard from "../../components/cards/AppCard";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
 import { reorder } from "../../util/UtilService";
+import AddAction from "./AddAction";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -31,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   listContainer: {
-    maxHeight: "65vh",
+    height: "65vh",
     overflow: "auto",
     boxShadow: "0px -4px 5px -4px rgba(0, 0, 0, 0.15)",
   },
@@ -88,8 +89,7 @@ const AddFlow: React.FC<{
 }> = ({ flow, projectId, onModalClose }) => {
   const classes = useStyles();
   const [data, setData] = useState<Flow | undefined>();
-  const [selectedActions, setSelectedActions] = useState<Action[] | undefined>();
-  const [removedActions, setRemovedActions] = useState<Action[]>();
+  const [selectedFlowActionSequences, setSelectedFlowActionSequences] = useState<FlowActionSequence[] | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -101,11 +101,6 @@ const AddFlow: React.FC<{
   const { project } = useSelector((state: RootState) => state.project);
 
   const dispatch = useDispatch();
-  const filterAvailableAction = () => {
-    if (project) {
-      return project.actions.filter((action: Action) => !selectedActions?.some((selectedAction: Action) => selectedAction.id === action.id))
-    }
-  }
 
   const handleModalOpen = () => {
     setData({ ...DEFAULT_FLOW, projectId: projectId });
@@ -115,8 +110,7 @@ const AddFlow: React.FC<{
     setNameError(undefined);
     onModalClose();
     dispatch(actions.clearStatus());
-    setSelectedActions(undefined);
-    setRemovedActions(undefined);
+    setSelectedFlowActionSequences(undefined);
     setData(undefined);
   };
   const handleSubmit = () => {
@@ -124,30 +118,25 @@ const AddFlow: React.FC<{
     setSubmitted(true);
   };
   const submitData = () => {
-    const updatedFlowActionMappings: FlowActionMapping[] = [];
-    const newFlowActionMappings: FlowActionMapping[] = [];
-    selectedActions?.map((action: Action, index) => {
-      if (action.flow_action_mapping) {
-        updatedFlowActionMappings.push({ ...action.flow_action_mapping, order: index })
+    const updatedSequences: FlowActionSequence[] = [];
+    const newSequences: FlowActionSequence[] = [];
+    selectedFlowActionSequences?.filter((sequence: FlowActionSequence) => !sequence.isRemoved).map((sequence: FlowActionSequence, index) => {
+      if (sequence.id) {
+        updatedSequences.push({ ...sequence, order: index })
       } else {
-        newFlowActionMappings.push({
-          actionId: action.id,
-          flowId: fetchedFlow?.id ?? "",
-          order: index
-        })
+        newSequences.push({ ...sequence, order: index })
       }
     })
-    const removedFlowActionMappings = removedActions?.map((action: Action) => (action.flow_action_mapping?.id))
-      .filter((flowActionMappingId: string | undefined) => !!flowActionMappingId)
-    const mappingsPayload = {
-      updatedFlowActionMappings, newFlowActionMappings, removedFlowActionMappings
+    const removedSequences = selectedFlowActionSequences?.filter((sequence: FlowActionSequence) => sequence.isRemoved).map((sequence: FlowActionSequence) => sequence.id)
+    const sequencePayload = {
+      updatedSequences, newSequences, removedSequences
     }
     setSubmitted(false);
     handleModalClose();
     if (data?.id.length) {
-      dispatch(updateFlow({ flow: data, mappings: mappingsPayload }));
+      dispatch(updateFlow({ flow: data, sequences: sequencePayload }));
     } else {
-      dispatch(createFlow({ flow: data, mappings: newFlowActionMappings }));
+      dispatch(createFlow({ flow: data, flowActionSequences: newSequences }));
     }
   };
   const handleFieldChange = (
@@ -177,20 +166,57 @@ const AddFlow: React.FC<{
     }
   };
 
-  const removeAction = (removedAction: Action) => {
-    setSelectedActions((prev: Action[] | undefined) => {
-      return prev?.filter((action: Action) => action.id !== removedAction.id)
-    })
-    if (removedAction.flow_action_mapping) {
-      setRemovedActions((prev: Action[] | undefined) => {
-        if (prev) return [...prev, removedAction]
-        return [removedAction]
-      })
+  const addNewAction = (action: Action) => {
+    const newSequence: FlowActionSequence = {
+      actionId: action.id,
+      flowId: fetchedFlow?.id,
+      order: selectedFlowActionSequences?.length ?? 0,
+      action: action
     }
+    setSelectedFlowActionSequences((prev: FlowActionSequence[] | undefined) => {
+      if (prev)
+        return [...prev, newSequence];
+      return [newSequence];
+    })
   }
 
-  const reorderActions = (reorderedActions: Action[]) => {
-    setSelectedActions(reorderedActions);
+  const restoreFlowActionSequence = (restoreIndex: number) => {
+    setSelectedFlowActionSequences((prev: FlowActionSequence[] | undefined) => {
+      return prev?.map((sequence: FlowActionSequence, index) => {
+        if (restoreIndex === index) {
+          return {
+            ...sequence,
+            isRemoved: false
+          }
+        }
+        return sequence;
+      })
+    })
+  }
+
+  const removeFlowActionSequence = (removeIndex: number) => {
+    setSelectedFlowActionSequences((prev: FlowActionSequence[] | undefined) => {
+      const updatedSequences =  prev?.map((sequence: FlowActionSequence, index) => {
+        if (removeIndex === index) {
+          return {
+            ...sequence,
+            isRemoved: true
+          }
+        }
+        return sequence;
+      })
+      return updatedSequences?.filter((sequence: FlowActionSequence, index) => {
+        if (!sequence.id && index === removeIndex) {
+          return false;
+        } else {
+          return true;
+        }
+      })
+    })
+  }
+
+  const reorderFlowActionSequences = (reorderedFlowActionSequences: FlowActionSequence[]) => {
+    setSelectedFlowActionSequences(reorderedFlowActionSequences);
   }
 
   useEffect(() => {
@@ -215,7 +241,7 @@ const AddFlow: React.FC<{
   useEffect(() => {
     if (flow) {
       setData(fetchedFlow)
-      setSelectedActions(fetchedFlow?.actions)
+      setSelectedFlowActionSequences(fetchedFlow?.flowActionSequences)
     }
   }, [fetchedFlow]);
 
@@ -287,10 +313,17 @@ const AddFlow: React.FC<{
                 classes={{ container: classes.gridContainer }}
               >
                 <Grid item xs={6} classes={{ item: classes.gridItem }} py={2}>
-                  <SelectedActionsView actions={selectedActions} removeAction={removeAction} reorderActions={reorderActions} />
+                  <AvailableActionsView
+                    actions={project?.actions}
+                    addAction={addNewAction}
+                    projectId={project?.id} />
                 </Grid>
                 <Grid item xs={6} classes={{ item: classes.gridItem }} py={2}>
-                  <AvailableActionsView actions={filterAvailableAction()} setSelectedActions={setSelectedActions} />
+                  <SelectedActionsView
+                    flowActionSequences={selectedFlowActionSequences}
+                    removeFlowActionSequence={removeFlowActionSequence}
+                    reorderFlowActionSequences={reorderFlowActionSequences}
+                    restoreFlowActionSequence={restoreFlowActionSequence} />
                 </Grid>
               </Grid>
             </Box>
@@ -301,17 +334,22 @@ const AddFlow: React.FC<{
   );
 };
 
-const SelectedActionsView: React.FC<{ actions?: Action[]; removeAction: (action: Action) => void; reorderActions: (reorderedActions: Action[]) => void }> = ({ actions, removeAction, reorderActions }) => {
+const SelectedActionsView: React.FC<{
+  flowActionSequences?: FlowActionSequence[];
+  removeFlowActionSequence: (index: number) => void;
+  reorderFlowActionSequences: (reorderedFlowActionSequences: FlowActionSequence[]) => void;
+  restoreFlowActionSequence: (index: number) => void;
+}> = ({ flowActionSequences, removeFlowActionSequence, reorderFlowActionSequences, restoreFlowActionSequence }) => {
   const classes = useStyles();
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (!destination) return;
-    if (actions) {
-      const reorderedActions = reorder(
-        [...actions],
+    if (flowActionSequences) {
+      const reorderedFlowActionSequences = reorder(
+        [...flowActionSequences],
         source.index,
         destination.index
       );
-      reorderActions(reorderedActions);
+      reorderFlowActionSequences(reorderedFlowActionSequences);
     }
   };
   return (
@@ -319,12 +357,12 @@ const SelectedActionsView: React.FC<{ actions?: Action[]; removeAction: (action:
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
         <Box flexGrow={1}>
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-            {actions && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+            {flowActionSequences && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                Selected: {actions?.length ?? 0}
+                Selected: {flowActionSequences.filter((x) => !x.isRemoved)?.length ?? 0}
               </Typography>
             </Box>}
-            {!actions && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+            {!flowActionSequences && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
               Add actions to this flow
             </Typography>}
           </Box>
@@ -336,8 +374,8 @@ const SelectedActionsView: React.FC<{ actions?: Action[]; removeAction: (action:
             <Droppable droppableId="droppable-list">
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
-                  {actions && actions.map((row, index) => (
-                    <Draggable draggableId={row.id} index={index} key={row.id}>
+                  {flowActionSequences && flowActionSequences.map((row, index) => (
+                    <Draggable draggableId={`${index}`} index={index} key={index}>
                       {(provided, snapshot) => (
                         <Box
                           ref={provided.innerRef}
@@ -346,9 +384,20 @@ const SelectedActionsView: React.FC<{ actions?: Action[]; removeAction: (action:
                         >
                           <Box mx={5} key={index}>
                             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-                              <Box width={"100%"}>
+                              <Box width={"100%"} sx={{
+                                opacity: row.isRemoved ? 0.5 : 1
+                              }}>
                                 <AppCard id={`${index}`}>
-                                  <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5}>
+                                  <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5} position="relative">
+                                  {!row.id && <Typography
+                                      variant="h6"
+                                      color="secondary"
+                                      position="absolute"
+                                      right={"-40px"}
+                                      top={"-40px"}
+                                    >
+                                      New
+                                    </Typography>}
                                     <Typography
                                       variant="subtitle1"
                                       color="primary"
@@ -356,31 +405,43 @@ const SelectedActionsView: React.FC<{ actions?: Action[]; removeAction: (action:
                                       textOverflow="ellipsis"
                                       maxWidth="300px"
                                     >
-                                      {row.name}
+                                      {row.action.name}
                                     </Typography>
                                   </Box>
                                 </AppCard>
-                                {actions && actions.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-                                  <Box className={classes.vertLine} />
-                                </Box>}
+                                {flowActionSequences && flowActionSequences.length - 1 > index &&
+                                  <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
+                                    <Box className={classes.vertLine} />
+                                  </Box>}
                               </Box>
-                              <Box ml={"auto"}>
+                              {!row.isRemoved && <Box ml={"auto"}>
                                 <Tooltip title={"Remove"}>
                                   <IconButton
                                     sx={{ padding: 0.5 }}
                                     onClick={() => {
-                                      removeAction(row);
+                                      removeFlowActionSequence(index);
                                     }}
-                                    data-testid="remove-added-replacement"
+                                    data-testid="remove-added-sequence"
                                   >
                                     <img src={DeleteIcon} alt="close" height="24" width="24" />
                                   </IconButton>
                                 </Tooltip>
-                              </Box>
+                              </Box>}
+                              {row.isRemoved && <Box ml={"auto"}>
+                                <Tooltip title={"Restore"}>
+                                  <IconButton
+                                    sx={{ padding: 0.5 }}
+                                    onClick={() => {
+                                      restoreFlowActionSequence(index);
+                                    }}
+                                    data-testid="restore-removed-sequence"
+                                  >
+                                    <img src={AddIcon} alt="close" height="24" width="24" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>}
                             </Box>
-
                           </Box>
-
                         </Box>
                       )}
                     </Draggable>
@@ -396,27 +457,34 @@ const SelectedActionsView: React.FC<{ actions?: Action[]; removeAction: (action:
   );
 };
 
-const AvailableActionsView: React.FC<{ actions?: Action[]; setSelectedActions: React.Dispatch<React.SetStateAction<Action[] | undefined>> }> = ({ actions, setSelectedActions }) => {
+const AvailableActionsView: React.FC<{
+  actions?: Action[];
+  addAction: (action: Action) => void;
+  projectId?: string;
+}> = ({ actions, addAction, projectId }) => {
   const classes = useStyles();
   const handleAdd = (action: Action) => {
-    setSelectedActions((prev: Action[] | undefined) => {
-      if (prev) return [...prev, action];
-      return [action];
-    });
+    addAction(action)
   }
   return (
     <>
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
         <Box flexGrow={1}>
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-            {actions && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
-              <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                Available actions: {actions?.length ?? 0}
-              </Typography>
-            </Box>}
-            {!actions && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-              No action found, please add some actions in this project
-            </Typography>}
+            <Box display={"flex"} alignItems={"center"} justifyContent={"start"} gap={2}>
+              {projectId && <AddAction
+                projectId={projectId}
+                onModalClose={() => { console.log("Add/edit action modal closed") }}
+              />}
+              {actions && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+                <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                  Available actions: {actions?.length ?? 0}
+                </Typography>
+              </Box>}
+              {!actions && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                No action found, please add some actions in this project
+              </Typography>}
+            </Box>
           </Box>
         </Box>
       </Box>

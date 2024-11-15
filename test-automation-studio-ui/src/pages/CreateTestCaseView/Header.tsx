@@ -13,8 +13,6 @@ import { makeStyles } from "@mui/styles";
 
 import AddIcon from "../../assets/images/add-icon-white.svg";
 import EditableTextField from "../../components/EditableTextField";
-import AppSelect from "../../components/AppSelect";
-import { Recording } from "../../declarations/interface";
 
 const useStyles = makeStyles((theme) => ({
   root: {

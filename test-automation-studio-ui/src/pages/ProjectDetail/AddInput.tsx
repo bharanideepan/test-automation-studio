@@ -7,9 +7,8 @@ import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Input } from "../../declarations/interface";
-import { ACTION_TYPES, DEFAULT_INPUT } from "./ActionContainer";
+import { DEFAULT_INPUT } from "./ActionContainer";
 import { createInput, updateInput } from "../../slices/project";
-import { AppSelect2 } from "../../components/AppSelect";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -20,20 +19,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 const MAX_LIMIT = 250;
 type NameErrorKey = "REQUIRED" | "MAX_LIMIT";
-type TypeErrorKey = "REQUIRED";
-type XpathErrorKey = "MAX_LIMIT" | "INVALID" | "MAX_LIMIT";
+type WaitAfterActionErrorKey = "INVALID";
 type ValueErrorKey = "MAX_LIMIT";
 
 type NameError = {
   [key in NameErrorKey]?: string;
 };
 
-type TypeError = {
-  [key in TypeErrorKey]?: string;
-};
-
-type XpathError = {
-  [key in XpathErrorKey]?: string;
+type WaitAfterActionError = {
+  [key in WaitAfterActionErrorKey]?: string;
 };
 
 type ValueError = {
@@ -42,8 +36,7 @@ type ValueError = {
 
 type ErrorMsg = {
   name: NameError;
-  type: TypeError;
-  xpath: XpathError;
+  waitAfterAction: WaitAfterActionError;
   value: ValueError;
 };
 
@@ -52,19 +45,15 @@ const errorMsg: ErrorMsg = {
     REQUIRED: "This field is required",
     MAX_LIMIT: `Maximum limit is ${MAX_LIMIT} characters`,
   },
-  type: {
-    REQUIRED: "This field is required",
-  },
-  xpath: {
-    MAX_LIMIT: `Maximum limit is ${MAX_LIMIT} characters`,
-    INVALID: "Invalid xpath"
+  waitAfterAction: {
+    INVALID: "Invalid duration"
   },
   value: {
     MAX_LIMIT: `Maximum limit is ${MAX_LIMIT} characters`,
   },
 };
 
-const AddInput: React.FC<{
+export const AddInput: React.FC<{
   input?: Input;
   actionId: string;
   onModalClose: () => void;
@@ -77,11 +66,8 @@ const AddInput: React.FC<{
   const [nameError, setNameError] = useState<
     NameErrorKey | undefined
   >();
-  const [typeError, setTypeError] = useState<
-    TypeErrorKey | undefined
-  >();
-  const [xpathError, setXpathError] = useState<
-    XpathErrorKey | undefined
+  const [waitAfterActionError, setWaitAfterActionError] = useState<
+    WaitAfterActionErrorKey | undefined
   >();
   const [valueError, setValueError] = useState<
     ValueErrorKey | undefined
@@ -96,16 +82,14 @@ const AddInput: React.FC<{
   const handleModalClose = () => {
     setModalOpen(false);
     setNameError(undefined);
-    setTypeError(undefined);
-    setXpathError(undefined);
+    setWaitAfterActionError(undefined);
     setValueError(undefined);
     onModalClose();
     dispatch(actions.clearStatus());
   };
   const handleSubmit = () => {
     handleFieldChange({target:{value: data?.name}}, "name")
-    handleFieldChange({target:{value: data?.type}}, "type")
-    handleFieldChange({target:{value: data?.xpath}}, "xpath")
+    handleFieldChange({target:{value: data?.waitAfterAction}}, "waitAfterAction")
     handleFieldChange({target:{value: data?.value}}, "value")
     setSubmitted(true);
   };
@@ -127,11 +111,8 @@ const AddInput: React.FC<{
     if (field === "name") {
       validateName(value);
     }
-    if (field === "type") {
-      validateType(value);
-    }
-    if (field === "xpath") {
-      validateXpath(value);
+    if (field === "waitAfterAction") {
+      validatWaitAfterAction(value);
     }
     if (field === "value") {
       validateValue(value);
@@ -145,46 +126,24 @@ const AddInput: React.FC<{
     });
   };
 
-  const isValidXpath = (xpath: string): boolean => {
-    // valida this xpath properly
-    return true;
-    try {
-      document.querySelector(xpath);
-      return true;
-    } catch (error) {
-      console.log("invalid")
-      return false;
-    }
-  };
-
-  const validateXpath = (xpath: string) => {
-    if (xpath.length > 250) {
-      setXpathError("MAX_LIMIT");
-    } else if (!isValidXpath(xpath)) {
-      setXpathError("INVALID");
+  const validatWaitAfterAction = (waitAfterAction: number) => {
+    if (isNaN(waitAfterAction)) {
+      setWaitAfterActionError("INVALID");
     } else {
-      setXpathError(undefined);
-    }
-  };
-
-  const validateType = (type: string) => {
-    if (type.length === 0) {
-      setTypeError("REQUIRED");
-    } else {
-      setTypeError(undefined);
+      setWaitAfterActionError(undefined);
     }
   };
 
   const validateValue = (value: string) => {
-    if (value.length > 250) {
-      setXpathError("MAX_LIMIT");
+    if (value.length > MAX_LIMIT) {
+      setValueError("MAX_LIMIT");
     } else {
-      setXpathError(undefined);
+      setValueError(undefined);
     }
   };
 
   const validateName = (name: string) => {
-    if (name.length > 250) {
+    if (name.length > MAX_LIMIT) {
       setNameError("MAX_LIMIT");
     } else if (name.length === 0) {
       setNameError("REQUIRED");
@@ -212,7 +171,7 @@ const AddInput: React.FC<{
   }, [modalOpen, data]);
 
   useEffect(() => {
-    if(!!nameError || !!typeError || !!xpathError || !!valueError) return
+    if(!!nameError || !!waitAfterActionError || !!valueError) return
     if (submitted) submitData();
   }, [submitted]);
 
@@ -244,6 +203,7 @@ const AddInput: React.FC<{
           <Box mb={0.5}>
             <Box>
               <AppTextbox
+                label="Name"
                 placeholder="Enter Name"
                 value={data.name}
                 onChange={(event) => {
@@ -257,29 +217,23 @@ const AddInput: React.FC<{
               />
             </Box>
             <Box mt={2}>
-              <AppSelect2
-                id={`action-type-dropdown`}
-                value={data.type}
-                onChange={(event) => {
-                  handleFieldChange(event, "type");
-                }} options={ACTION_TYPES} label="Select Action Type" />
-            </Box>
-            <Box mt={2}>
               <AppTextbox
-                placeholder="Enter Xpath"
-                value={data.xpath}
+                label="Wait duration after action"
+                placeholder="Enter Wait duration after action"
+                value={data.waitAfterAction}
                 onChange={(event) => {
-                  handleFieldChange(event, "xpath");
+                  handleFieldChange(event, "waitAfterAction");
                 }}
                 classes={{ root: classes.input }}
-                error={!!xpathError}
+                error={!!waitAfterActionError}
                 helperText={
-                  xpathError ? errorMsg.xpath[xpathError] : ""
+                  waitAfterActionError ? errorMsg.waitAfterAction[waitAfterActionError] : ""
                 }
               />
             </Box>
             <Box mt={2}>
               <AppTextbox
+                label="Value"
                 placeholder="Enter Value"
                 value={data.value}
                 onChange={(event) => {
@@ -302,7 +256,7 @@ const AddInput: React.FC<{
                 onClick={handleSubmit}
                 fullWidth
                 aria-label={title}
-                disabled={!!nameError || !!typeError || !!xpathError || !!valueError}
+                disabled={!!nameError || !!waitAfterActionError || !!valueError}
               >
                 <Typography variant="h5" sx={{ textTransform: "capitalize" }}>
                   {title}

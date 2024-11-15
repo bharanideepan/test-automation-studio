@@ -45,32 +45,32 @@ const slice = createSlice({
       state.status = null;
     },
   },
-  extraReducers: {
-    [getAllProjects.fulfilled]: (state, action) => {
-      const { limit, skip, total, data } = action.payload.data;
+  extraReducers: (builder) => {
+    builder.addCase(getAllProjects.fulfilled, (state, action) => {
+      const { limit, skip, total, data } = action.payload;
       state.pagination = { limit, skip, total };
       state.list = data;
-    },
-    [getAllProjects.rejected]: (state) => {
+    })
+    builder.addCase(getAllProjects.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while fetching projects",
       };
-    },
-    [createProject.fulfilled]: (state, action) => {
-      const newProject = action.payload.data;
+    })
+    builder.addCase(createProject.fulfilled, (state, action) => {
+      const newProject = action.payload;
       state.list.push(newProject);
       state.status = {
         type: "SUCCESS",
         message: "Project created successfully",
       };
-    },
-    [createProject.rejected]: (state) => {
+    })
+    builder.addCase(createProject.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while creating new project",
       };
-    },
+    })
   },
 });
 

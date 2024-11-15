@@ -2,37 +2,23 @@ import { HooksObject } from '@feathersjs/feathers';
 
 const populateFields = (hook: any) => {
   const Sequelize = hook.app.get("sequelizeClient");
-  const { flow, testCaseFlowSequence, action, input, testCaseFlowSequenceActionInput } = Sequelize.models;
+  const { flow, flowActionSequence, testCaseFlowSequence, action, input } = Sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
       {
         model: testCaseFlowSequence,
-        as: 'testCaseFlowSequences',
         include: [
           {
             model: flow,
-            as: 'flow',
             include: [
               {
-                model: action,
-                as: 'actions',
+                model: flowActionSequence,
                 include: [
                   {
-                    model: input,
-                    as: 'inputs',
+                    model: action,
                   },
-                  {
-                    model: testCaseFlowSequenceActionInput,
-                    as: 'actionInput',
-                    attributes: [
-                      ["testCaseFlowSequenceId", "sequenceId"]
-                    ],
-                    include: [
-                      {model: input}
-                    ]
-                  },
-                ],
+                ]
               },
             ],
           },
@@ -40,30 +26,40 @@ const populateFields = (hook: any) => {
       },
     ],
     order: [
-      [{ model: testCaseFlowSequence, as: 'testCaseFlowSequences' }, 'order', 'ASC'],
+      [{ model: testCaseFlowSequence }, 'order', 'ASC'],
       [
-        { model: testCaseFlowSequence, as: 'testCaseFlowSequences' },
-        { model: flow, as: 'flow' },
-        { model: action, as: 'actions' },
+        { model: testCaseFlowSequence },
+        { model: flow },
+        { model: flowActionSequence },
         'order',
         'ASC',
       ],
     ],
   };
-  
+
 };
 
-const filterTestCaseInputMapping = (hook: any) => {
-  hook.result.dataValues.testCaseFlowSequences = hook.result.dataValues.testCaseFlowSequences.map((testCaseFlowSequence: any) => {
+const filterTestCaseInputMapping = async (hook: any) => {
+  hook.result.dataValues.testCaseFlowSequences = await Promise.all(hook.result.dataValues.testCaseFlowSequences.map(async (testCaseFlowSequence: any) => {
     const testCaseFlowSequenceId = testCaseFlowSequence.id;
-    testCaseFlowSequence.dataValues.flow.dataValues.actions = testCaseFlowSequence.dataValues.flow.actions.map((action: any) => {
-      action.dataValues.actionInput = action.dataValues.actionInput.find((item: any) => {
-        return item.dataValues.sequenceId == testCaseFlowSequenceId
-      })
-      return action
-    })
+    testCaseFlowSequence.dataValues.flow.dataValues.flowActionSequences = await Promise.all(testCaseFlowSequence.dataValues.flow.flowActionSequences.map(async (flowActionSequence: any) => {
+      const actionInputs = await hook.app.service('input').find({
+        query: {
+          actionId: flowActionSequence.dataValues.action.id
+        }
+      });
+      const inputs = await hook.app.service('test-case-flow-sequence-action-input').find({
+        query: {
+          testCaseFlowSequenceId: testCaseFlowSequenceId,
+          flowActionSequenceId: flowActionSequence.dataValues.id
+        }
+      });
+      flowActionSequence.dataValues.testCaseFlowSequenceActionInput = inputs.data[0];
+      flowActionSequence.dataValues.action.dataValues.inputs = actionInputs.data;
+      return flowActionSequence;
+    }))
     return testCaseFlowSequence;
-  })
+  }))
   return hook;
 };
 

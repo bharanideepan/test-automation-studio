@@ -1,12 +1,11 @@
 import { HooksObject } from '@feathersjs/feathers';
 const populateFields = (hook: any) => {
   const sequelize = hook.app.get("sequelizeClient");
-  const { input, testCaseFlowSequenceActionInput } = sequelize.models;
+  const { input } = sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
       { model: input },
-      { model: testCaseFlowSequenceActionInput },
     ],
   };
 };

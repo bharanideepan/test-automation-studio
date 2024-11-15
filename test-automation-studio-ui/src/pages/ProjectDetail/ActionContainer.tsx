@@ -10,16 +10,17 @@ import {
   Tooltip,
   IconButton,
   Button,
-  Grid
+  Grid,
+  Checkbox
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import { Action, Input } from "../../declarations/interface";
 import { useDispatch } from "react-redux";
-import { deleteAction } from "../../slices/project";
+import { deleteAction, setDefaultInput } from "../../slices/project";
 import clsx from "clsx";
 import AddAction from "./AddAction";
 import AddInput from "./AddInput";
@@ -27,21 +28,26 @@ import AddInput from "./AddInput";
 export const DEFAULT_ACTION: Action = {
   id: "",
   projectId: "",
-  name: ""
+  name: "",
+  type: "",
+  xpath: "",
+  valueRegex: "",
+  inputs: [],
 };
 
 export const DEFAULT_INPUT: Input = {
   id: "",
   actionId: "",
   name: "",
-  type: "",
   value: "",
-  xpath: ""
+  waitAfterAction: 0,
+  isDefault: false
 };
 
 export const ACTION_TYPES = [
   { label: "Launch Browser", value: "LAUNCH_BROWSER" },
   { label: "Click", value: "CLICK" },
+  { label: "Double Click", value: "DOUBLE_CLICK" },
   { label: "Select", value: "SELECT" },
   { label: "Type text", value: "TYPE_TEXT" },
   { label: "Checkbox", value: "CHECKBOX" },
@@ -50,7 +56,7 @@ export const ACTION_TYPES = [
 ];
 const useStyles = makeStyles((theme) => ({
   body: {
-    borderTop: `0.5px solid ${theme.palette.primary40.main}`,
+    // borderTop: `0.5px solid ${theme.palette.primary40.main}`,
   },
   container: {
     height: "100%",
@@ -95,6 +101,7 @@ const ActionContainer: React.FC<{
   projectId: string;
 }> = ({ list, projectId }) => {
   const classes = useStyles();
+  const [count, setCount] = useState(0);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState("");
   const [selectedAction, setSelectedAction] = useState<Action | undefined>(undefined);
@@ -138,18 +145,27 @@ const ActionContainer: React.FC<{
     // dispatch(deleteInput(selectedInputId));
   };
 
+  useEffect(() => {
+    if(list) {
+      if(list.length !== count) {
+        setSelectedAction(list[list.length-1])
+      }
+      setCount(list.length)
+    }
+  }, [list])
+
   return (
     <>
       {list.length === 0 && (
         <Box className={clsx(classes.contentCenter, classes.body)}>
-          <Box mr={2}>
+          <Box mr={1}>
             <AddAction
               projectId={projectId}
               onModalClose={() => { console.log("Add action modal closed") }}
             />
           </Box>
           <Typography variant="h5" color="primary">
-            Add new action
+            Add New Action
           </Typography>
         </Box>
       )}
@@ -165,7 +181,7 @@ const ActionContainer: React.FC<{
             <ActionsListView projectId={projectId} actions={list} handleDeleteAction={handleDeleteAction} selectedAction={list.find((action: Action) => action.id == selectedAction?.id)} setSelectedAction={setSelectedAction} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <InputListView actionId={selectedAction?.id} inputs={list.find((action: Action) => action.id == selectedAction?.id)?.inputs} handleDeleteInput={handleDeleteInput} selectedInput={selectedInput} setSelectedInput={setSelectedInput} />
+            <InputListView actionId={selectedAction?.id} actionName={selectedAction?.name} inputs={list.find((action: Action) => action.id == selectedAction?.id)?.inputs} handleDeleteInput={handleDeleteInput} selectedInput={selectedInput} setSelectedInput={setSelectedInput} />
           </Grid>
         </Grid>
       )}
@@ -329,13 +345,42 @@ const ActionsListView: React.FC<{
           <Box className={classes.body}>
             <TableContainer sx={{ maxHeight: "100%" }}>
               <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={{ width: "30%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Name
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "20%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Type
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "20%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Xpath
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "20%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Regex
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "10%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Edit
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
                 <TableBody>
                   {actions.map((row, index) => {
                     return (
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
                         setSelectedAction(row);
                       }} className={selectedAction?.id == row.id ? classes.active : ''}>
-                        <TableCell style={{ width: "90%" }} align="left">
+                        <TableCell style={{ width: "30%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             color="primary"
@@ -344,6 +389,39 @@ const ActionsListView: React.FC<{
                             maxWidth="300px"
                           >
                             {row.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell style={{ width: "20%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {ACTION_TYPES.find((x) => x.value == row.type)?.label}
+                          </Typography>
+                        </TableCell>
+                        <TableCell style={{ width: "20%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {row.xpath}
+                          </Typography>
+                        </TableCell>
+                        <TableCell style={{ width: "20%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {row.valueRegex}
                           </Typography>
                         </TableCell>
                         <TableCell style={{ width: "10%" }} align="left">
@@ -404,16 +482,26 @@ const InputListView: React.FC<{
   setSelectedInput: (input: Input) => void
   selectedInput: Input | undefined;
   actionId?: string;
+  actionName?: string;
 }> = ({
-  inputs, handleDeleteInput, selectedInput, setSelectedInput, actionId
+  inputs, handleDeleteInput, selectedInput, setSelectedInput, actionId, actionName
 }) => {
     const classes = useStyles();
     const [editInput, setEditInput] = useState<Input | undefined>(undefined);
+    const dispatch = useDispatch();
+    const handleSetDefaultInput = (event: any, input: Input) => {
+      dispatch(setDefaultInput({ ...input, isDefault: event.target.checked }))
+    }
     return (
       <>
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
+              {actionName && <Box>
+                <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                  {actionName}
+                </Typography>
+              </Box>}
               {actionId && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
                 <AddInput
                   input={editInput}
@@ -434,55 +522,80 @@ const InputListView: React.FC<{
           <Box className={classes.body}>
             <TableContainer sx={{ maxHeight: "100%" }}>
               <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={{ width: "10%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Default
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "30%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Name
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "30%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Value
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "20%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Wait after action
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "10%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Edit
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
                 <TableBody>
                   {inputs && inputs.map((row, index) => {
                     return (
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
                         setSelectedInput(row);
                       }} className={selectedInput?.id == row.id ? '' : ''}>
-                        <TableCell style={{ width: "20%" }} align="left">
-                            <Typography
-                              variant="subtitle1"
-                              color="primary"
-                              overflow="hidden"
-                              textOverflow="ellipsis"
-                              maxWidth="300px"
-                            >
-                              <b>Name:</b> {row.name}
-                            </Typography>
+                        <TableCell style={{ width: "10%" }} align="left">
+                          <Tooltip title={"Set as Default"}>
+                            <Checkbox disabled={row.isDefault} checked={row.isDefault} onChange={(event) => {
+                              handleSetDefaultInput(event, row);
+                            }} />
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell style={{ width: "30%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {row.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell style={{ width: "30%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {row.value}
+                          </Typography>
                         </TableCell>
                         <TableCell style={{ width: "20%" }} align="left">
-                            <Typography
-                              variant="subtitle1"
-                              color="primary"
-                              overflow="hidden"
-                              textOverflow="ellipsis"
-                              maxWidth="300px"
-                            >
-                              <b>Xpath:</b> {row.xpath}
-                            </Typography>
-                        </TableCell>
-                        <TableCell style={{ width: "20%" }} align="left">
-                            <Typography
-                              variant="subtitle1"
-                              color="primary"
-                              overflow="hidden"
-                              textOverflow="ellipsis"
-                              maxWidth="300px"
-                            >
-                              <b>Value:</b> {row.value}
-                            </Typography>
-                        </TableCell>
-                        <TableCell style={{ width: "20%" }} align="left">
-                            <Typography
-                              variant="subtitle1"
-                              color="primary"
-                              overflow="hidden"
-                              textOverflow="ellipsis"
-                              maxWidth="300px"
-                            >
-                              <b>Type:</b> {ACTION_TYPES.find((x) => x.value == row.type)?.label}
-                            </Typography>
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {row.waitAfterAction}
+                          </Typography>
                         </TableCell>
                         <TableCell style={{ width: "10%" }} align="left">
                           <Box

@@ -6,98 +6,55 @@ import {
   SelectChangeEvent,
   InputLabel,
   FormControl,
+  Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 
 const useStyles = makeStyles((theme) => ({
   select: {
     "&.MuiInputBase-root": {
-      height: 28,
+      height: 38,
       fontSize: 12,
       lineHeight: "16px",
-      border: `0.5px solid ${theme.palette.primary.main}`,
+      // border: `0.5px solid ${theme.palette.primary.main}`,
     },
     "& fieldset": {
-      border: "none",
+      // border: "none",
     },
   },
   label: {
-    top: "unset !important",
-    bottom: "20px",
+    // top: "unset !important",
+    // bottom: "20px",
   },
   labelFilled: {
-    top: "0",
-    bottom: "15px !important",
+    // top: "0",
+    // bottom: "15px !important",
   },
 }));
 
-const AppSelect: React.FC<{
+export const AppSelect: React.FC<{
   value: string;
   options: { label: string; value: string }[];
   onChange: (event: SelectChangeEvent<string>) => void;
   disabled?: boolean;
   label?: string;
   id: string;
-}> = ({ value, options, onChange, disabled, label, id }) => {
+  error?: boolean;
+  helperText?: string;
+}> = ({ value, options, onChange, disabled, label, id, error, helperText }) => {
   const classes = useStyles();
   return (
-    <FormControl sx={{ m: 1, minWidth: 120 }}>
+    <FormControl sx={{ width: "100%" }}>
       {label && (
         <InputLabel
-          classes={{
-            root: classes.label,
-            focused: classes.labelFilled,
-            filled: classes.labelFilled,
-          }}
-          id={id}
-        >
-          {label}
-        </InputLabel>
-      )}
-      <Select
-        labelId={id}
-        value={value}
-        onChange={onChange}
-        className={classes.select}
-        disabled={disabled}
-        inputProps={{
-          "data-testid": `${id}-test-id`,
+        classes={{
+          root: classes.label,
+          focused: classes.labelFilled,
+          filled: classes.labelFilled,
         }}
-      >
-        {options.map((option, index) => (
-          <MenuItem key={index} value={option.value}>
-            {option.label}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
-
-const useStyles2 = makeStyles((theme) => ({
-  select: {
-    "&.MuiInputBase-root": {
-      fontSize: 12,
-    },
-  },
-}));
-
-export const AppSelect2: React.FC<{
-  value: string;
-  options: { label: string; value: string }[];
-  onChange: (event: SelectChangeEvent<string>) => void;
-  disabled?: boolean;
-  label?: string;
-  id: string;
-}> = ({ value, options, onChange, disabled, label, id }) => {
-  const classes = useStyles2();
-  return (
-    <>
-      {label && (
-        <InputLabel
-          id={id}
+        id={id}
         >
-          {label}
+        <Typography color={error ? "error" : ""}>{label}</Typography>
         </InputLabel>
       )}
       <Select
@@ -110,6 +67,7 @@ export const AppSelect2: React.FC<{
           "data-testid": `${id}-test-id`,
         }}
         sx={{display:"flex"}}
+        error={error}
       >
         {options.map((option, index) => (
           <MenuItem key={index} value={option.value}>
@@ -117,9 +75,11 @@ export const AppSelect2: React.FC<{
           </MenuItem>
         ))}
       </Select>
-    </>
+      {helperText && <Typography color={"error"} mt={"3px"} mx={"14px"}>{helperText}</Typography>}
+    </FormControl>
   );
 };
+
 AppSelect.propTypes = {
   value: PropTypes.string.isRequired,
   options: PropTypes.arrayOf(

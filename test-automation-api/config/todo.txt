@@ -1,5 +1,1 @@
 1. Store selectors - page wise - page object modal.
-2. Create actions for flow specific.
-3. Store action type and selector in action itself.
-4. Flow has many actions. Action belongs to one flow.
-5. Action has many inputs. Input belongs to one action.

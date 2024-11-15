@@ -25,14 +25,14 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING(5000),
       allowNull: true,
     },
-    waitBeforeAction: {
-      type: DataTypes.BIGINT,
-      defaultValue: 0,
-    },
     waitAfterAction: {
       type: DataTypes.BIGINT,
       defaultValue: 0,
     },
+    isDefault: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false
+    }
   });
   (input as any).associate = function (models: any): void {
     input.belongsTo(models["action"], { foreignKey: "actionId" });

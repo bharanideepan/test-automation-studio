@@ -9,14 +9,14 @@ class InputService extends BaseService {
     return this.patch(`/${input.id}`, input);
   }
 
+  async setDefaultInput(input: Input) {
+    return this.post(`/set-default`, input);
+  }
+
   async createInput(input: Input) {
-    return this.post("", {
-      name: input.name,
-      actionId: input.actionId,
-      type:  input.type,
-      xpath: input.xpath, 
-      value: input.value, 
-    });
+    const newInput = {...input} as any;
+    delete newInput.id;
+    return this.post("", newInput);
   }
 
   async deleteInput(id: string) {

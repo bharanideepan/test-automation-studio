@@ -6,14 +6,14 @@ import { Application } from '../declarations';
 
 export default function (app: Application): typeof Model {
   const sequelizeClient: Sequelize = app.get('sequelizeClient');
-  const testCaseFlowSequence = sequelizeClient.define('testCaseFlowSequence', {
+  const flowActionSequence = sequelizeClient.define('flowActionSequence', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    testCaseId: {
+    actionId: {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
@@ -26,10 +26,10 @@ export default function (app: Application): typeof Model {
       allowNull: false
     }
   });
-  (testCaseFlowSequence as any).associate = function (models: any): void {
-    testCaseFlowSequence.belongsTo(models["testCase"], {foreignKey: "testCaseId",})
-    testCaseFlowSequence.belongsTo(models["flow"], {foreignKey: "flowId",})
-    testCaseFlowSequence.hasMany(models["testCaseFlowSequenceActionInput"], { foreignKey: "testCaseFlowSequenceId", onDelete: 'CASCADE' })
+  (flowActionSequence as any).associate = function (models: any): void {
+    flowActionSequence.belongsTo(models["action"], { foreignKey: "actionId", })
+    flowActionSequence.belongsTo(models["flow"], { foreignKey: "flowId", })
+    flowActionSequence.hasMany(models["testCaseFlowSequenceActionInput"], { foreignKey: "flowActionSequenceId", onDelete: 'CASCADE' })
   };
-  return testCaseFlowSequence;
+  return flowActionSequence;
 }

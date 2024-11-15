@@ -11,10 +11,9 @@ class ActionService extends BaseService {
   }
 
   async createAction(action: Action) {
-    return this.post("", {
-      projectId: action.projectId,
-      name: action.name,
-    });
+    const newAction = {...action} as any;
+    delete newAction.id;
+    return this.post("", newAction);
   }
 
   async deleteAction(id: string) {
