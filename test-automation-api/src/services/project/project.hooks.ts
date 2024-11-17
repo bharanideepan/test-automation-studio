@@ -4,7 +4,8 @@ const populateFields = (hook: any) => {
   hook.params.sequelize = {
     raw: false,
     include: [
-      { model: flow,
+      {
+        model: flow,
         include: [
           {
             model: flowActionSequence,
@@ -20,12 +21,22 @@ const populateFields = (hook: any) => {
             ]
           }
         ]
-       },
+      },
       { model: testCase },
-      { model: action, include: [{
-        model: input
-      }] },
+      {
+        model: action, include: [{
+          model: input
+        }]
+      },
     ],
+    order: [
+      [
+        { model: flow },
+        { model: flowActionSequence },
+        'order',
+        'ASC',
+      ]
+    ]
   };
 };
 

@@ -13,7 +13,7 @@ import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
-import { Flow, FlowActionSequence, Input, TestCase, TestCaseFlowSequence } from "../../declarations/interface";
+import { Assertion, Flow, FlowActionSequence, Input, TestCase, TestCaseFlowSequence } from "../../declarations/interface";
 import { createTestCase, updateTestCase } from "../../slices/project";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
@@ -22,7 +22,7 @@ import { reorder } from "../../util/UtilService";
 import { getTestCaseById } from "../../slices/testCase";
 import AppSelect from "../../components/AppSelect";
 import AddInput from "./AddInput";
-import { DEFAULT_TEST_CASE } from "../../util/constants";
+import { DEFAULT_ASSERTION, DEFAULT_TEST_CASE, GET_ASSERTION_OPTIONS_FORMATTED, OPERATOR_TYPES, OUTPUT_ACTION_TYPES } from "../../util/constants";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -91,9 +91,11 @@ const AddTestCase: React.FC<{
 }> = ({ testCase, projectId, onModalClose }) => {
   const classes = useStyles();
   const [data, setData] = useState<TestCase | undefined>();
-  const [selectedFlowSequence, setSelectedFlowSequence] = useState<TestCaseFlowSequence[] | undefined>();
+  const [selectedFlowSequences, setselectedFlowSequences] = useState<TestCaseFlowSequence[] | undefined>();
+  const [assertions, setAssertions] = useState<Assertion[] | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [step, setStep] = useState(0);
 
   const [nameError, setNameError] = useState<
     NameErrorKey | undefined
@@ -112,7 +114,8 @@ const AddTestCase: React.FC<{
     setNameError(undefined);
     onModalClose();
     dispatch(actions.clearStatus());
-    setSelectedFlowSequence(undefined);
+    setselectedFlowSequences(undefined);
+    setAssertions(undefined);
     setData(undefined);
   };
   const handleSubmit = () => {
@@ -122,29 +125,30 @@ const AddTestCase: React.FC<{
   const submitData = () => {
     const updatedSequences: TestCaseFlowSequence[] = [];
     const newSequences: TestCaseFlowSequence[] = [];
-    selectedFlowSequence?.filter((sequence: TestCaseFlowSequence) => !sequence.isRemoved).map((sequence: TestCaseFlowSequence, index) => {
+    selectedFlowSequences?.filter((sequence: TestCaseFlowSequence) => !sequence.isRemoved).map((sequence: TestCaseFlowSequence, index) => {
       if (sequence.id) {
         updatedSequences.push({ ...sequence, order: index })
       } else {
         newSequences.push({ ...sequence, order: index })
       }
     })
-    const removedSequences = selectedFlowSequence?.filter((sequence: TestCaseFlowSequence) => sequence.isRemoved)
+    const removedSequences = selectedFlowSequences?.filter((sequence: TestCaseFlowSequence) => sequence.isRemoved)
     const sequencePayload = {
       updatedSequences, newSequences, removedSequences
     }
     setSubmitted(false);
     handleModalClose();
     if (data?.id.length) {
-      dispatch(updateTestCase({ testCase: data, sequences: sequencePayload }));
+      dispatch(updateTestCase({ testCase: data, sequences: sequencePayload, assertions: assertions ?? [] }));
     } else {
-      dispatch(createTestCase({ testCase: data, sequences: newSequences }));
+      dispatch(createTestCase({ testCase: data, sequences: newSequences, assertions: assertions ?? [] }));
     }
   };
   const handleFieldChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any,
     field: keyof Flow
   ) => {
+    setSubmitted(false);
     const value = event.target.value;
     if (field === "name") {
       validateName(value);
@@ -170,8 +174,9 @@ const AddTestCase: React.FC<{
 
   const addNewFlow = (flow: Flow) => {
     const newSequence: TestCaseFlowSequence = {
+      testCaseFlowSequenceTempId: `${new Date().getTime()}`,
       flowId: flow.id,
-      order: selectedFlowSequence?.length ?? 0,
+      order: selectedFlowSequences?.length ?? 0,
       flow: {
         ...flow,
         ...(flow.flowActionSequences && {
@@ -191,7 +196,7 @@ const AddTestCase: React.FC<{
       },
       testCaseId: fetchedTestCase?.id ?? "",
     }
-    setSelectedFlowSequence((prev: TestCaseFlowSequence[] | undefined) => {
+    setselectedFlowSequences((prev: TestCaseFlowSequence[] | undefined) => {
       if (prev)
         return [...prev, newSequence];
       return [newSequence];
@@ -199,7 +204,8 @@ const AddTestCase: React.FC<{
   }
 
   const restoreTestCaseFlowSequence = (restoreIndex: number) => {
-    setSelectedFlowSequence((prev: TestCaseFlowSequence[] | undefined) => {
+    removeAssertion(restoreIndex, false)
+    setselectedFlowSequences((prev: TestCaseFlowSequence[] | undefined) => {
       return prev?.map((sequence: TestCaseFlowSequence, index) => {
         if (restoreIndex === index) {
           return {
@@ -212,8 +218,46 @@ const AddTestCase: React.FC<{
     })
   }
 
+  const removeAssertion = (removeIndex: number, remove: boolean) => {
+    const removedSequence = selectedFlowSequences && selectedFlowSequences[removeIndex];
+    if (removedSequence) {
+      const options = GET_ASSERTION_OPTIONS_FORMATTED([removedSequence], false)
+        .map((option) => option.value).flat();
+      setAssertions((prev: Assertion[] | undefined) => {
+        if (prev) {
+          return prev.map((prevAssertion: Assertion) => {
+            if (prevAssertion.source) {
+              if (options.includes(prevAssertion.source)) {
+                return {
+                  ...prevAssertion,
+                  isRemoved: remove
+                }
+              }
+            }
+            if (prevAssertion.target) {
+              if (options.includes(prevAssertion.target)) {
+                return {
+                  ...prevAssertion,
+                  isRemoved: remove
+                }
+              }
+            }
+            return prevAssertion;
+          }).filter((prevAssertion: Assertion) => {
+            if (prevAssertion.isRemoved && (prevAssertion.source?.includes("Temp") || prevAssertion.target?.includes("Temp"))) {
+              return false;
+            }
+            return true;
+          })
+        }
+        return prev;
+      })
+    }
+  }
+
   const removeTestCaseFlowSequence = (removeIndex: number) => {
-    setSelectedFlowSequence((prev: TestCaseFlowSequence[] | undefined) => {
+    removeAssertion(removeIndex, true)
+    setselectedFlowSequences((prev: TestCaseFlowSequence[] | undefined) => {
       const updatedSequences = prev?.map((sequence: TestCaseFlowSequence, index) => {
         if (removeIndex === index) {
           return {
@@ -234,7 +278,27 @@ const AddTestCase: React.FC<{
   }
 
   const reorderTestCaseFlowSequences = (reorderedTestCaseFlowSequences: TestCaseFlowSequence[]) => {
-    setSelectedFlowSequence(reorderedTestCaseFlowSequences);
+    setselectedFlowSequences(reorderedTestCaseFlowSequences);
+  }
+
+  const getSelectedFlowSequences = () => {
+    let prev = JSON.parse(JSON.stringify(fetchedTestCase?.testCaseFlowSequences))
+    prev = prev?.map((prevTestCaseFlowSequence: TestCaseFlowSequence) => {
+      prevTestCaseFlowSequence.flow.flowActionSequences = prevTestCaseFlowSequence.flow.flowActionSequences?.map((prevFlowActionSequence: FlowActionSequence) => {
+        if (!prevFlowActionSequence.testCaseFlowSequenceActionInput) {
+          prevFlowActionSequence.testCaseFlowSequenceActionInput = {
+            defaultInput: true,
+            skip: false,
+            flowActionSequenceId: prevFlowActionSequence.id ?? "",
+            inputId: (prevFlowActionSequence.action.inputs) ? prevFlowActionSequence.action.inputs.find((input: Input) => input.isDefault)?.id ?? "" : "",
+            testCaseFlowSequenceId: prevTestCaseFlowSequence.id ?? ""
+          }
+        }
+        return prevFlowActionSequence
+      })
+      return prevTestCaseFlowSequence;
+    })
+    return prev;
   }
 
   useEffect(() => {
@@ -259,7 +323,8 @@ const AddTestCase: React.FC<{
   useEffect(() => {
     if (testCase) {
       setData(fetchedTestCase)
-      setSelectedFlowSequence(fetchedTestCase?.testCaseFlowSequences)
+      setselectedFlowSequences(getSelectedFlowSequences())
+      setAssertions(fetchedTestCase?.assertions)
     }
   }, [fetchedTestCase]);
 
@@ -311,7 +376,31 @@ const AddTestCase: React.FC<{
                 />
               </Box>
               <Box display={"flex"} gap={2} alignItems={"center"} justifyContent={"center"}>
-                <Button
+                {step === 0 && <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => { setStep(1) }}
+                  fullWidth
+                  aria-label="cancel"
+                  disabled={!!nameError}
+                >
+                  <Typography variant="h5" sx={{ textTransform: "capitalize", margin: 1 }}>
+                    Next
+                  </Typography>
+                </Button>}
+                {step === 1 && <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => { setStep(0) }}
+                  fullWidth
+                  aria-label="back"
+                  disabled={!!nameError}
+                >
+                  <Typography variant="h5" sx={{ textTransform: "capitalize", margin: 1 }}>
+                    Back
+                  </Typography>
+                </Button>}
+                {step === 1 && <Button
                   variant="contained"
                   color="secondary"
                   onClick={handleSubmit}
@@ -322,7 +411,7 @@ const AddTestCase: React.FC<{
                   <Typography variant="h5" sx={{ textTransform: "capitalize", margin: 1 }}>
                     Save
                   </Typography>
-                </Button>
+                </Button>}
               </Box>
             </Box>
             <Box mt={2}>
@@ -330,22 +419,25 @@ const AddTestCase: React.FC<{
                 container
                 classes={{ container: classes.gridContainer }}
               >
-                <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
+                {step === 0 && <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
                   <AvailableFlowsView
                     flows={project?.flows}
                     addFlow={addNewFlow} />
-                </Grid>
+                </Grid>}
                 <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
                   <SelectedFlowsView
-                    testCaseFlowSequences={selectedFlowSequence}
+                    testCaseFlowSequences={selectedFlowSequences}
                     removeTestCaseFlowSequence={removeTestCaseFlowSequence}
                     reorderTestCaseFlowSequences={reorderTestCaseFlowSequences}
                     restoreTestCaseFlowSequence={restoreTestCaseFlowSequence} />
                 </Grid>
                 <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
                   <SequenceInputForm
-                    selectedFlowSequence={selectedFlowSequence} setSelectedFlowSequence={setSelectedFlowSequence} />
+                    selectedFlowSequences={selectedFlowSequences} setselectedFlowSequences={setselectedFlowSequences} />
                 </Grid>
+                {step === 1 && <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
+                  <Assertions assertions={assertions} setAssertions={setAssertions} selectedFlowSequences={selectedFlowSequences} fetchedTestCase={fetchedTestCase} />
+                </Grid>}
               </Grid>
             </Box>
           </Box>
@@ -355,19 +447,246 @@ const AddTestCase: React.FC<{
   );
 };
 
+const Assertions: React.FC<{
+  assertions?: Assertion[];
+  setAssertions: React.Dispatch<React.SetStateAction<Assertion[] | undefined>>;
+  selectedFlowSequences: TestCaseFlowSequence[] | undefined;
+  fetchedTestCase?: TestCase;
+}> = ({ assertions, setAssertions, selectedFlowSequences, fetchedTestCase }) => {
+  const classes = useStyles();
+
+  const restoreAssertion = (restoreIndex: number) => {
+    setAssertions((prev: Assertion[] | undefined) => {
+      return prev?.map((assertion: Assertion, index) => {
+        if (restoreIndex === index) {
+          return {
+            ...assertion,
+            isRemoved: false
+          }
+        }
+        return assertion;
+      })
+    })
+  }
+
+  const removeAssertion = (removeIndex: number) => {
+    setAssertions((prev: Assertion[] | undefined) => {
+      const updatedSequences = prev?.map((assertion: Assertion, index) => {
+        if (removeIndex === index) {
+          return {
+            ...assertion,
+            isRemoved: true
+          }
+        }
+        return assertion;
+      })
+      return updatedSequences?.filter((assertion: Assertion, index) => {
+        if (!assertion.id && index === removeIndex) {
+          return false;
+        } else {
+          return true;
+        }
+      })
+    })
+  }
+
+  const addNewAssertion = () => {
+    setAssertions((prev) => {
+      if (prev) return [...prev, {
+        ...DEFAULT_ASSERTION,
+        ...(fetchedTestCase && fetchedTestCase.id && { testCaseId: fetchedTestCase.id })
+      }];
+      return [{
+        ...DEFAULT_ASSERTION,
+        ...(fetchedTestCase && fetchedTestCase.id && { testCaseId: fetchedTestCase.id })
+      }];
+    })
+  }
+
+  const setAssertInput = (event: any,
+    index: number,
+    field: 'skip' | 'source' | 'target' | 'operator'
+      | 'useCustomTargetValue' | 'customTargetValue' | 'errorMessage') => {
+    const value = (field === "skip" || field === "useCustomTargetValue") ? event.target.checked : event.target.value;
+    setAssertions((prev: Assertion[] | undefined) => {
+      return prev?.map((prevAssertion: Assertion, prevIndex: number) => {
+        if (prevIndex === index) {
+          return {
+            ...prevAssertion,
+            [field]: value
+          }
+        }
+        return prevAssertion
+      })
+    })
+  }
+
+  const getOptions = (excludeValue?: string) => {
+    const options = GET_ASSERTION_OPTIONS_FORMATTED(selectedFlowSequences, true).filter((x) => x.value !== excludeValue) ?? []
+    return options
+  }
+
+  return (
+    <>
+      <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
+        <Box flexGrow={1}>
+          <Box display={"flex"} alignItems={"center"} justifyContent={"start"} gap={1}>
+            <Tooltip title={"Add new action for this project"}>
+              <IconButton
+                sx={{ padding: 0.5 }}
+                onClick={addNewAssertion}
+                data-testid="add-new-assertion"
+              >
+                <img src={AddIcon} alt="close" />
+              </IconButton>
+            </Tooltip>
+            {assertions && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+              <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                <b>Assertions:</b> {assertions.length}
+              </Typography>
+            </Box>}
+            {!assertions &&
+              <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                Create a new Assertion
+              </Typography>}
+          </Box>
+        </Box>
+      </Box>
+      <Box className={classes.listContainer} pt={2}>
+        <Box className={classes.body} px={3}>
+          {assertions && assertions.map((row, index) => (
+            <Box key={index} mb={2} sx={{
+              opacity: row.isRemoved ? 0.5 : 1
+            }}>
+              <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
+                <Box width={"100%"}>
+                  <AppCard id={`${index}`}>
+                    <Box>
+                      <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"} position="relative">
+                        <Box display={"flex"} alignItems={"center"} justifyContent={"center"} position="relative">
+                          <Tooltip title={"Skip this assertion"}>
+                            <Checkbox checked={row.skip} onChange={(event) => {
+                              setAssertInput(event, index, "skip");
+                            }} disabled={row.isRemoved} />
+                          </Tooltip>
+                          <Typography variant="subtitle1">Skip this assert</Typography>
+                        </Box>
+                        {!row.skip && <Box display={"flex"} alignItems={"center"} justifyContent={"center"} position="relative">
+                          <Tooltip title={"Use Custom target value"}>
+                            <Checkbox checked={row.useCustomTargetValue} onChange={(event) => {
+                              setAssertInput(event, index, "useCustomTargetValue");
+                            }} disabled={row.isRemoved} />
+                          </Tooltip>
+                          <Typography variant="subtitle1">Use Custom target value</Typography>
+                        </Box>}
+                      </Box>
+                      {!row.skip &&
+                        <Box mt={1}>
+                          <Box display={"flex"} alignItems={"center"} justifyContent={"center"} gap={1}>
+                            <AppSelect
+                              id={`action-input-dropdown`}
+                              value={row.source ?? ""}
+                              onChange={(event) => {
+                                setAssertInput(event, index, "source");
+                              }} options={getOptions(row.target)} label="Source" disabled={row.isRemoved} />
+                            <AppSelect
+                              id={`action-input-dropdown`}
+                              value={row.operator ?? ""}
+                              onChange={(event) => {
+                                setAssertInput(event, index, "operator");
+                              }} options={OPERATOR_TYPES} label="Operator" disabled={row.isRemoved} />
+                            {!row.useCustomTargetValue && <AppSelect
+                              id={`action-input-dropdown`}
+                              value={row.target ?? ""}
+                              onChange={(event) => {
+                                setAssertInput(event, index, "target");
+                              }} options={getOptions(row.source)} label="Target" disabled={row.isRemoved} />}
+                            {row.useCustomTargetValue && <AppTextbox
+                              label="Target"
+                              placeholder="Enter Custom target value"
+                              value={row.customTargetValue}
+                              onChange={(event) => {
+                                setAssertInput(event, index, "customTargetValue");
+                              }}
+                              classes={{ root: classes.input }} disabled={row.isRemoved}
+                            />}
+                          </Box>
+                        </Box>
+                      }
+                      {!row.skip &&
+                        <Box mt={1}>
+                          <Box display={"flex"} alignItems={"center"} justifyContent={"center"} gap={1}>
+                            <AppTextbox
+                              label="Error Message"
+                              placeholder="Enter Error Message"
+                              value={row.errorMessage}
+                              onChange={(event) => {
+                                setAssertInput(event, index, "errorMessage");
+                              }}
+                              classes={{ root: classes.input }} disabled={row.isRemoved}
+                            />
+                          </Box>
+                        </Box>}
+                    </Box>
+                  </AppCard>
+                </Box>
+                {!row.isRemoved && <Box ml={"auto"}>
+                  <Tooltip title={"Remove"}>
+                    <IconButton
+                      sx={{ padding: 0.5 }}
+                      onClick={() => {
+                        removeAssertion(index);
+                      }}
+                      data-testid="remove-added-sequence"
+                    >
+                      <img src={DeleteIcon} alt="close" height="24" width="24" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>}
+                {row.isRemoved && <Box ml={"auto"}>
+                  <Tooltip title={"Restore"}>
+                    <IconButton
+                      sx={{ padding: 0.5 }}
+                      onClick={() => {
+                        restoreAssertion(index);
+                      }}
+                      data-testid="restore-removed-sequence"
+                    >
+                      <img src={AddIcon} alt="close" height="24" width="24" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>}
+              </Box>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    </>
+  );
+};
+
 const SequenceInputForm: React.FC<{
-  selectedFlowSequence?: TestCaseFlowSequence[];
-  setSelectedFlowSequence: React.Dispatch<React.SetStateAction<TestCaseFlowSequence[] | undefined>>;
-}> = ({ selectedFlowSequence, setSelectedFlowSequence }) => {
+  selectedFlowSequences?: TestCaseFlowSequence[];
+  setselectedFlowSequences: React.Dispatch<React.SetStateAction<TestCaseFlowSequence[] | undefined>>;
+}> = ({ selectedFlowSequences, setselectedFlowSequences }) => {
   const classes = useStyles();
   const setActionInput = (event: any, flowActionSequence: FlowActionSequence, testCaseFlowSequence: TestCaseFlowSequence, updateType?: string) => {
     const newValue = (updateType === "default" || updateType === "skip") ? event.target.checked : event.target.value;
-    setSelectedFlowSequence((prevTestCaseFlowSequences: TestCaseFlowSequence[] | undefined) => {
+    setselectedFlowSequences((prevTestCaseFlowSequences: TestCaseFlowSequence[] | undefined) => {
       let prev = JSON.parse(JSON.stringify(prevTestCaseFlowSequences))
       prev = prev?.map((prevTestCaseFlowSequence: TestCaseFlowSequence) => {
         if (prevTestCaseFlowSequence.id === testCaseFlowSequence.id) {
           prevTestCaseFlowSequence.flow.flowActionSequences = prevTestCaseFlowSequence.flow.flowActionSequences?.map((prevFlowActionSequence: FlowActionSequence) => {
             if (prevFlowActionSequence.id === flowActionSequence.id) {
+              if (!prevFlowActionSequence.testCaseFlowSequenceActionInput) {
+                prevFlowActionSequence.testCaseFlowSequenceActionInput = {
+                  testCaseFlowSequenceId: testCaseFlowSequence.id ?? "",
+                  flowActionSequenceId: flowActionSequence.id ?? "",
+                  inputId: "",
+                  defaultInput: true,
+                  skip: false
+                }
+              }
               return {
                 ...prevFlowActionSequence,
                 ...(prevFlowActionSequence.testCaseFlowSequenceActionInput && {
@@ -402,12 +721,12 @@ const SequenceInputForm: React.FC<{
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
         <Box flexGrow={1}>
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-            {selectedFlowSequence && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+            {selectedFlowSequences && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                 Provide inputs for the actions
               </Typography>
             </Box>}
-            {!selectedFlowSequence && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+            {!selectedFlowSequences && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
               No flow added in this Test Case
             </Typography>}
           </Box>
@@ -415,7 +734,7 @@ const SequenceInputForm: React.FC<{
       </Box>
       <Box className={classes.listContainer} pt={2}>
         <Box className={classes.body} px={3}>
-          {selectedFlowSequence && selectedFlowSequence.map((row, index) => (
+          {selectedFlowSequences && selectedFlowSequences.map((row, index) => (
             <Box key={index}>
               {!row.isRemoved && <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
                 <Box width={"100%"} sx={{
@@ -440,41 +759,39 @@ const SequenceInputForm: React.FC<{
                             {flowActionSequence.action.name}
                           </Typography>
                         </Box>
-                        <Box display={"flex"} alignItems={""} justifyContent={"space-between"}>
-                          <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-                            <Checkbox checked={flowActionSequence.testCaseFlowSequenceActionInput?.skip} onChange={(event) => {
-                              setActionInput(event, flowActionSequence, row, "skip");
-                            }} />
-                            <InputLabel sx={{ marginTop: 0.25 }}>
-                              Skip this action
-                            </InputLabel>
-                          </Box>
-                          {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-                            <Checkbox checked={flowActionSequence.testCaseFlowSequenceActionInput?.defaultInput} onChange={(event) => {
-                              setActionInput(event, flowActionSequence, row, "default");
-                            }} />
-                            <InputLabel sx={{ marginTop: 0.25 }}>
-                              Use default input
-                            </InputLabel>
-                          </Box>}
-                          {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Box>
-                            <AppSelect
-                              id={`action-input-dropdown`}
-                              value={getSelectedInput(flowActionSequence.action.inputs ?? [], flowActionSequence.testCaseFlowSequenceActionInput?.inputId)}
-                              onChange={(event) => {
-                                setActionInput(event, flowActionSequence, row, "input");
-                              }} options={getInputOptions(flowActionSequence.action.inputs ?? [])} label="Select Action Input" />
-                          </Box>}
-                          {/* <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-                            <AddInput
-                              actionId={flowActionSequence.action.id}
-                              onModalClose={() => { console.log("Add/edit input modal closed") }}
-                            />
-                            <InputLabel sx={{ marginTop: 0.25 }}>
-                              Add new input
-                            </InputLabel>
-                          </Box> */}
-                        </Box>
+                        <Grid container>
+                          <Grid item xs={3} >
+                            <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
+                              <Checkbox checked={flowActionSequence.testCaseFlowSequenceActionInput?.skip} onChange={(event) => {
+                                setActionInput(event, flowActionSequence, row, "skip");
+                              }} />
+                              <InputLabel sx={{ marginTop: 0.25 }}>
+                                Skip this action
+                              </InputLabel>
+                            </Box>
+                          </Grid>
+                          {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Grid item xs={4} >
+                            <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
+                              <Checkbox checked={flowActionSequence.testCaseFlowSequenceActionInput?.defaultInput} onChange={(event) => {
+                                setActionInput(event, flowActionSequence, row, "default");
+                              }} />
+                              <InputLabel sx={{ marginTop: 0.25 }}>
+                                Use default input
+                              </InputLabel>
+                            </Box>
+                          </Grid>}
+                          <Grid item xs={2}></Grid>
+                          {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Grid item xs={3} >
+                            <Box minWidth={"25px"}>
+                              <AppSelect
+                                id={`action-input-dropdown`}
+                                value={getSelectedInput(flowActionSequence.action.inputs ?? [], flowActionSequence.testCaseFlowSequenceActionInput?.inputId)}
+                                onChange={(event) => {
+                                  setActionInput(event, flowActionSequence, row, "input");
+                                }} options={getInputOptions(flowActionSequence.action.inputs ?? [])} label="Select Action Input" />
+                            </Box>
+                          </Grid>}
+                        </Grid>
                       </Box>
                     </AppCard>
                     {row.flow.flowActionSequences && row.flow.flowActionSequences.length - 1 > index &&
@@ -499,6 +816,25 @@ const SelectedFlowsView: React.FC<{
   restoreTestCaseFlowSequence: (index: number) => void;
 }> = ({ testCaseFlowSequences, removeTestCaseFlowSequence, reorderTestCaseFlowSequences, restoreTestCaseFlowSequence }) => {
   const classes = useStyles();
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [removeIndex, setRemoveIndex] = useState<number | undefined>()
+
+  const handleRemove = (index: number) => {
+    setRemoveIndex(index)
+    setRemoveModalOpen(true);
+  }
+
+  const handleRemoveModalClose = () => {
+    setRemoveIndex(undefined)
+    setRemoveModalOpen(false);
+  };
+
+  const confirmRemove = () => {
+    if (removeIndex !== undefined)
+      removeTestCaseFlowSequence(removeIndex)
+    handleRemoveModalClose()
+  };
+
   const onDragEnd = ({ destination, source }: DropResult) => {
     if (!destination) return;
     if (testCaseFlowSequences) {
@@ -577,7 +913,7 @@ const SelectedFlowsView: React.FC<{
                                   <IconButton
                                     sx={{ padding: 0.5 }}
                                     onClick={() => {
-                                      removeTestCaseFlowSequence(index);
+                                      handleRemove(index);
                                     }}
                                     data-testid="remove-added-sequence"
                                   >
@@ -611,9 +947,69 @@ const SelectedFlowsView: React.FC<{
           </DragDropContext>
         </Box>
       </Box>
+      <RemoveSequenceModal removeModalOpen={removeModalOpen} handleRemoveModalClose={handleRemoveModalClose} confirmRemove={confirmRemove} />
     </>
   );
 };
+
+const RemoveSequenceModal: React.FC<{
+  removeModalOpen: boolean
+  handleRemoveModalClose: () => void
+  confirmRemove: () => void
+}> = ({
+  removeModalOpen, handleRemoveModalClose, confirmRemove
+}) => {
+    return <AppModal
+      open={removeModalOpen}
+      onClose={handleRemoveModalClose}
+      header={
+        <Typography
+          variant="h5"
+          color="primaryHighlight.main"
+          sx={{ fontWeight: 600 }}
+        >
+          REMOVE FLOW
+        </Typography>
+      }
+    >
+      <Box mb={0.5}>
+        <Typography
+          variant="h5"
+          color="primary"
+          sx={{ fontWeight: 400, textAlign: "center" }}
+        >
+          Are you sure that you want to remove this sequence? This will remove all assertions mapped to this flow actions.
+        </Typography>
+        <Box display="flex" flexDirection="column" gap="8px" mt={2.75}>
+          <Button
+            variant="outlined"
+            color="primary"
+            sx={{
+              padding: 1.5,
+            }}
+            onClick={handleRemoveModalClose}
+          >
+            <Typography variant="h5" sx={{ textTransform: "capitalize" }}>
+              Cancel
+            </Typography>
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            sx={{
+              padding: 1.5,
+            }}
+            onClick={confirmRemove}
+            aria-label="Confirm delete"
+          >
+            <Typography variant="h5" sx={{ textTransform: "capitalize" }}>
+              Remove
+            </Typography>
+          </Button>
+        </Box>
+      </Box>
+    </AppModal>
+  }
 
 const AvailableFlowsView: React.FC<{
   flows?: Flow[];

@@ -20,6 +20,16 @@ export default function (app: Application): void {
 
   // Initialize our service with any options it requires
   app.use('/test-case', new TestCase(options, app));
+  app.use('/test-case/create', {
+    async create(data: any, params: any) {
+      return await app.service('test-case').createTestCaseData(data, params);
+    },
+  });
+  app.use('/test-case/update', {
+    async create(data: any, params: any) {
+      return await app.service('test-case').updateTestCaseData(data, params);
+    }
+  });
 
   // Get our initialized service so that we can register hooks
   const service = app.service('test-case');

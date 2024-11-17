@@ -143,6 +143,7 @@ const AddFlow: React.FC<{
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any,
     field: keyof Flow
   ) => {
+    setSubmitted(false);
     const value = event.target.value;
     if (field === "name") {
       validateName(value);

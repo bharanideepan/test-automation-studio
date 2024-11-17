@@ -20,6 +20,20 @@ export interface TestCase {
   name: string;
   projectId: string;
   testCaseFlowSequences?: TestCaseFlowSequence[];
+  assertions?: Assertion[];
+}
+
+export interface Assertion {
+  id?: string;
+  skip: boolean;
+  operator?: string;
+  source?: string;
+  target?: string;
+  testCaseId?: string;
+  customTargetValue?: string;
+  useCustomTargetValue?: boolean;
+  errorMessage?: string;
+  isRemoved?: boolean;
 }
 
 export interface Action {
@@ -49,6 +63,7 @@ export interface TestCaseFlowSequence {
   order: number;
   flow: Flow;
   isRemoved?: boolean;
+  testCaseFlowSequenceTempId?: string;
 }
 
 export interface TestCaseFlowSequenceActionInput {

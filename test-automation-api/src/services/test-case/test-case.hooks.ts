@@ -2,7 +2,7 @@ import { HooksObject } from '@feathersjs/feathers';
 
 const populateFields = (hook: any) => {
   const Sequelize = hook.app.get("sequelizeClient");
-  const { flow, flowActionSequence, testCaseFlowSequence, action, input } = Sequelize.models;
+  const { flow, flowActionSequence, testCaseFlowSequence, action, assertion } = Sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
@@ -24,6 +24,9 @@ const populateFields = (hook: any) => {
           },
         ],
       },
+      {
+        model: assertion
+      }
     ],
     order: [
       [{ model: testCaseFlowSequence }, 'order', 'ASC'],

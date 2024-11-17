@@ -8,6 +8,7 @@ import TestCaseFlowSequenceService from "../services/testCaseFlowSequenceService
 import TestCaseService from "../services/testCaseService";
 import {
   Action,
+  Assertion,
   Flow,
   FlowActionSequence,
   Input,
@@ -99,12 +100,8 @@ export const updateFlow: any = createAsyncThunk(
 
 export const createTestCase: any = createAsyncThunk(
   "project/createTestCase",
-  async (payload: {testCase: TestCase, sequences: TestCaseFlowSequence[]}) => {
-    const createdTestCase: any = await TestCaseService.createTestCase(payload.testCase);
-    await TestCaseFlowSequenceService.createTestCaseFlowSequences(
-      payload.sequences.map((map: TestCaseFlowSequence) => ({...map, testCaseId: createdTestCase.id}))
-    );
-    return createdTestCase
+  async (payload: {testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[]}) => {
+    return await TestCaseService.createTestCaseData(payload);
   }
 );
 
@@ -112,9 +109,8 @@ export const updateTestCase: any = createAsyncThunk(
   "project/updateTestCase",
   async (payload: {testCase: TestCase, sequences:{
     updatedSequences: TestCaseFlowSequence[], newSequences: TestCaseFlowSequence[], removedSequences: string[]
-  }}) => {
-    await TestCaseFlowSequenceService.updateTestCaseFlowSequences(payload.sequences);
-    return await TestCaseService.updateTestCase(payload.testCase);
+  }, assertions: Assertion[]}) => {
+    return await TestCaseService.updateTestCaseData(payload);
   }
 );
 
@@ -159,7 +155,7 @@ const slice = createSlice({
       };
     })
     builder.addCase(createTestCase.fulfilled, (state, action) => {
-      const testCaseData = action.payload;
+      const testCaseData = action.payload.testCase;
       if (state.project) {
         state.project.testCases = [...state.project.testCases, testCaseData];
       }
@@ -175,7 +171,7 @@ const slice = createSlice({
       };
     })
     builder.addCase(updateTestCase.fulfilled, (state, action) => {
-      const updatedTestCase = action.payload;
+      const updatedTestCase = action.payload.testCase;
       if (state.project) {
         state.project.testCases = state.project.testCases.map(
           (testCase: TestCase) => {

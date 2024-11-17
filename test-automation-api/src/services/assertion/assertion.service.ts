@@ -1,14 +1,14 @@
-// Initializes the `test-case-flow-sequence` service on path `/test-case-flow-sequence`
+// Initializes the `assertion` service on path `/assertion`
 import { ServiceAddons } from '@feathersjs/feathers';
 import { Application } from '../../declarations';
-import { TestCaseFlowSequence } from './test-case-flow-sequence.class';
-import createModel from '../../models/test-case-flow-sequence';
-import hooks from './test-case-flow-sequence.hooks';
+import { Assertion } from './assertion.class';
+import hooks from './assertion.hooks';
+import createModel from '../../models/assertion.model'
 
 // Add this service to the service type index
 declare module '../../declarations' {
   interface ServiceTypes {
-    'test-case-flow-sequence': TestCaseFlowSequence & ServiceAddons<any>;
+    'assertion': Assertion & ServiceAddons<any>;
   }
 }
 
@@ -19,9 +19,10 @@ export default function (app: Application): void {
   };
 
   // Initialize our service with any options it requires
-  app.use('/test-case-flow-sequence', new TestCaseFlowSequence(options, app));
+  app.use('/assertion', new Assertion(options, app));
+
   // Get our initialized service so that we can register hooks
-  const service = app.service('test-case-flow-sequence');
+  const service = app.service('assertion');
 
   service.hooks(hooks);
 }

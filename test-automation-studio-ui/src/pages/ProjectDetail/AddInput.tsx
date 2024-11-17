@@ -108,6 +108,7 @@ export const AddInput: React.FC<{
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent | any,
     field: keyof Input
   ) => {
+    setSubmitted(false);
     const value = event.target.value;
     if (field === "name") {
       validateName(value);

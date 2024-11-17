@@ -4,7 +4,7 @@ import { makeStyles } from "@mui/styles";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    border: `0.3px solid ${theme.palette.primary.main}`,
+    // border: `0.3px solid ${theme.palette.primary.main}`,
     borderRadius: 3,
     fontWeight: "400 !important",
     fontSize: "14px !important",
