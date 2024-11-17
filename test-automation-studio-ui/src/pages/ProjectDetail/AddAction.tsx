@@ -7,9 +7,9 @@ import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action } from "../../declarations/interface";
-import { ACTION_TYPES, DEFAULT_ACTION } from "./ActionContainer";
 import { createAction, updateAction } from "../../slices/project";
 import AppSelect from "../../components/AppSelect";
+import { ACTION_TYPES, DEFAULT_ACTION } from "../../util/constants";
 
 const useStyles = makeStyles((theme) => ({
   input: {

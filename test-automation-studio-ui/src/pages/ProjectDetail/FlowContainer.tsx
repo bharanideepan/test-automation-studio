@@ -24,12 +24,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 
-export const DEFAULT_FLOW: Flow = {
-  id: "",
-  projectId: "",
-  name: ""
-};
-
 const useStyles = makeStyles((theme) => ({
   body: {
     // borderTop: `0.5px solid ${theme.palette.primary40.main}`,

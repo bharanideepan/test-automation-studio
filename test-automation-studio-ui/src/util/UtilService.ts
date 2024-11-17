@@ -18,14 +18,6 @@ export const convertMsToSec = (
   return result;
 };
 
-export const generateFlowUrl = (workflowId: string): string => {
-  return `${window.location.origin}/player/flow/${workflowId}`;
-};
-
-export const generateRecordingUrl = (recordingId: string): string => {
-  return `${window.location.origin}/recording/${recordingId}`;
-};
-
 export const reorder = <T>(
   list: T[],
   startIndex: number,

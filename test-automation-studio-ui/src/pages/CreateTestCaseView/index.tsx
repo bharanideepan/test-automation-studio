@@ -10,7 +10,6 @@ import { getProjectById } from "../../slices/project";
 import AppModal from "../../components/AppModal";
 import useSnackbar from "../../hooks/useSnackbar";
 import SuccessIcon from "../../assets/images/success-tick.svg";
-import { generateRecordingUrl } from "../../util/UtilService";
 
 const useStyles = makeStyles((theme) => ({
   body: {

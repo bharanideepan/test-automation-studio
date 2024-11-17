@@ -13,7 +13,6 @@ import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action, Flow, FlowActionSequence } from "../../declarations/interface";
-import { DEFAULT_FLOW } from "./FlowContainer";
 import { createFlow, updateFlow } from "../../slices/project";
 import { RootState } from "../../store/rootReducer";
 import { getFlowById } from "../../slices/flow";
@@ -21,6 +20,7 @@ import AppCard from "../../components/cards/AppCard";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
 import { reorder } from "../../util/UtilService";
 import AddAction from "./AddAction";
+import { DEFAULT_FLOW } from "../../util/constants";
 
 const useStyles = makeStyles((theme) => ({
   body: {

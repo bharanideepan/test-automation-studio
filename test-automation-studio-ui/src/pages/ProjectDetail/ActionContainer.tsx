@@ -24,36 +24,8 @@ import { deleteAction, setDefaultInput } from "../../slices/project";
 import clsx from "clsx";
 import AddAction from "./AddAction";
 import AddInput from "./AddInput";
+import { ACTION_TYPES } from "../../util/constants";
 
-export const DEFAULT_ACTION: Action = {
-  id: "",
-  projectId: "",
-  name: "",
-  type: "",
-  xpath: "",
-  valueRegex: "",
-  inputs: [],
-};
-
-export const DEFAULT_INPUT: Input = {
-  id: "",
-  actionId: "",
-  name: "",
-  value: "",
-  waitAfterAction: 0,
-  isDefault: false
-};
-
-export const ACTION_TYPES = [
-  { label: "Launch Browser", value: "LAUNCH_BROWSER" },
-  { label: "Click", value: "CLICK" },
-  { label: "Double Click", value: "DOUBLE_CLICK" },
-  { label: "Select", value: "SELECT" },
-  { label: "Type text", value: "TYPE_TEXT" },
-  { label: "Checkbox", value: "CHECKBOX" },
-  { label: "Radio", value: "Radio" },
-  { label: "Validate element is visible", value: "IS_VISIBLE" },
-];
 const useStyles = makeStyles((theme) => ({
   body: {
     // borderTop: `0.5px solid ${theme.palette.primary40.main}`,
@@ -181,7 +153,7 @@ const ActionContainer: React.FC<{
             <ActionsListView projectId={projectId} actions={list} handleDeleteAction={handleDeleteAction} selectedAction={list.find((action: Action) => action.id == selectedAction?.id)} setSelectedAction={setSelectedAction} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <InputListView actionId={selectedAction?.id} actionName={selectedAction?.name} inputs={list.find((action: Action) => action.id == selectedAction?.id)?.inputs} handleDeleteInput={handleDeleteInput} selectedInput={selectedInput} setSelectedInput={setSelectedInput} />
+            <InputListView action={selectedAction} inputs={list.find((action: Action) => action.id == selectedAction?.id)?.inputs} handleDeleteInput={handleDeleteInput} selectedInput={selectedInput} setSelectedInput={setSelectedInput} />
           </Grid>
         </Grid>
       )}
@@ -481,10 +453,9 @@ const InputListView: React.FC<{
   handleDeleteInput: (id: string) => void;
   setSelectedInput: (input: Input) => void
   selectedInput: Input | undefined;
-  actionId?: string;
-  actionName?: string;
+  action?: Action;
 }> = ({
-  inputs, handleDeleteInput, selectedInput, setSelectedInput, actionId, actionName
+  inputs, handleDeleteInput, selectedInput, setSelectedInput, action
 }) => {
     const classes = useStyles();
     const [editInput, setEditInput] = useState<Input | undefined>(undefined);
@@ -497,22 +468,22 @@ const InputListView: React.FC<{
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-              {actionName && <Box>
+              {action && <Box>
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                  {actionName}
+                  {action.name}
                 </Typography>
               </Box>}
-              {actionId && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+              {action && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
                 <AddInput
                   input={editInput}
-                  actionId={actionId}
+                  action={action}
                   onModalClose={() => { setEditInput(undefined) }}
                 />
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                   Inputs: {inputs?.length ?? 0}
                 </Typography>
               </Box>}
-              {!actionId && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+              {!action && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                 Select an action to view its inputs
               </Typography>}
             </Box>
@@ -541,7 +512,7 @@ const InputListView: React.FC<{
                     </TableCell>
                     <TableCell style={{ width: "20%" }} align="left">
                       <Typography variant="h5" color="primary">
-                        Wait after action
+                        Wait after action (in sec)
                       </Typography>
                     </TableCell>
                     <TableCell style={{ width: "10%" }} align="left">

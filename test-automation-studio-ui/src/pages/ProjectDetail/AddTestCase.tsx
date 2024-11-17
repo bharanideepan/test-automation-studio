@@ -19,10 +19,10 @@ import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
 import { reorder } from "../../util/UtilService";
-import { DEFAULT_TEST_CASE } from "./TestCaseContainer";
 import { getTestCaseById } from "../../slices/testCase";
 import AppSelect from "../../components/AppSelect";
 import AddInput from "./AddInput";
+import { DEFAULT_TEST_CASE } from "../../util/constants";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -408,7 +408,7 @@ const SequenceInputForm: React.FC<{
               </Typography>
             </Box>}
             {!selectedFlowSequence && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-              No flow added in this test case
+              No flow added in this Test Case
             </Typography>}
           </Box>
         </Box>

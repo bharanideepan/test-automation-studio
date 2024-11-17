@@ -11,8 +11,6 @@ import {
   getProjectById,
   updateProjectName,
 } from "../../slices/project";
-import { actions as projectsActions } from "../../slices/projects";
-import { generateFlowUrl } from "../../util/UtilService";
 import useSnackbar from "../../hooks/useSnackbar";
 import ActionContainer from "./ActionContainer";
 import FlowContainer from "./FlowContainer";

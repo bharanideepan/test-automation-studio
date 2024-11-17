@@ -25,12 +25,6 @@ import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import AddTestCase from "./AddTestCase";
 
-export const DEFAULT_TEST_CASE: TestCase = {
-  id: "",
-  projectId: "",
-  name: ""
-};
-
 const useStyles = makeStyles((theme) => ({
   body: {
     // borderTop: `0.5px solid ${theme.palette.primary40.main}`,
@@ -112,7 +106,7 @@ const TestCaseContaier: React.FC<{
           <Box mr={1}>
             <AddTestCase
               projectId={projectId}
-              onModalClose={() => { console.log("Add/edit test case modal closed") }}
+              onModalClose={() => { console.log("Add/edit Test Case modal closed") }}
             />
           </Box>
           <Typography variant="h5" color="primary">
@@ -166,7 +160,7 @@ const TestCasesListView: React.FC<{
                 </Typography>
               </Box>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                Click a test case to view its flows in order
+                Click a Test Case to view its flows in order
               </Typography>
             </Box>
           </Box>

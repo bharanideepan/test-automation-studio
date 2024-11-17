@@ -6,9 +6,10 @@ import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
-import { Input } from "../../declarations/interface";
-import { DEFAULT_INPUT } from "./ActionContainer";
+import { Action, Input } from "../../declarations/interface";
 import { createInput, updateInput } from "../../slices/project";
+import { DEFAULT_INPUT } from "../../util/constants";
+import { AppSelect } from "../../components/AppSelect";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -55,9 +56,9 @@ const errorMsg: ErrorMsg = {
 
 export const AddInput: React.FC<{
   input?: Input;
-  actionId: string;
+  action: Action;
   onModalClose: () => void;
-}> = ({ input, actionId, onModalClose }) => {
+}> = ({ input, action, onModalClose }) => {
   const classes = useStyles();
   const [data, setData] = useState<Input | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
@@ -77,7 +78,7 @@ export const AddInput: React.FC<{
   const dispatch = useDispatch();
 
   const handleModalOpen = () => {
-    setData({ ...DEFAULT_INPUT, actionId: actionId });
+    setData({ ...DEFAULT_INPUT, actionId: action.id });
   };
   const handleModalClose = () => {
     setModalOpen(false);
@@ -218,7 +219,7 @@ export const AddInput: React.FC<{
             </Box>
             <Box mt={2}>
               <AppTextbox
-                label="Wait duration after action"
+                label="Wait duration after action (in sec)"
                 placeholder="Enter Wait duration after action"
                 value={data.waitAfterAction}
                 onChange={(event) => {
@@ -229,10 +230,23 @@ export const AddInput: React.FC<{
                 helperText={
                   waitAfterActionError ? errorMsg.waitAfterAction[waitAfterActionError] : ""
                 }
+                type="number"
               />
             </Box>
             <Box mt={2}>
-              <AppTextbox
+              {(action.type === "SET_CHECKBOX_VALUE" || action.type === "SET_RADIO_VALUE") &&<AppSelect
+                id={`input-value-dropdown`}
+                value={data.value ?? ""}
+                onChange={(event) => {
+                  handleFieldChange(event, "value");
+                }}
+                error={!!valueError}
+                helperText={
+                  valueError ? errorMsg.value[valueError] : ""
+                }
+                options={[{label:"Select",value:"SELECT"},{label:"Unselect",value:"UN_SELECT"}]}
+                label="Select Input" />}
+              {(action.type === "LAUNCH_BROWSER" || action.type === "TYPE_TEXT") &&<AppTextbox
                 label="Value"
                 placeholder="Enter Value"
                 value={data.value}
@@ -244,7 +258,7 @@ export const AddInput: React.FC<{
                 helperText={
                   valueError ? errorMsg.value[valueError] : ""
                 }
-              />
+              />}
             </Box>
             <Box mt={2.75}>
               <Button
