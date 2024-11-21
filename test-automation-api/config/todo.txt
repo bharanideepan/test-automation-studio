@@ -1,5 +1,8 @@
 2. Check if the flowActionSequenceId is not available in the assertion, and mark it as removed one.
 3. Check if the action is set to skip, and mark the mapped assertion as removed one.
+6. Unique identifier (display) to identify the source and target names from the list
 4. Create an API for getting proper runnable action sequence with assertions, which will be used to instruct RF.
 1. Store selectors - page wise - page object modal.
 5. Design test run history modal.
+add new input for action in test case creation page
+assertion one action's output should be another action's input.

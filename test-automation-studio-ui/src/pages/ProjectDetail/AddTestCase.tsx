@@ -377,6 +377,17 @@ const AddTestCase: React.FC<{
               </Box>
               <Box display={"flex"} gap={2} alignItems={"center"} justifyContent={"center"}>
                 {step === 0 && <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleModalClose}
+                  fullWidth
+                  aria-label="back"
+                >
+                  <Typography variant="h5" sx={{ textTransform: "capitalize", margin: 1 }}>
+                    Cancel
+                  </Typography>
+                </Button>}
+                {step === 0 && <Button
                   variant="contained"
                   color="secondary"
                   onClick={() => { setStep(1) }}
@@ -394,7 +405,6 @@ const AddTestCase: React.FC<{
                   onClick={() => { setStep(0) }}
                   fullWidth
                   aria-label="back"
-                  disabled={!!nameError}
                 >
                   <Typography variant="h5" sx={{ textTransform: "capitalize", margin: 1 }}>
                     Back
@@ -581,7 +591,7 @@ const Assertions: React.FC<{
                         </Box>}
                       </Box>
                       {!row.skip &&
-                        <Box mt={1}>
+                        <Box mt={2}>
                           <Box display={"flex"} alignItems={"center"} justifyContent={"center"} gap={1}>
                             <AppSelect
                               id={`action-input-dropdown`}
@@ -614,7 +624,7 @@ const Assertions: React.FC<{
                         </Box>
                       }
                       {!row.skip &&
-                        <Box mt={1}>
+                        <Box mt={2}>
                           <Box display={"flex"} alignItems={"center"} justifyContent={"center"} gap={1}>
                             <AppTextbox
                               label="Error Message"

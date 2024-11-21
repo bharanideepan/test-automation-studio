@@ -26,6 +26,7 @@ export default function (app: Application): typeof Model {
     testCase.belongsTo(models["project"], { foreignKey: "projectId" });
     testCase.hasMany(models["testCaseFlowSequence"], { foreignKey: "testCaseId" });
     testCase.hasMany(models["assertion"], { foreignKey: "testCaseId" });
+    testCase.hasMany(models["testCaseRun"], {foreignKey: "testCaseId"})
   };
   return testCase;
 }

@@ -24,6 +24,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import AddTestCase from "./AddTestCase";
+import io from 'socket.io-client';
+
+// const socket = io('http://localhost:3030'); // Update with your server URL
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -81,6 +84,7 @@ const TestCaseContaier: React.FC<{
   const [count, setCount] = useState(0);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | undefined>(undefined);
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
+  const [updates, setUpdates] = useState<any>([]);
 
   useEffect(() => {
     if (selectedTestCase) dispatch(getTestCaseById(selectedTestCase?.id))
@@ -99,6 +103,19 @@ const TestCaseContaier: React.FC<{
     }
   }, [list])
 
+//   useEffect(() => {
+//     const event = `testCaseRunUpdates`;
+//     socket.on('connect', () => {
+//         console.log('Connected to server');
+//     });
+//     socket.on(event, (update) => {
+//         console.log(update);
+//     });
+//     return () => {
+//         socket.off(event);
+//     };
+// }, []);
+  
   return (
     <>
       {list.length === 0 && (

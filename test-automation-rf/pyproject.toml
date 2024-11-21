@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "test-automation-rf"
+version = "1.0.0"
+description = "robotframework based rf_worker to perform automation in web applications"
+authors = ["Bharani Deepan <bharani@ideas2it.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+beautifulsoup4 = '4.11.1'
+boto3 = '1.26.142'
+commitizen = '3.5.0'
+confluent-kafka = '2.3.0'
+ddtrace = '1.18.0'
+pandas = '1.5.3'
+paramiko = '2.8.1'
+playwright = '1.29.1'
+pre-commit = '2.17.0'
+python = '3.9.20'
+pyyaml = '6.0'
+returns = '0.20.0'
+robotframework = '5.0.1'
+robotframework-browser = '16.2.0'
+robotframework-datetime-tz = '1.0.6'
+robotframework-robocop = '3.2.0'
+robotframework-screencaplibrary = '1.6.0'
+robotframework-tidy = '4.4.0'
+robotframework-assertion-engine = '2.0.0'
+rpaframework = '23.2.1'
+xvfbwrapper = '0.2.9'
+rpaframework-recognition = '5.1.2'
+
+[tool.poetry.dev-dependencies]
+asv = '0.5.1'
+attrs = '21.4.0'
+black = '22.6'
+flake8 = '3.9.0'
+isort = '5.8.0'
+mypy = '0.971'
+pycodestyle = '2.7.0'
+pydocstyle = '6.1'
+pytest = '7.0.0'
+pytest-cov = '3.0.0'
+python-semantic-release = '7.34.6'
+git-changelog = '2.0.0'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

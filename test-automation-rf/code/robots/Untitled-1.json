@@ -1,0 +1,56 @@
+{
+   
+    "flows": [
+        {
+            "actions": [                
+                {
+            
+                    "test_case_input_mappings": [
+                        {
+                            "input": {
+                                "type": "NEW_PAGE",
+                                "xpath": null,
+                                "value": "https://iassistant.ideas2it.com/login"
+                            }
+                        }
+                    ]
+                },
+                {
+                    
+                    "test_case_input_mappings": [
+                        {
+                            "input": {       
+                                "type": "FILL_TEXT",
+                                "xpath": "//input[@name='username']",
+                                "value": "yuvaraj.v@ideas2it.com"
+                            }
+                        }
+                    ]
+                },
+                {
+                    
+                    "test_case_input_mappings": [
+                        {
+                            "input": {       
+                                "type": "FILL_TEXT",
+                                "xpath": "//input[@name='password']",
+                                "value": "I22119"
+                            }
+                        }
+                    ]
+                },
+                {
+                    
+                    "test_case_input_mappings": [
+                        {
+                            "input": {       
+                                "type": "LEFT_CLICK",
+                                "xpath": "//button[text() = 'Login']"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

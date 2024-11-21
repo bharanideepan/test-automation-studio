@@ -8,6 +8,7 @@ import testCaseFlowSequenceActionInput from "./test-case-flow-sequence-action-in
 import testCaseFlowSequence from "./test-case-flow-sequence/test-case-flow-sequence.service";
 import flowActionSequence from "./flow-action-sequence/flow-action-sequence.service";
 import assertionSequence from "./assertion/assertion.service";
+import testCaseRun from "./test-case-run/test-case-run.service";
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -20,4 +21,5 @@ export default function (app: Application): void {
   app.configure(testCaseFlowSequence);
   app.configure(flowActionSequence);
   app.configure(assertionSequence);
+  app.configure(testCaseRun);
 }

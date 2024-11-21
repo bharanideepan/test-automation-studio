@@ -1,6 +1,6 @@
-# app-screen-emulation-service
+# Test Automation Studio API
 
-> Rest api service for managing app screen emulation process
+> Rest api service for managing test automation workflow data
 
 ## About
 
@@ -13,16 +13,14 @@ Getting up and running is as easy as 1, 2, 3.
 1. Make sure you have [NodeJS](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed.
 2. Install your dependencies
 
-    ```
-    cd path/to/app-screen-emulation-service
-    npm install
-    ```
-
+   ```
+   npm install
+   ```
 3. Start your app
 
-    ```
-    npm start
-    ```
+   ```
+   npm start
+   ```
 
 ## Testing
 

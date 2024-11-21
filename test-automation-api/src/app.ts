@@ -30,7 +30,7 @@ app.configure(
     docsPath: "/docs",
     specs: {
       info: {
-        title: "Dopple APIs",
+        title: "Test Automation Studio APIs",
         description: "A description",
         version: "1.0.0",
       },
@@ -69,7 +69,20 @@ app.use("/", express.static(app.get("public")));
 
 // Set up Plugins and providers
 app.configure(express.rest());
-app.configure(socketio());
+app.configure(socketio((io) => {
+  app.io = io;
+  app.io.on('connection', (socket) => {
+    // console.log('A client connected to /test');
+    io.emit(`testCaseRunUpdates`, { sample: "sample" });
+  });
+  // io.on("connection", (socket) => {
+  //   socket.on("testCaseRunUpdates", (data: any) => {
+  //     console.log("Update received:", data);
+  //     const { testCaseRunId, status, logs } = data;
+  //     io.emit(`testCaseRunUpdates:${testCaseRunId}`, { status, logs });
+  //   });
+  // });
+}));
 
 app.configure(sequelize);
 
