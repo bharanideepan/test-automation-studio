@@ -10,7 +10,7 @@ Resource    ../../modules/components/COMP_Select.resource
 
 
 *** Keywords ***
-comp-get-selected-options
+get-selected-options
     [Documentation]    Gets all selected options
     ...
     ...    INPUT:
@@ -33,7 +33,7 @@ comp-get-selected-options
         EX_Exception.ex-fail    ERROR_WHILE_ACCESSING_SELECTBOX
     END
 
-comp-select-multiple-options
+select-multiple-options
     [Documentation]    Selects the option by given attribute
     ...
     ...    INPUT:
@@ -56,7 +56,7 @@ comp-select-multiple-options
     [Tags]    component
     [Arguments]    ${selector}    @{values}    ${attribute}=label    ${retry_count}=3
     COMP_Select.validate-precondition    ${selector}
-    UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}
     TRY
         Wait Until Keyword Succeeds
@@ -71,7 +71,7 @@ comp-select-multiple-options
         EX_Exception.ex-throw-actual-message-from-retry-error-message    ${err_msg}
     END
 
-comp-is-all-selected
+is-all-selected
     [Documentation]    Checks if all the options in the dropdown are selected
     ...
     ...    INPUT:
@@ -86,13 +86,13 @@ comp-is-all-selected
     [Tags]    component
     [Arguments]    ${selector}
     COMP_Select.validate-precondition    ${selector}
-    ${selected_options}=    COMP_MultiSelect.comp-get-selected-options    ${selector}
-    ${options}=    COMP_Select.comp-get-options    ${selector}
+    ${selected_options}=    COMP_MultiSelect.get-selected-options    ${selector}
+    ${options}=    COMP_Select.get-options    ${selector}
     ${selected_count}=    Get Length    ${selected_options}
     ${options_count}=    Get Length    ${options}
     RETURN    ${selected_count == ${options_count}}
 
-comp-is-all-unselected
+is-all-unselected
     [Documentation]    Checks if all the options are unselected
     ...
     ...    INPUT:
@@ -107,6 +107,6 @@ comp-is-all-unselected
     [Tags]    component
     [Arguments]    ${selector}
     COMP_Select.validate-precondition    ${selector}
-    ${selected_options}=    COMP_MultiSelect.comp-get-selected-options    ${selector}
+    ${selected_options}=    COMP_MultiSelect.get-selected-options    ${selector}
     ${selected_count}=    Get Length    ${selected_options}
     RETURN    ${selected_count == '0'}

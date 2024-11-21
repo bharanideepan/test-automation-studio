@@ -3,7 +3,7 @@ Library     Collections
 
 
 *** Keywords ***
-util-check-key-exists
+check-key-exists
     [Documentation]    checks whether the key exists in dicitonary
     ...
     ...    INPUT:
@@ -16,7 +16,7 @@ util-check-key-exists
     ${is_key_exists}=    Run Keyword And Return Status    dictionary should contain key    ${dictionary}    ${key}
     RETURN    ${is_key_exists}
 
-util-is-value-not-none
+is-value-not-none
     [Documentation]    checks whether the key exists in dicitonary
     ...
     ...    INPUT:
@@ -29,24 +29,15 @@ util-is-value-not-none
     ${no_none_exists}=    Run Keyword And Return Status    dictionary should contain key    ${dictionary}    ${key}
     IF    $no_none_exists == $True
         ${values}=    Set Variable    ${dictionary}[${key}]
-        ${is_json}=    Evaluate    isinstance(${values},dict)
-        IF    $is_json == $True
-            IF    $values != $None
-                ${no_none_exists}=    Set Variable    ${True}
-            ELSE
-                ${no_none_exists}=    Set Variable    ${False}
-            END
+        IF    $values != $None
+            ${no_none_exists}=    Set Variable    ${True}
         ELSE
-            IF    $values != $None
-                ${no_none_exists}=    Set Variable    ${True}
-            ELSE
-                ${no_none_exists}=    Set Variable    ${False}
-            END
+            ${no_none_exists}=    Set Variable    ${False}
         END
     END
     RETURN    ${no_none_exists}
 
-util-check-value-exists-in-list
+check-value-exists-in-list
     [Documentation]    Method used ckeck if the given list contains the item
     ...    Returns true if contains else false
     ...
@@ -60,7 +51,7 @@ util-check-value-exists-in-list
     ${is_value_exists}=    Run Keyword And Return Status    List Should Contain Value    ${list}    ${item}
     RETURN    ${is_value_exists}
 
-util-check-lists-are-equal
+check-lists-are-equal
     [Documentation]    Method used ckeck if the given lists contains equal items
     ...    Returns true if contains else false
     ...
@@ -74,7 +65,7 @@ util-check-lists-are-equal
     ${is_equal}=    Run Keyword And Return Status    Lists Should Be Equal    ${list1}    ${list2}
     RETURN    ${is_equal}
 
-util-find-common-items
+find-common-items
     [Documentation]    Method used to return the common items present in both lists
     ...
     ...    INPUT:
@@ -95,7 +86,7 @@ util-find-common-items
     END
     RETURN    ${common_items}
 
-util-get-field-values
+get-field-values
     [Documentation]    Method used to get the values as list for the particular field
     ...    from list fo dictionaries
     ...
@@ -116,7 +107,7 @@ util-get-field-values
     END
     RETURN    ${result}
 
-util-replace-list-of-dictionaries-keys-using-mapper
+replace-list-of-dictionaries-keys-using-mapper
     [Documentation]    Method used to replace the list of dictionary keys with the given mapper
     ...
     ...    INPUT:
@@ -130,7 +121,7 @@ util-replace-list-of-dictionaries-keys-using-mapper
     [Arguments]    ${list}    ${mapper_dict}    ${include_only_mapper_keys}=${False}
     ${new_list}=    Create List
     FOR    ${dict}    IN    @{list}
-        ${new_dict}=    util-replace-dictionary-keys-using-mapper
+        ${new_dict}=    replace-dictionary-keys-using-mapper
         ...    ${dict}
         ...    ${mapper_dict}
         ...    ${include_only_mapper_keys}
@@ -138,7 +129,7 @@ util-replace-list-of-dictionaries-keys-using-mapper
     END
     RETURN    ${new_list}
 
-util-replace-dictionary-keys-using-mapper
+replace-dictionary-keys-using-mapper
     [Documentation]    Method used to replace the dictionary keys with the given mapper
     ...
     ...    INPUT:
@@ -152,7 +143,7 @@ util-replace-dictionary-keys-using-mapper
     [Arguments]    ${dict}    ${mapper_dict}    ${include_only_mapper_keys}=${False}
     ${new_dict}=    Create Dictionary
     FOR    ${old_key}    IN    @{dict}
-        ${key_exists}=    UTIL_Collection.util-check-key-exists    ${mapper_dict}    ${old_key}
+        ${key_exists}=    UTIL_Collection.check-key-exists    ${mapper_dict}    ${old_key}
         IF    $include_only_mapper_keys
             IF    ${key_exists}
                 Set To Dictionary    ${new_dict}    ${mapper_dict}[${old_key}]=${dict}[${old_key}]
@@ -164,7 +155,7 @@ util-replace-dictionary-keys-using-mapper
     END
     RETURN    ${new_dict}
 
-util-is-list-empty
+is-list-empty
     [Documentation]    Method used to check if the list is empty or not and return boolean
     ...
     ...    INPUT:
@@ -177,7 +168,7 @@ util-is-list-empty
     ${count}=    Get Length    ${lists}
     RETURN    ${count == ${0}}
 
-util-check-dict-has-same-value
+check-dict-has-same-value
     [Documentation]    Method used to check if the all values in a dictionary are same given value
     ...
     ...    INPUT:
@@ -196,7 +187,7 @@ util-check-dict-has-same-value
     END
     RETURN    ${result}
 
-util-check-dictionary-is-empty
+check-dictionary-is-empty
     [Documentation]    Method used to check if dictionary is empty or not
     ...
     ...    INPUT:
@@ -215,7 +206,7 @@ util-check-dictionary-is-empty
     END
     RETURN    ${is_empty}
 
-util-merge-dictionaries
+merge-dictionaries
     [Documentation]    Method used to add the dictionaries values into the first dictionary
     ...    Note – If two keys with the same name exist,
     ...    the value of the latter key is included in the merged dictionary

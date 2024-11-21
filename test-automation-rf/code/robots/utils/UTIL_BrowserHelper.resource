@@ -8,9 +8,17 @@ Resource    ../utils/UTIL_Validation.resource
 Resource    ../utils/UTIL_String.resource
 Resource    UTIL_Collection.resource
 
+*** Variable ***
+${ELEMENT_STATE_ATTACHED}             attached
+${ELEMENT_STATE_ENABLED}              enabled
+${ELEMENT_STATE_VISIBLE}              visible
+${ELEMENT_STATE_CHECKED}              checked
+${ELEMENT_STATE_UNCHECKED}            unchecked
+${ELEMENT_STATE_EDITABLE}             editable
+${ELEMENT_STATE_HIDDEN}               hidden
 
 *** Keywords ***
-util-get-elements
+get-elements
     [Documentation]    Method is used to get the locator reference.
     ...    INPUT:
     ...    ${selector}: string
@@ -24,7 +32,7 @@ util-get-elements
     ...
     [Tags]    util
     [Arguments]    ${selector}
-    # UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
+    # UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
     TRY
         ${elements}=    RPA.Browser.Playwright.Get Elements    ${selector}
         RETURN    ${elements}
@@ -33,7 +41,7 @@ util-get-elements
         EX_Exception.ex-fail    UNABLE_TO_GET_ELEMENTS
     END
 
-util-get-property
+get-property
     [Documentation]    Method used to get property
     ...
     ...    INPUT:
@@ -47,7 +55,7 @@ util-get-property
     ...    INVALID_BROWSER_ELEMENT_PROPERTY
     [Tags]    util
     [Arguments]    ${selector}    ${property_name}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
     TRY
         ${property}=    RPA.Browser.Playwright.Get Property    ${selector}    ${property_name}
         RETURN    ${property}
@@ -56,7 +64,7 @@ util-get-property
         EX_Exception.ex-fail    INVALID_BROWSER_ELEMENT_PROPERTY
     END
 
-util-get-attribute
+get-attribute
     [Documentation]    Method used to get property
     ...
     ...    INPUT:
@@ -70,9 +78,9 @@ util-get-attribute
     ...    INVALID_BROWSER_ELEMENT_ATTRIBUTE
     [Tags]    util
     [Arguments]    ${selector}    ${attribute_name}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
-    ${attributes}=    UTIL_BrowserHelper.util-get-attribute-names    ${selector}
-    ${contains}=    UTIL_Collection.util-check-value-exists-in-list    ${attributes}    ${attribute_name}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
+    ${attributes}=    UTIL_BrowserHelper.get-attribute-names    ${selector}
+    ${contains}=    UTIL_Collection.check-value-exists-in-list    ${attributes}    ${attribute_name}
     IF    $contains
         TRY
             ${attribute}=    RPA.Browser.Playwright.Get Attribute    ${selector}    ${attribute_name}
@@ -84,7 +92,7 @@ util-get-attribute
     END
     RETURN    '${EMPTY}'
 
-util-get-attribute-names
+get-attribute-names
     [Documentation]    Method used to get attribute names
     ...
     ...    INPUT:
@@ -96,11 +104,11 @@ util-get-attribute-names
     ...    ELEMENT_NOT_ATTACHED
     [Tags]    util
     [Arguments]    ${selector}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
     ${attributes}=    RPA.Browser.Playwright.Get Attribute Names    ${selector}
     RETURN    ${attributes}
 
-util-is-enabled-after-wait
+is-enabled-after-wait
     [Documentation]    checks whether the given selector is enabled
     ...    after waiting for the element state
     ...
@@ -113,10 +121,10 @@ util-is-enabled-after-wait
     ...    ELEMENT_NOT_ATTACHED
     [Tags]    util
     [Arguments]    ${selector}
-    ${result}=    util-is-element-state-appear-after-wait    ${selector}    ELEMENT_STATE_ENABLED
+    ${result}=    is-element-state-appear-after-wait    ${selector}    ${ELEMENT_STATE_ENABLED}
     RETURN    ${result}
 
-util-is-visible-after-wait
+is-visible-after-wait
     [Documentation]    checks whether the given selector is visible
     ...    after waiting for the element state
     ...
@@ -129,10 +137,10 @@ util-is-visible-after-wait
     ...    ELEMENT_NOT_ATTACHED
     [Tags]    util
     [Arguments]    ${selector}
-    ${result}=    util-is-element-state-appear-after-wait    ${selector}    ELEMENT_STATE_VISIBLE
+    ${result}=    is-element-state-appear-after-wait    ${selector}    ${ELEMENT_STATE_VISIBLE}
     RETURN    ${result}
 
-util-is-editable-after-wait
+is-editable-after-wait
     [Documentation]    checks whether the given selector is editable
     ...    after waiting for the element state
     ...
@@ -145,10 +153,10 @@ util-is-editable-after-wait
     ...    ELEMENT_NOT_ATTACHED
     [Tags]    util
     [Arguments]    ${selector}
-    ${result}=    util-is-element-state-appear-after-wait    ${selector}    ELEMENT_STATE_EDITABLE
+    ${result}=    is-element-state-appear-after-wait    ${selector}    ${ELEMENT_STATE_EDITABLE}
     RETURN    ${result}
 
-util-is-attached-after-wait
+is-attached-after-wait
     [Documentation]    checks whether the given selector is attached to the DOM
     ...    after waiting for the element state
     ...
@@ -159,13 +167,13 @@ util-is-attached-after-wait
     [Tags]    util
     [Arguments]    ${selector}
     TRY
-        ${result}=    util-is-element-state-appear-after-wait    ${selector}    ELEMENT_STATE_ATTACHED
+        ${result}=    is-element-state-appear-after-wait    ${selector}    ${ELEMENT_STATE_ATTACHED}
         RETURN    ${result}
     EXCEPT
         RETURN    ${False}
     END
 
-util-is-hidden-after-wait
+is-hidden-after-wait
     [Documentation]    checks whether the given selector is hidden
     ...    after waiting for the element state
     ...
@@ -178,10 +186,10 @@ util-is-hidden-after-wait
     ...    ELEMENT_NOT_ATTACHED
     [Tags]    util
     [Arguments]    ${selector}
-    ${result}=    util-is-element-state-appear-after-wait    ${selector}    ELEMENT_STATE_HIDDEN
+    ${result}=    is-element-state-appear-after-wait    ${selector}    ${ELEMENT_STATE_HIDDEN}
     RETURN    ${result}
 
-util-is-element-state-appear-after-wait
+is-element-state-appear-after-wait
     [Documentation]    Used to get the element state
     ...    after waiting for the element state
     ...
@@ -207,7 +215,7 @@ util-is-element-state-appear-after-wait
         EX_Exception.ex-fail    ELEMENT_NOT_ATTACHED
     END
 
-util-wait-until-network-is-idle
+wait-until-network-is-idle
     [Documentation]    Method used to wait until network is idle
     ...
     ...    INPUT:
@@ -226,19 +234,19 @@ util-wait-until-network-is-idle
         EX_Exception.ex-fail    ${message}
     END
 
-util-wait-for-body-to-stop-loading
+wait-for-body-to-stop-loading
     [Documentation]    Method used to wait until the body html stops loading
     [Tags]    util
     TRY
         Log To Console    <=== Waiting for body to stop loading ===>    INFO
-        util-wait-for-element-change    //body    debounce=true
+        wait-for-element-change    //body    debounce=true
         Log To Console    <=== Body stops loading ===>    INFO
     EXCEPT    ELEMENT_NOT_ATTACHED_IN_CUSTOM_SLEEP
         Log To Console    Element is not attached to perform custom sleep    ERROR
         EX_Exception.ex-fail    ELEMENT_NOT_ATTACHED_IN_CUSTOM_SLEEP
     END
 
-util-wait-for-element-change
+wait-for-element-change
     [Documentation]    custom sleep function: wait for particular
     ...    element to load fully , implemented with
     ...    js debounce and mutation observer
@@ -264,7 +272,7 @@ util-wait-for-element-change
     ...    ${error_message}=ELEMENT_NOT_ATTACHED_IN_CUSTOM_SLEEP
 
     Log To Console    custom sleep started for element:${selector}    INFO
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}    ${error_message}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}    ${error_message}
     Log To Console    element attached in the dom:${selector}    INFO
     TRY
         ${element_innerText}=    RPA.Browser.Playwright.Evaluate JavaScript
@@ -333,7 +341,7 @@ util-wait-for-element-change
         Log To Console    Error inside custom sleep util: ${err_msg}    ERROR
     END
 
-util-get-element-count
+get-element-count
     [Documentation]    Method is used to get element count for given selector
     ...    INPUT:
     ...    ${selector}: String
@@ -345,7 +353,7 @@ util-get-element-count
     ${element_count}=    RPA.Browser.Playwright.Get Element Count    ${selector}
     RETURN    ${element_count}
 
-util-check-if-element-selected-by-css
+check-if-element-selected-by-css
     [Documentation]    Methos is used to check the element is selected or not using css
     ...
     ...    INPUT:
@@ -358,10 +366,10 @@ util-check-if-element-selected-by-css
     ...    UNABLE_TO_CHECK_ELEMENT_IS_SELECTED_OR_NOT
     [Tags]    util
     [Arguments]    ${selector}    ${css_property}=color    ${css_value}=rgb(16, 16, 16)
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
     TRY
         &{style_dict}=    RPA.Browser.Playwright.Get Style    selector=${selector}
-        ${is_element_selected}=    UTIL_String.util-compare-strings    ${style_dict}[${css_property}]    ${css_value}
+        ${is_element_selected}=    UTIL_String.compare-strings    ${style_dict}[${css_property}]    ${css_value}
         RETURN    ${is_element_selected}
     EXCEPT    AS    ${error_message}
         Log To Console    ${error_message}    ERROR

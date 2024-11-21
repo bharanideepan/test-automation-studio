@@ -4,7 +4,7 @@ Library     String
 
 
 *** Keywords ***
-util-compare-strings
+compare-strings
     [Documentation]    Method used to compare the strings
     ...
     ...    INPUT:
@@ -19,7 +19,7 @@ util-compare-strings
     ...    () => `${string1}` === `${string2}`
     RETURN    ${result}
 
-util-check-string-contains
+check-string-contains
     [Documentation]    Method used to check if string1 contains string2
     ...
     ...    INPUT:
@@ -34,7 +34,7 @@ util-check-string-contains
     ...    () => `${string1}`.includes(`${string2}`)
     RETURN    ${result}
 
-util-check-string-contains-all-substrings
+check-string-contains-all-substrings
     [Documentation]    Method used to check if string1 contains all substrings
     ...
     ...    INPUT:
@@ -49,7 +49,7 @@ util-check-string-contains-all-substrings
     ...    () => ${substrings}.every(substring => `${string}`.includes(substring))
     RETURN    ${result}
 
-util-check-string-contains-any-substring
+check-string-contains-any-substring
     [Documentation]    Method used to check if string1 contains any substring
     ...
     ...    INPUT:
@@ -64,7 +64,7 @@ util-check-string-contains-any-substring
     ...    () => ${substrings}.some(substring => `${string}`.includes(substring))
     RETURN    ${result}
 
-util-check-and-enclose-with-quote
+check-and-enclose-with-quote
     [Documentation]    Method used to enclose the string with single quotes
     ...    if the string contains double quotes
     ...    else encloses with double quotes

@@ -28,7 +28,7 @@ export class TestCaseRun extends Service {
         status: "STARTED"
       });
       const testCase = await this.app.service('test-case').get(testCaseId);
-      const message = { type: 'runExecute', payload: { testCaseRun, testCase } };
+      const message = { type: 'START_RUN', payload: { testCaseRun, testCase } };
       if (this.app.io) {
         console.log("IO exists")
         this.app.io?.emit(`testCaseRunUpdates:26`, { status: "success" });

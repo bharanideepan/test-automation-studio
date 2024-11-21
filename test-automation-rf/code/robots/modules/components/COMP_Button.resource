@@ -7,7 +7,7 @@ Resource    ../../utils/UTIL_String.resource
 
 
 *** Keywords ***
-comp-left-click
+left-click
     [Documentation]    Performs left click operation on button
     ...
     ...    INPUT:
@@ -52,10 +52,10 @@ validate-precondition
     ...    ELEMENT_NOT_ENABLED
     [Tags]    robot:private
     [Arguments]    ${selector}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
-    UTIL_Validation.util-fail-if-not-a-button    ${selector}
-    UTIL_Validation.util-fail-if-not-visible-after-wait    ${selector}
-    UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
+    # UTIL_Validation.fail-if-not-a-button    ${selector}
+    UTIL_Validation.fail-if-not-visible-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
 
 perform-click-and-validate-post-condition
     [Documentation]    Method used to perform the click operation
@@ -76,7 +76,6 @@ perform-click-and-validate-post-condition
     END
 
     TRY
-        RPA.Browser.Scroll To Element    ${selector}
         RPA.Browser.Playwright.Click    ${selector}    left    1
     EXCEPT    AS    ${err_msg}
         Log To Console    ${err_msg}

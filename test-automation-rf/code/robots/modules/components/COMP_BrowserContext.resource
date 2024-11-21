@@ -1,17 +1,13 @@
 *** Settings ***
 Library     RPA.Browser.Playwright
 Library     OperatingSystem
-Resource    ../../utils/UTIL_Validation.resource
-Resource    ../../utils/exceptions/EX_Exception.resource
-Resource    ../../utils/UTIL_BrowserHelper.resource
-Resource    ../../utils/UTIL_String.resource
 
 
 *** Keywords ***
 launch-browser
     [Arguments]    ${url}    ${browser_timeout}=20s
-    RPA.Browser.Playwright.New Persistent Context
-    ...    browser=chromium
-    ...    headless=False
+    New Browser    chromium    headless=False
+    New Context    viewport={'width': 1280, 'height': 720}    acceptDownloads=True
     RPA.Browser.Playwright.Set Browser Timeout    ${browser_timeout}
-    RPA.Browser.Playwright.New Page    ${url}
+    ${page_id}=    RPA.Browser.Playwright.New Page    ${url}
+    RPA.Browser.Playwright.Switch Page    ${page_id}

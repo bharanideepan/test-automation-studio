@@ -16,6 +16,7 @@ export const OPERATOR_TYPES = [
 
 export const ACTION_TYPES = [
   { label: "Launch Browser", value: "LAUNCH_BROWSER" },
+  { label: "New Page", value: "NEW_PAGE" },
   { label: "Click", value: "CLICK" },
   { label: "Double Click", value: "DOUBLE_CLICK" },
   { label: "Get dropdown value", value: "GET_DROPDOWN_VALUE" },
@@ -82,11 +83,11 @@ export const DEFAULT_ASSERTION: Assertion = {
 
 export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCaseFlowSequence[], excludeRemovedSequences?: boolean) => {
   const options = selectedFlowSequences?.filter((flowSequence: TestCaseFlowSequence) => {
-    if(excludeRemovedSequences) {
-      if(flowSequence.isRemoved) {
+    if (excludeRemovedSequences) {
+      if (flowSequence.isRemoved) {
         return false;
       }
-    } 
+    }
     return true;
   }).map((flowSequence: TestCaseFlowSequence) => {
     const arr: {

@@ -6,7 +6,7 @@ Resource    ../../utils/UTIL_BrowserHelper.resource
 Resource    ../../utils/UTIL_String.resource
 
 *** Keywords ***
-comp-set-value
+set-value
     [Documentation]    Updates Field Value and checks for post condition
     ...    And retries if the retry value is provided
     ...
@@ -26,7 +26,7 @@ comp-set-value
     [Tags]    component
     [Arguments]    ${selector}    ${value}    ${retry_count}=3
     COMP_Textbox.validate-precondition    ${selector}
-    UTIL_Validation.util-fail-if-not-editable-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-editable-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}
     TRY
         Wait Until Keyword Succeeds
@@ -40,7 +40,7 @@ comp-set-value
         EX_Exception.ex-throw-actual-message-from-retry-error-message    ${err_msg}
     END
 
-comp-set-password-secret
+set-password-secret
     [Documentation]    Updates Password Field
     ...
     ...    INPUT:
@@ -62,8 +62,8 @@ comp-set-password-secret
     EXCEPT    ELEMENT_NOT_A_TEXT_BOX
         EX_Exception.ex-fail    ELEMENT_NOT_A_PASSWORD_TEXTBOX
     END
-    UTIL_Validation.util-fail-if-not-a-password-textbox    ${selector}
-    UTIL_Validation.util-fail-if-not-editable-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-a-password-textbox    ${selector}
+    UTIL_Validation.fail-if-not-editable-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}
     TRY
         Wait Until Keyword Succeeds
@@ -76,7 +76,7 @@ comp-set-password-secret
         EX_Exception.ex-throw-actual-message-from-retry-error-message    ${err_msg}
     END
 
-comp-get-value
+get-value
     [Documentation]    Returns Field Value
     ...
     ...    INPUT:
@@ -89,7 +89,7 @@ comp-get-value
     [Tags]    component
     [Arguments]    ${selector}
     COMP_Textbox.validate-precondition    ${selector}
-    ${fieldTextValue}=    UTIL_BrowserHelper.util-get-property    ${selector}    value
+    ${fieldTextValue}=    UTIL_BrowserHelper.get-property    ${selector}    value
     RETURN    ${fieldTextValue}
 
 # ======== Helper functions =======
@@ -107,9 +107,9 @@ validate-precondition
     ...    ELEMENT_NOT_VISIBLE
     [Tags]    robot:private
     [Arguments]    ${selector}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
-    UTIL_Validation.util-fail-if-not-a-textbox    ${selector}
-    UTIL_Validation.util-fail-if-not-visible-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-a-textbox    ${selector}
+    UTIL_Validation.fail-if-not-visible-after-wait    ${selector}
 
 fill-text-and-validate-post-condition
     [Documentation]    Updates the Field value and checks for post condition
@@ -127,12 +127,11 @@ fill-text-and-validate-post-condition
 
     IF    ${retry_info}[is_first_try] == ${False}
         COMP_Textbox.validate-precondition    ${selector}
-        UTIL_Validation.util-fail-if-not-editable-after-wait    ${selector}
+        UTIL_Validation.fail-if-not-editable-after-wait    ${selector}
     ELSE
         Set To Dictionary    ${retry_info}    is_first_try=${False}
     END
     TRY
-        RPA.Browser.Playwright.Scroll To Element    ${selector}
         RPA.Browser.Playwright.Fill Text    ${selector}    ${value}
     EXCEPT    AS    ${err_msg}
         Log To Console    ${err_msg}
@@ -153,9 +152,9 @@ fail-if-value-not-populated
     ...    VALUE_NOT_POPULATED
     [Tags]    robot:private
     [Arguments]    ${selector}    ${value}
-    ${populated_value}=    COMP_Textbox.comp-get-value    ${selector}
-    ${matches}=    UTIL_String.util-compare-strings    ${populated_value}    ${value}
-    UTIL_Validation.util-fail-keyword-if    ${matches == False}    VALUE_NOT_POPULATED
+    ${populated_value}=    COMP_Textbox.get-value    ${selector}
+    ${matches}=    UTIL_String.compare-strings    ${populated_value}    ${value}
+    UTIL_Validation.fail-keyword-if    ${matches == False}    VALUE_NOT_POPULATED
 
 fill-password-and-validate-post-condition
     [Documentation]    Updates the Field value and checks for post condition
@@ -175,14 +174,13 @@ fill-password-and-validate-post-condition
         EXCEPT    ELEMENT_NOT_A_TEXT_BOX
             EX_Exception.ex-fail    ELEMENT_NOT_A_PASSWORD_TEXTBOX
         END
-        UTIL_Validation.util-fail-if-not-a-password-textbox    ${selector}
-        UTIL_Validation.util-fail-if-not-editable-after-wait    ${selector}
+        UTIL_Validation.fail-if-not-a-password-textbox    ${selector}
+        UTIL_Validation.fail-if-not-editable-after-wait    ${selector}
     ELSE
         Set To Dictionary    ${retry_info}    is_first_try=${False}
     END
 
     TRY
-        RPA.Browser.Playwright.Scroll To Element    ${selector}
         RPA.Browser.Playwright.Fill Secret    ${selector}    $APP_PASSWORD_SECRET
     EXCEPT    AS    ${err_msg}
         Log To Console    ${err_msg}

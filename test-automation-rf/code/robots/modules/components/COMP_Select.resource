@@ -8,7 +8,7 @@ Resource    ../../utils/UTIL_String.resource
 
 
 *** Keywords ***
-comp-get-options
+get-options
     [Documentation]    Gets select options
     ...
     ...    INPUT:
@@ -23,7 +23,7 @@ comp-get-options
     [Tags]    component
     [Arguments]    ${selector}
     COMP_Select.validate-precondition    ${selector}
-    UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
     TRY
         ${select_options}=    RPA.Browser.Playwright.Get Select Options    ${selector}
         RETURN    ${select_options}
@@ -32,7 +32,7 @@ comp-get-options
         EX_Exception.ex-fail    ERROR_WHILE_ACCESSING_SELECTBOX
     END
 
-comp-get-selected-option
+get-selected-option
     [Documentation]    Gets the selected option
     ...    Error will thrown if multiple options selected
     ...
@@ -57,11 +57,11 @@ comp-get-selected-option
         EX_Exception.ex-fail    ERROR_WHILE_ACCESSING_SELECTBOX
     END
     ${selected_length}=    Get Length    ${selected_options}
-    UTIL_Validation.util-fail-keyword-if    ${selected_length == ${0}}    NO_OPTION_SELECTED
-    UTIL_Validation.util-fail-keyword-if    ${selected_length >> ${1}}    MULTIPLE_OPTIONS_SELECTED
+    UTIL_Validation.fail-keyword-if    ${selected_length == ${0}}    NO_OPTION_SELECTED
+    UTIL_Validation.fail-keyword-if    ${selected_length >> ${1}}    MULTIPLE_OPTIONS_SELECTED
     RETURN    ${selected_options}[0]
 
-comp-select-single-option
+select-single-option
     [Documentation]    Selects the option by given attribute
     ...
     ...    INPUT:
@@ -84,7 +84,7 @@ comp-select-single-option
     [Tags]    component
     [Arguments]    ${selector}    ${value}    ${attribute}=label    ${retry_count}=3
     COMP_Select.validate-precondition    ${selector}
-    UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}
     TRY
         Wait Until Keyword Succeeds
@@ -114,9 +114,9 @@ validate-precondition
     ...    ELEMENT_NOT_VISIBLE
     [Tags]    robot:private
     [Arguments]    ${selector}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
-    UTIL_Validation.util-fail-if-not-a-selectbox    ${selector}
-    UTIL_Validation.util-fail-if-not-visible-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-a-selectbox    ${selector}
+    UTIL_Validation.fail-if-not-visible-after-wait    ${selector}
 
 select-options-and-validate-post-condition
     [Documentation]    Method used to set single select option and validate post condition
@@ -134,7 +134,7 @@ select-options-and-validate-post-condition
 
     IF    ${retry_info}[is_first_try] == ${False}
         COMP_Select.validate-precondition    ${selector}
-        UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+        UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
     ELSE
         Set To Dictionary    ${retry_info}    is_first_try=${False}
     END
@@ -171,5 +171,5 @@ validate-option-precondition
     [Tags]    robot:private
     [Arguments]    ${selector}
     Log To Console    Validating select option selector: ${selector}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}    SELECT_OPTION_NOT_ATTACHED
-    UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}    SELECT_OPTION_NOT_ENABLED
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}    SELECT_OPTION_NOT_ATTACHED
+    UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}    SELECT_OPTION_NOT_ENABLED

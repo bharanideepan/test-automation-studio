@@ -7,7 +7,7 @@ Resource    ../../utils/UTIL_String.resource
 
 
 *** Keywords ***
-comp-get-value
+get-value
     [Documentation]    Gets the current checkbox status
     ...
     ...    INPUT:
@@ -29,7 +29,7 @@ comp-get-value
         EX_Exception.ex-fail    ERROR_WHILE_ACCESSING_CHECKBOX
     END
 
-comp-set-value
+set-value
     [Documentation]    Updates the Field value and checks for post condition
     ...    And retries if the retry value is provided
     ...
@@ -49,7 +49,7 @@ comp-set-value
     [Tags]    component
     [Arguments]    ${selector}    ${perform_check}    ${retry_count}=3
     COMP_Checkbox.validate-precondition    ${selector}
-    UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}
     TRY
         Wait Until Keyword Succeeds
@@ -78,9 +78,9 @@ validate-precondition
     ...    ELEMENT_NOT_A_CHECKBOX
     [Tags]    robot:private
     [Arguments]    ${selector}
-    UTIL_Validation.util-fail-if-not-attached-after-wait    ${selector}
-    UTIL_Validation.util-fail-if-not-a-checkbox    ${selector}
-    UTIL_Validation.util-fail-if-not-visible-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-attached-after-wait    ${selector}
+    UTIL_Validation.fail-if-not-a-checkbox    ${selector}
+    UTIL_Validation.fail-if-not-visible-after-wait    ${selector}
 
 set-checkbox-value-and-validate-post-condition
     [Documentation]    Updates the Field value and checks for post condition
@@ -100,7 +100,7 @@ set-checkbox-value-and-validate-post-condition
 
     IF    ${retry_info}[is_first_try] == ${False}
         COMP_Checkbox.validate-precondition    ${selector}
-        UTIL_Validation.util-fail-if-not-enabled-after-wait    ${selector}
+        UTIL_Validation.fail-if-not-enabled-after-wait    ${selector}
     ELSE
         Set To Dictionary    ${retry_info}    is_first_try=${False}
     END
@@ -116,9 +116,9 @@ set-checkbox-value-and-validate-post-condition
         EX_Exception.ex-fail    UNKNOWN_ERROR_OCCURRED
     END
 
-    ${value}=    COMP_Checkbox.comp-get-value    ${selector}
+    ${value}=    COMP_Checkbox.get-value    ${selector}
     IF    ${perform_check}
-        UTIL_Validation.util-fail-keyword-if    ${value != ${perform_check}}    UNABLE_TO_CHECK_CHECKBOX
+        UTIL_Validation.fail-keyword-if    ${value != ${perform_check}}    UNABLE_TO_CHECK_CHECKBOX
     ELSE
-        UTIL_Validation.util-fail-keyword-if    ${value != ${perform_check}}    UNABLE_TO_UNCHECK_CHECKBOX
+        UTIL_Validation.fail-keyword-if    ${value != ${perform_check}}    UNABLE_TO_UNCHECK_CHECKBOX
     END
