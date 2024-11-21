@@ -1,6 +1,7 @@
 *** Settings ***
 Library     RPA.Browser.Playwright
 Library     String
+Library     ../../TopicProducer.py
 
 *** Keywords ***
 Push response message to kafka topic

@@ -33,7 +33,8 @@ export class TestCaseRun extends Service {
         console.log("IO exists")
         this.app.io?.emit(`testCaseRunUpdates:26`, { status: "success" });
       }
-      this.sendMessage(commandTopic, message)
+      await this.sendMessage(commandTopic, message);
+      this.consume();
       return testCaseRun;
     } catch (err) {
       throw new Error(`Error while creating test-case-data: ${err}`);
@@ -60,7 +61,7 @@ export class TestCaseRun extends Service {
 
           // Update the `testCaseRun` in the database
           const { testCaseRunId, status, message: updateMessage } = response;
-          await this.app.service('test-case-run').patch(testCaseRunId, { status, message: updateMessage });
+          // await this.app.service('test-case-run').patch(testCaseRunId, { status, message: updateMessage });
 
           // Send real-time updates to the front-end
           // this.app.io.emit('test-case-run-updates', { testCaseRunId, status, message: updateMessage });
@@ -74,7 +75,7 @@ export class TestCaseRun extends Service {
       await producer.connect();
       await consumer.connect();
       console.log("Kafka producer and consumer connected.");
-      this.consume(); // Start consuming messages
+      // this.consume(); // Start consuming messages
     } catch (err) {
       console.error("Error initializing Kafka:", err);
     }

@@ -9,6 +9,7 @@ Library     ../CommandConsumer.py
 Library     ./utils/Common_util.py
 Resource     ./utils/UTIL_Collection.resource
 Resource     ./utils/UTIL_BrowserHelper.resource
+Resource     ./utils/UTIL_Common.resource
 Resource    ./modules/components/COMP_Button.resource
 Resource    ./modules/components/COMP_Textbox.resource
 Resource    ./modules/components/COMP_Checkbox.resource
@@ -97,6 +98,8 @@ execute-test-case
                         
                     END
                 END
+                ${message}=    Create Dictionary    message=IN_PROGRESS    flowSequenceId=${testCaseFlowSequence}[id]
+                UTIL_Common.Push response message to kafka topic    ${message}
             END
         END
     ELSE
