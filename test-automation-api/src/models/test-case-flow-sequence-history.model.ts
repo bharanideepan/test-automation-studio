@@ -5,16 +5,20 @@ import { Application } from '../declarations';
 
 export default function (app: Application): typeof Model {
   const sequelizeClient: Sequelize = app.get('sequelizeClient');
-  const testCaseRun = sequelizeClient.define('testCaseRun', {
+  const testCaseRunFlowSequenceHistory = sequelizeClient.define('testCaseRunFlowSequenceHistory', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    testCaseId: {
+    testCaseRunId: {
       type: DataTypes.BIGINT,
       allowNull: false,
+    },
+    testCaseFlowSequenceId: {
+      type: DataTypes.BIGINT,
+      allowNull: false
     },
     status: {
       type: DataTypes.STRING(5000),
@@ -25,8 +29,9 @@ export default function (app: Application): typeof Model {
       allowNull: true,
     }
   });
-  (testCaseRun as any).associate = function (models: any): void {
-    testCaseRun.belongsTo(models["testCase"], { foreignKey: "testCaseId" });
+  (testCaseRunFlowSequenceHistory as any).associate = function (models: any): void {
+    testCaseRunFlowSequenceHistory.belongsTo(models["testCaseRun"], { foreignKey: "testCaseRunId" });
+    testCaseRunFlowSequenceHistory.belongsTo(models["testCaseFlowSequence"], { foreignKey: "testCaseFlowSequenceId" });
   };
-  return testCaseRun;
+  return testCaseRunFlowSequenceHistory;
 }

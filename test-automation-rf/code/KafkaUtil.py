@@ -14,13 +14,13 @@ running = True
 
 def get_kafka_params():
     bootstrap_servers = 'localhost:9092'
-    consumer_group_id = 'test-automation-rf'
+    groupId = 'test-automation-rf'
     offset_reset = 'earliest'
     request_topic = 'request_topic'
     response_topic = 'response_topic'
     return {
         'bootstrap_servers': bootstrap_servers,
-        'consumer_group_id': consumer_group_id,
+        'groupId': groupId,
         'offset_reset_policy': offset_reset,
         'request_topic': request_topic,
         'response_topic':  response_topic 

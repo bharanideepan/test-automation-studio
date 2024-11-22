@@ -30,6 +30,10 @@ const populateFields = (hook: any) => {
       },
     ],
     order: [
+      [{ model: flow }, 'createdAt', 'ASC'],
+      [{ model: testCase }, 'createdAt', 'ASC'],
+      [{ model: action }, 'createdAt', 'ASC'],
+      [{ model: action }, { model: input }, 'createdAt', 'ASC'],
       [
         { model: flow },
         { model: flowActionSequence },

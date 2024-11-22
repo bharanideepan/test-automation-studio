@@ -49,13 +49,18 @@ execute-functional-block
     [Documentation]    To execute fb
     [Tags]    to-initialize-library
     WHILE    '${TERMINATION_FLAG}' == 'False'
+        COMP_BrowserContext.launch-browser
         Log To Console    <===Polling message===>
         ${json}=    CommandConsumer.Get A Command    ${5}
+        IF    '${json}[type]' == 'KILL'
+            BREAK
+        END
         TRY
             execute-test-case    ${json}
         EXCEPT    AS    ${error_message}
             Log To Console    ${error_message}
         END
+        # COMP_BrowserContext.close-browser
     END
 
 execute-test-case
@@ -75,32 +80,48 @@ execute-test-case
         ${testCase}=    Set Variable    ${input}[payload][testCase]
         ${testCaseRun}=    Set Variable    ${input}[payload][testCaseRun]
         Log To Console    Test Case Name: ${testCase}[name]
-        ${is_test_case_flow_sequences_exists}=    UTIL_Collection.is-value-not-none    ${testCase}    testCaseFlowSequences
-        IF    $is_test_case_flow_sequences_exists
-            FOR    ${testCaseFlowSequence}    IN    @{testCase}[testCaseFlowSequences]
-                ${flow}=    Set Variable    ${testCaseFlowSequence}[flow]
-                Log To Console    Flow Name: ${flow}[name]
-                ${is_flow_action_sequences_exists}=    UTIL_Collection.is-value-not-none    ${flow}    flowActionSequences
-                IF    $is_flow_action_sequences_exists
-                    FOR    ${flowActionSequence}    IN    @{flow}[flowActionSequences]
-                        ${action}=    Set Variable    ${flowActionSequence}[action]
-                        Log To Console    Action Name: ${action}[name]
-                        ${input}=    Common_util.Get Selected Input    ${flowActionSequence}
-                        IF    $input == $None
-                            Log To Console    Input not found for this action. Terminate the test case here!!!
-                            EX_Exception.ex-fail    INPUT_NOT_FOUND_IN_ACTION
+        TRY
+            ${is_test_case_flow_sequences_exists}=    UTIL_Collection.is-value-not-none    ${testCase}    testCaseFlowSequences
+            ${test_case_run_response_message}=    Create Dictionary    testCaseRunId=${testCaseRun}[id]    status=STARTED
+            UTIL_Common.Push response message to kafka topic    ${test_case_run_response_message}
+            IF    $is_test_case_flow_sequences_exists
+                FOR    ${testCaseFlowSequence}    IN    @{testCase}[testCaseFlowSequences]
+                    TRY
+                        ${flow}=    Set Variable    ${testCaseFlowSequence}[flow]
+                        Log To Console    Flow Name: ${flow}[name]
+                        ${is_flow_action_sequences_exists}=    UTIL_Collection.is-value-not-none    ${flow}    flowActionSequences
+                        IF    $is_flow_action_sequences_exists
+                            FOR    ${flowActionSequence}    IN    @{flow}[flowActionSequences]
+                                TRY
+                                    ${action}=    Set Variable    ${flowActionSequence}[action]
+                                    Log To Console    Action Name: ${action}[name]
+                                    ${input}=    Common_util.Get Selected Input    ${flowActionSequence}
+                                    IF    $input == $None
+                                        Log To Console    Input not found for this action. Terminate the test case here!!!
+                                        EX_Exception.ex-fail    INPUT_NOT_FOUND_IN_ACTION
+                                    END
+                                    execute-action    ${action}    ${input}
+                                    send-action-sequence-message    ${flowActionSequence}[id]    ${testCaseRun}[id]    COMPLETED
+                                EXCEPT    AS    ${error_message}
+                                    Log To Console    ${error_message}
+                                    send-action-sequence-message    ${flowActionSequence}[id]    ${testCaseRun}[id]    FAILED    ${error_message}
+                                    EX_Exception.ex-fail    ${error_message}
+                                END
+                            END
                         END
-                        TRY
-                            execute-action    ${action}    ${input}
-                        EXCEPT    AS    ${error_message}
-                            Log To Console    ${error_message}
-                        END
-                        
+                        send-flow-sequence-message    ${testCaseFlowSequence}[id]    ${testCaseRun}[id]    COMPLETED
+                    EXCEPT    AS    ${error_message}
+                        Log To Console    ${error_message}
+                        send-flow-sequence-message    ${testCaseFlowSequence}[id]    ${testCaseRun}[id]    FAILED    ${error_message}
+                        EX_Exception.ex-fail    ${error_message}
                     END
                 END
-                ${message}=    Create Dictionary    message=IN_PROGRESS    flowSequenceId=${testCaseFlowSequence}[id]
-                UTIL_Common.Push response message to kafka topic    ${message}
             END
+            send-test-case-run-message    ${testCaseRun}[id]    PASS
+        EXCEPT    AS    ${error_message}
+            Log To Console    ${error_message}
+            send-test-case-run-message    ${testCaseRun}[id]    FAIL    errorMessage=${error_message}
+            EX_Exception.ex-fail    ${error_message}
         END
     ELSE
         Log To Console    Command type not developed
@@ -110,9 +131,9 @@ execute-action
     [Arguments]    ${action}    ${input}
     ${value}=    Set Variable    ${input}[value]
     IF    '${action}[type]' == '${LAUNCH_BROWSER}'
-        COMP_BrowserContext.launch-browser    ${input}[value]
+        COMP_BrowserContext.new-page    ${input}[value]
     ELSE IF    '${action}[type]' == '${NEW_PAGE}'
-        New Page    ${input}[value]
+        COMP_BrowserContext.new-page    ${input}[value]
     ELSE IF    '${action}[type]' == '${CLICK}'
         COMP_Button.left-click    ${action}[xpath]
     ELSE IF    '${action}[type]' == '${DOUBLE_CLICK}'
@@ -156,3 +177,29 @@ execute-action
     END
     Log To Console    ${value}
     BuiltIn.Sleep    ${input}[waitAfterAction]s
+
+send-action-sequence-message
+    [Arguments]    ${flowActionSequenceId}    ${testCaseRunId}    ${status}    ${errorMessage}=${EMPTY}
+    ${response_message}=    Create Dictionary    
+    ...    flowActionSequenceId=${flowActionSequenceId}   
+    ...    testCaseRunId=${testCaseRunId}   
+    ...    status=${status}    
+    ...    errorMessage=${errorMessage}
+    UTIL_Common.Push response message to kafka topic    ${response_message}
+
+send-flow-sequence-message
+    [Arguments]    ${testCaseFlowSequenceId}    ${testCaseRunId}    ${status}    ${errorMessage}=${EMPTY}
+    ${response_message}=    Create Dictionary    
+    ...    testCaseFlowSequenceId=${testCaseFlowSequenceId}   
+    ...    testCaseRunId=${testCaseRunId}   
+    ...    status=${status}    
+    ...    errorMessage=${errorMessage}
+    UTIL_Common.Push response message to kafka topic    ${response_message}
+
+send-test-case-run-message
+    [Arguments]    ${testCaseRunId}    ${status}    ${errorMessage}=${EMPTY}
+    ${response_message}=    Create Dictionary    
+    ...    testCaseRunId=${testCaseRunId}   
+    ...    status=${status}    
+    ...    errorMessage=${errorMessage}
+    UTIL_Common.Push response message to kafka topic    ${response_message}

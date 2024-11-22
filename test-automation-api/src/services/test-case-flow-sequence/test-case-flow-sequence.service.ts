@@ -2,7 +2,7 @@
 import { ServiceAddons } from '@feathersjs/feathers';
 import { Application } from '../../declarations';
 import { TestCaseFlowSequence } from './test-case-flow-sequence.class';
-import createModel from '../../models/test-case-flow-sequence';
+import createModel from '../../models/test-case-flow-sequence.model';
 import hooks from './test-case-flow-sequence.hooks';
 
 // Add this service to the service type index

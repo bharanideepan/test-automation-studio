@@ -16,7 +16,7 @@ import KafkaUtil
 running = True
 kafka_params = KafkaUtil.get_kafka_params()
 bootstrap_servers = kafka_params.get('bootstrap_servers')
-consumer_group_id = kafka_params.get('consumer_group_id')
+groupId = kafka_params.get('groupId')
 offset_reset = kafka_params.get('offset_reset_policy')
 request_topic = kafka_params.get('request_topic')
 
@@ -24,7 +24,7 @@ request_topic = kafka_params.get('request_topic')
 """ Kafka Consumer to receive the json message and process it """
 consumer_conf = {
     "bootstrap.servers": bootstrap_servers,
-    "group.id": consumer_group_id,
+    "group.id": groupId,
     "auto.offset.reset": offset_reset,
 }
 

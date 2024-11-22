@@ -135,4 +135,19 @@ export class TestCase extends Service {
       throw new Error(`Error while creating test-case-data: ${err}`);
     }
   }
+
+  async getExecutableTestCaseData(id: any, params: any) {
+    try {
+      const testCaseData = await this.app.service('test-case').get(id, params);
+      testCaseData.dataValues.testCaseFlowSequences = testCaseData.dataValues.testCaseFlowSequences.map((testCaseFlowSequence: any) => {
+        testCaseFlowSequence.dataValues.flow.dataValues.flowActionSequences = testCaseFlowSequence.dataValues.flow.dataValues.flowActionSequences.filter((flowActionSequence: any) => {
+          return !flowActionSequence.dataValues.testCaseFlowSequenceActionInput.skip;
+        })
+        return testCaseFlowSequence;
+      })
+      return testCaseData;
+    } catch (err) {
+      throw new Error(`Error while fetching executable test-case-data: ${err}`);
+    }
+  }
 }
