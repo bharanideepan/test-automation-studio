@@ -47,6 +47,12 @@ export const OUTPUT_ACTION_TYPES = [
   "GET_TEXT"
 ]
 
+export const BOOLEAN_ACITON_TYPES = [
+  "GET_CHECKBOX_VALUE",
+  "GET_RADIO_VALUE",
+  "IS_ELEMENT_VISIBLE",
+]
+
 export const DEFAULT_ACTION: Action = {
   id: "",
   projectId: "",
@@ -102,7 +108,8 @@ export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCase
       testCaseFlowSequenceId?: string;
       testCaseFlowSequenceTempId?: string;
       flowActionSequenceId: string;
-      actionName: string
+      actionName: string;
+      actionType: string;
     }[] = [];
     flowSequence.flow.flowActionSequences?.map((actionSequence: FlowActionSequence) => {
       const flowActionSequenceId = actionSequence.id ?? "";
@@ -112,7 +119,8 @@ export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCase
             ...(flowSequence.id && { testCaseFlowSequenceId: flowSequence.id }),
             ...(flowSequence.testCaseFlowSequenceTempId && { testCaseFlowSequenceTempId: flowSequence.testCaseFlowSequenceTempId }),
             flowActionSequenceId,
-            actionName: actionSequence.action.name
+            actionName: actionSequence.action.name,
+            actionType: actionSequence.action.type
           });
         }
       } else {
@@ -121,7 +129,8 @@ export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCase
             ...(flowSequence.id && { testCaseFlowSequenceId: flowSequence.id }),
             ...(flowSequence.testCaseFlowSequenceTempId && { testCaseFlowSequenceTempId: flowSequence.testCaseFlowSequenceTempId }),
             flowActionSequenceId,
-            actionName: actionSequence.action.name
+            actionName: actionSequence.action.name,
+            actionType: actionSequence.action.type
           });
         }
       }
@@ -132,7 +141,7 @@ export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCase
       ? `testCaseFlowSequenceId:${x.testCaseFlowSequenceId}::flowActionSequenceId:${x.flowActionSequenceId}`
       : `testCaseFlowSequenceTempId:${x.testCaseFlowSequenceTempId}::flowActionSequenceId:${x.flowActionSequenceId}`;
     return {
-      label: x.actionName, value
+      label: x.actionName, value, type: x.actionType
     }
   }) ?? []
   return options;

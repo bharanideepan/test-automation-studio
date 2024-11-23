@@ -22,7 +22,7 @@ import { reorder } from "../../util/UtilService";
 import { getTestCaseById } from "../../slices/testCase";
 import AppSelect from "../../components/AppSelect";
 import AddInput from "./AddInput";
-import { DEFAULT_ASSERTION, DEFAULT_TEST_CASE, GET_ASSERTION_OPTIONS_FORMATTED, OPERATOR_TYPES, OUTPUT_ACTION_TYPES } from "../../util/constants";
+import { BOOLEAN_ACITON_TYPES, DEFAULT_ASSERTION, DEFAULT_TEST_CASE, GET_ASSERTION_OPTIONS_FORMATTED, OPERATOR_TYPES } from "../../util/constants";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -543,6 +543,28 @@ const Assertions: React.FC<{
     return options
   }
 
+  const customInputOption = (row: Assertion, index: number, sourceId?: string) => {
+    const options = getOptions();
+    const optionType = options.find((option) => option.value === sourceId)?.type;
+    if (optionType && BOOLEAN_ACITON_TYPES.includes(optionType)) {
+      return <AppSelect
+        id={`action-input-dropdown`}
+        value={row.target ?? ""}
+        onChange={(event) => {
+          setAssertInput(event, index, "target");
+        }} options={[{ label: 'True', value: 'TRUE' }, { label: 'False', value: 'FALSE' }]} label="Target" disabled={row.isRemoved} />
+    }
+    return <AppTextbox
+      label="Target"
+      placeholder="Enter Custom target value"
+      value={row.customTargetValue}
+      onChange={(event) => {
+        setAssertInput(event, index, "customTargetValue");
+      }}
+      classes={{ root: classes.input }} disabled={row.isRemoved}
+    />
+  }
+
   return (
     <>
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -619,15 +641,7 @@ const Assertions: React.FC<{
                                 setAssertInput(event, index, "target");
                               }} options={getOptions(row.source)} label="Target" disabled={row.isRemoved} />}
                             {/* TODO: custom input as dropdown for selected action types */}
-                            {row.useCustomTargetValue && <AppTextbox
-                              label="Target"
-                              placeholder="Enter Custom target value"
-                              value={row.customTargetValue}
-                              onChange={(event) => {
-                                setAssertInput(event, index, "customTargetValue");
-                              }}
-                              classes={{ root: classes.input }} disabled={row.isRemoved}
-                            />}
+                            {row.useCustomTargetValue && customInputOption(row, index, row.source)}
                           </Box>
                         </Box>
                       }

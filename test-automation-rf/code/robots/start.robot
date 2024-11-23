@@ -154,29 +154,29 @@ execute-action
     ELSE IF    '${action}[type]' == '${GET_CHECKBOX_VALUE}'
         ${value}=    COMP_Checkbox.get-value    ${action}[xpath]
         IF    ${value}
-            ${value}=    Set Variable    SELECT
+            ${value}=    Set Variable    TRUE
         ELSE
-            ${value}=    Set Variable    UN_SELECT
+            ${value}=    Set Variable    FALSE
         END
     ELSE IF    '${action}[type]' == '${SET_CHECKBOX_VALUE}'
-        ${select}=    evaluate(${input}[value] == SELECT)
+        ${select}=    evaluate(${input}[value] == TRUE)
         COMP_Checkbox.set-value    ${action}[xpath]    ${select}
     ELSE IF    '${action}[type]' == '${GET_RADIO_VALUE}'
         ${value}=    COMP_Checkbox.get-value    ${action}[xpath]
         IF    ${value}
-            ${value}=    Set Variable    SELECT
+            ${value}=    Set Variable    TRUE
         ELSE
-            ${value}=    Set Variable    UN_SELECT
+            ${value}=    Set Variable    FALSE
         END
     ELSE IF    '${action}[type]' == '${SET_RADIO_VALUE}'
-        ${select}=    evaluate(${input}[value] == SELECT)
+        ${select}=    evaluate(${input}[value] == TRUE)
         COMP_Checkbox.set-value    ${action}[xpath]    ${select}
     ELSE IF    '${action}[type]' == '${IS_ELEMENT_VISIBLE}'
         ${value}=    Util_BrowserHelper.is-attached-after-wait    ${action}[xpath]
         IF    ${value}
-            ${value}=    Set Variable    VISIBLE
+            ${value}=    Set Variable    TRUE
         ELSE
-            ${value}=    Set Variable    NOT_VISIBLE
+            ${value}=    Set Variable    FALSE
         END
     ELSE IF    '${action}[type]' == '${GET_TEXT}'
         ${value}=    Util_BrowserHelper.get-property    ${action}[xpath]    innerText

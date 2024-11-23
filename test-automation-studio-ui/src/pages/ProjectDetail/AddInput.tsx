@@ -89,9 +89,9 @@ export const AddInput: React.FC<{
     dispatch(actions.clearStatus());
   };
   const handleSubmit = () => {
-    handleFieldChange({target:{value: data?.name}}, "name")
-    handleFieldChange({target:{value: data?.waitAfterAction}}, "waitAfterAction")
-    handleFieldChange({target:{value: data?.value}}, "value")
+    handleFieldChange({ target: { value: data?.name } }, "name")
+    handleFieldChange({ target: { value: data?.waitAfterAction } }, "waitAfterAction")
+    handleFieldChange({ target: { value: data?.value } }, "value")
     setSubmitted(true);
   };
   const submitData = () => {
@@ -173,7 +173,7 @@ export const AddInput: React.FC<{
   }, [modalOpen, data]);
 
   useEffect(() => {
-    if(!!nameError || !!waitAfterActionError || !!valueError) return
+    if (!!nameError || !!waitAfterActionError || !!valueError) return
     if (submitted) submitData();
   }, [submitted]);
 
@@ -235,7 +235,7 @@ export const AddInput: React.FC<{
               />
             </Box>
             <Box mt={2}>
-              {(action.type === "SET_CHECKBOX_VALUE" || action.type === "SET_RADIO_VALUE") &&<AppSelect
+              {(action.type === "SET_CHECKBOX_VALUE" || action.type === "SET_RADIO_VALUE") && <AppSelect
                 id={`input-value-dropdown`}
                 value={data.value ?? ""}
                 onChange={(event) => {
@@ -245,9 +245,9 @@ export const AddInput: React.FC<{
                 helperText={
                   valueError ? errorMsg.value[valueError] : ""
                 }
-                options={[{label:"Select",value:"SELECT"},{label:"Unselect",value:"UN_SELECT"}]}
+                options={[{ label: "True", value: "TRUE" }, { label: "False", value: "FALSE" }]}
                 label="Select Input" />}
-              {(action.type === "LAUNCH_BROWSER" || action.type === "TYPE_TEXT") &&<AppTextbox
+              {(action.type === "LAUNCH_BROWSER" || action.type === "TYPE_TEXT") && <AppTextbox
                 label="Value"
                 placeholder="Enter Value"
                 value={data.value}
