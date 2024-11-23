@@ -19,6 +19,7 @@ const populateFields = (hook: any) => {
       },
     ],
     order: [
+      ['createdAt', 'DESC'],
       [{ model: testCaseFlowSequenceHistory }, 'order', 'ASC'],
     ],
   };

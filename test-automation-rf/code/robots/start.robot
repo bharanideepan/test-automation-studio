@@ -104,8 +104,9 @@ execute-test-case
                                         EX_Exception.ex-fail    INPUT_NOT_FOUND_IN_ACTION
                                     END
                                     ${value}=    execute-action    ${action}    ${input}
-                                    perform-assertion    ${assertions}    ${testCaseFlowSequence}[id]    ${flowActionSequence}[id]    ${value}
-                                    send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    COMPLETED    ${action}    ${input}
+                                    ${assertion_message}=    perform-assertion    ${assertions}    ${testCaseFlowSequence}[id]    ${flowActionSequence}[id]    ${value}
+                                    Log To Console    ${assertion_message}
+                                    send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    COMPLETED    ${action}    ${input}    ${EMPTY}    ${assertion_message}
                                 EXCEPT    AS    ${error_message}
                                     Log To Console    ${error_message}
                                     send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    FAILED    ${action}    ${input}    ${error_message}
@@ -203,19 +204,43 @@ perform-assertion
         ${is_source_exists}=    UTIL_Collection.is-value-not-none    ${ACCUMULATION}    ${source}
         ${is_target_exists}=    UTIL_Collection.is-value-not-none    ${ACCUMULATION}    ${target}
         IF    '${source}' == '${key}' and '${is_source_exists}' == '${True}'
+            IF    $skip
+                RETURN    Skipped assertion!!
+            END
             IF    $useCustomTargetValue
-                BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${errorMessage}
+                IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
+                    BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${errorMessage}
+                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] == ${customTargetValue}
+                ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
+                    BuiltIn.Should Not Be Equal    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${errorMessage}
+                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] != ${customTargetValue}
+                END
             END
             IF    $is_target_exists
-                BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${errorMessage}
+                IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
+                    BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${errorMessage}
+                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] == ${ACCUMULATION}[${target}]
+                ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
+                    BuiltIn.Should Not Be Equal    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${errorMessage}
+                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] != ${ACCUMULATION}[${target}]
+                END
             END
         END
         IF     '${target}' == '${key}' and '${is_target_exists}' == '${True}'
+            IF    $skip
+                RETURN    Skipped assertion!!
+            END
             IF    $useCustomTargetValue
                 Log To Console    No need to assert here.
             END
             IF    $is_source_exists
-                BuiltIn.Should Be Equal    ${ACCUMULATION}[${target}]    ${ACCUMULATION}[${source}]    ${errorMessage}
+                IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
+                    BuiltIn.Should Be Equal    ${ACCUMULATION}[${target}]    ${ACCUMULATION}[${source}]    ${errorMessage}
+                    RETURN    Assertion passed: ${ACCUMULATION}[${target}] == ${ACCUMULATION}[${source}]
+                ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
+                    BuiltIn.Should Not Be Equal    ${ACCUMULATION}[${target}]    ${ACCUMULATION}[${source}]    ${errorMessage}
+                    RETURN    Assertion passed: ${ACCUMULATION}[${target}] != ${ACCUMULATION}[${source}]
+                END
             END
         END
     END
@@ -226,7 +251,8 @@ send-action-sequence-message
     ...    ${status}
     ...    ${action}
     ...    ${input}
-    ...    ${errorMessage}=${EMPTY}
+    ...    ${errorMessage}
+    ...    ${assertionMessage}
     ${response_message}=    Create Dictionary    
     ...    flowActionSequenceHistoryId=${flowActionSequenceHistoryId}   
     ...    status=${status}    
@@ -235,6 +261,7 @@ send-action-sequence-message
     ...    actionXpath=${action}[xpath]
     ...    inputValue=${input}[value]
     ...    errorMessage=${errorMessage}
+    ...    assertionMessage=${assertionMessage}
     UTIL_Common.Push response message to kafka topic    ${response_message}
 
 send-flow-sequence-message

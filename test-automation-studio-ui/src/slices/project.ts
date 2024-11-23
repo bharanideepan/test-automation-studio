@@ -43,7 +43,7 @@ export const createAction: any = createAsyncThunk(
       id: "",
       value: ""
     })
-    return {...createdAction, inputs: [createdInput]};
+    return { ...createdAction, inputs: [createdInput] };
   }
 );
 export const updateAction: any = createAsyncThunk(
@@ -80,36 +80,41 @@ export const setDefaultInput: any = createAsyncThunk(
 
 export const createFlow: any = createAsyncThunk(
   "project/createFlow",
-  async (payload: {flow: Flow, flowActionSequences: FlowActionSequence[]}) => {
+  async (payload: { flow: Flow, flowActionSequences: FlowActionSequence[] }) => {
     const createdFlow: any = await FlowService.createFlow(payload.flow);
     await FlowActionSequenceService.createSequences(payload.flowActionSequences.map(
-      (map: FlowActionSequence) => ({...map, flowId: createdFlow.id}))
+      (map: FlowActionSequence) => ({ ...map, flowId: createdFlow.id }))
     );
-    return createdFlow
+    return await FlowService.getFlowById(createdFlow.id);
   }
 );
 export const updateFlow: any = createAsyncThunk(
   "project/updateFlow",
-  async (payload: {flow: Flow, sequences:{
-    updatedSequences: FlowActionSequence[], newSequences: FlowActionSequence[], removedSequences: string[]
-  }}) => {
+  async (payload: {
+    flow: Flow, sequences: {
+      updatedSequences: FlowActionSequence[], newSequences: FlowActionSequence[], removedSequences: string[]
+    }
+  }) => {
     await FlowActionSequenceService.updateSequences(payload.sequences);
-    return await FlowService.updateFlow(payload.flow);
+    const updatedFlow: any = await FlowService.updateFlow(payload.flow);
+    return await FlowService.getFlowById(updatedFlow.id);
   }
 );
 
 export const createTestCase: any = createAsyncThunk(
   "project/createTestCase",
-  async (payload: {testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[]}) => {
+  async (payload: { testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[] }) => {
     return await TestCaseService.createTestCaseData(payload);
   }
 );
 
 export const updateTestCase: any = createAsyncThunk(
   "project/updateTestCase",
-  async (payload: {testCase: TestCase, sequences:{
-    updatedSequences: TestCaseFlowSequence[], newSequences: TestCaseFlowSequence[], removedSequences: string[]
-  }, assertions: Assertion[]}) => {
+  async (payload: {
+    testCase: TestCase, sequences: {
+      updatedSequences: TestCaseFlowSequence[], newSequences: TestCaseFlowSequence[], removedSequences: string[]
+    }, assertions: Assertion[]
+  }) => {
     return await TestCaseService.updateTestCaseData(payload);
   }
 );
@@ -295,7 +300,7 @@ const slice = createSlice({
         state.project.actions = state.project.actions.map(
           (action: Action) => {
             if (action.id === createdInput.actionId) {
-              action.inputs = [...action.inputs??[], createdInput]
+              action.inputs = [...action.inputs ?? [], createdInput]
               return action;
             }
             return action;
@@ -320,7 +325,7 @@ const slice = createSlice({
           (action: Action) => {
             if (action.id === updatedInput.actionId) {
               action.inputs = action.inputs?.map((input: Input) => {
-                if(input.id === updatedInput.id) {
+                if (input.id === updatedInput.id) {
                   return updatedInput;
                 }
                 return input;

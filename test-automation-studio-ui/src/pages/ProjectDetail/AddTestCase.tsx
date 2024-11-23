@@ -112,6 +112,7 @@ const AddTestCase: React.FC<{
   const handleModalClose = () => {
     setModalOpen(false);
     setNameError(undefined);
+    setStep(0);
     onModalClose();
     dispatch(actions.clearStatus());
     setselectedFlowSequences(undefined);
@@ -324,7 +325,29 @@ const AddTestCase: React.FC<{
     if (testCase) {
       setData(fetchedTestCase)
       setselectedFlowSequences(getSelectedFlowSequences())
-      setAssertions(fetchedTestCase?.assertions)
+      const loadedAssertions = fetchedTestCase?.assertions?.map((assertion: Assertion) => {
+        const options = GET_ASSERTION_OPTIONS_FORMATTED(getSelectedFlowSequences());
+        let option = options.find((option) => option.value === assertion.source);
+        if (!option) {
+          return {
+            ...assertion,
+            isRemoved: true,
+            unRestorable: true
+          }
+        }
+        if (assertion.useCustomTargetValue) return assertion;
+        option = options.find((option) => option.value === assertion.target);
+        if (option) {
+          return assertion;
+        } else {
+          return {
+            ...assertion,
+            isRemoved: true,
+            unRestorable: true
+          }
+        }
+      })
+      setAssertions(loadedAssertions)
     }
   }, [fetchedTestCase]);
 
@@ -549,9 +572,9 @@ const Assertions: React.FC<{
     if (optionType && BOOLEAN_ACITON_TYPES.includes(optionType)) {
       return <AppSelect
         id={`action-input-dropdown`}
-        value={row.target ?? ""}
+        value={row.customTargetValue ?? ""}
         onChange={(event) => {
-          setAssertInput(event, index, "target");
+          setAssertInput(event, index, "customTargetValue");
         }} options={[{ label: 'True', value: 'TRUE' }, { label: 'False', value: 'FALSE' }]} label="Target" disabled={row.isRemoved} />
     }
     return <AppTextbox
@@ -640,7 +663,6 @@ const Assertions: React.FC<{
                               onChange={(event) => {
                                 setAssertInput(event, index, "target");
                               }} options={getOptions(row.source)} label="Target" disabled={row.isRemoved} />}
-                            {/* TODO: custom input as dropdown for selected action types */}
                             {row.useCustomTargetValue && customInputOption(row, index, row.source)}
                           </Box>
                         </Box>
@@ -660,6 +682,7 @@ const Assertions: React.FC<{
                           </Box>
                         </Box>}
                     </Box>
+                    {row.unRestorable && <Typography mt={2} variant="subtitle2" color="error">Action mapped with this assertion is no longer included in the flow. Updating this Test Case will remove this Assertion</Typography>}
                   </AppCard>
                 </Box>
                 {!row.isRemoved && <Box ml={"auto"}>

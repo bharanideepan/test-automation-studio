@@ -35,6 +35,7 @@ export interface Assertion {
   useCustomTargetValue?: boolean;
   errorMessage?: string;
   isRemoved?: boolean;
+  unRestorable?: boolean;
 }
 
 export interface Action {
@@ -114,6 +115,7 @@ export interface FlowActionSequenceHistory {
   actionXpath: string;
   createdAt: string;
   errorMessage: string;
+  assertionMessage?: string;
   id: string;
   inputValue: string;
   status: string;

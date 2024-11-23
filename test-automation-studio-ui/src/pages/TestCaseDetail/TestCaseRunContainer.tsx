@@ -463,6 +463,20 @@ const TestCaseRunHistoryView: React.FC = () => {
                                     </Tooltip>
                                   </TableCell>
                                 </TableRow>}
+                                {flowActionSequenceHistory.assertionMessage && <TableRow>
+                                  <TableCell style={{ width: "50%" }} align="left">
+                                    <Typography variant="subtitle1" color="primary">
+                                      Assertion Message:
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell style={{ width: "20%" }} align="left">
+                                    <Tooltip title={flowActionSequenceHistory.assertionMessage}>
+                                      <Typography variant="subtitle1" className={classes.PASS}>
+                                        {flowActionSequenceHistory.assertionMessage}
+                                      </Typography>
+                                    </Tooltip>
+                                  </TableCell>
+                                </TableRow>}
                                 <TableRow>
                                   <TableCell style={{ width: "50%" }} align="left">
                                     <Typography variant="subtitle1" color="primary">

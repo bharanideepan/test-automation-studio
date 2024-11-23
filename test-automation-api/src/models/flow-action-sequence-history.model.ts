@@ -48,6 +48,10 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING(5000),
       allowNull: true,
     },
+    assertionMessage: {
+      type: DataTypes.STRING(5000),
+      allowNull: true,
+    },
     order: {
       type: DataTypes.INTEGER,
       allowNull: false

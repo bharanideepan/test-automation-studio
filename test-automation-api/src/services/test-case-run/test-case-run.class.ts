@@ -96,9 +96,9 @@ export class TestCaseRun extends Service {
           const response = JSON.parse(message.value.toString("utf8"));
           console.log("Response from RPA received.", response);
           if (response.flowActionSequenceHistoryId) {
-            const { flowActionSequenceHistoryId, actionName, actionType, actionXpath, inputValue, status, errorMessage } = response;
+            const { flowActionSequenceHistoryId, actionName, actionType, actionXpath, inputValue, status, errorMessage, assertionMessage } = response;
             this.app.service('flow-action-sequence-history').patch(flowActionSequenceHistoryId, {
-              status, errorMessage, actionName, actionType, actionXpath, inputValue
+              status, errorMessage, actionName, actionType, actionXpath, inputValue, assertionMessage
             })
           } else if (response.testCaseFlowSequenceHistoryId) {
             const { testCaseFlowSequenceHistoryId, status, errorMessage } = response;

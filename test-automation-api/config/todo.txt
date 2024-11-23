@@ -1,19 +1,16 @@
-assertion logic in RF
-assertion one action's output should be another action's input.
-send live updated from RF to node.js to track which step is completed
-ability to execute test-case in front-end
-fix connectivity from node.js and react app to show live updates
-display live updates of the test-case-run
-Design test-case run history modal.
-Check if the flowActionSequenceId is not available in the assertion, and mark it as removed one.
-Check if the action is set to skip, and mark the mapped assertion as removed one.
-Unique identifier (display) to identify the source and target names from the list
-Create an API for getting proper runnable action sequence with assertions, which will be used to instruct RF.
-Store selectors - page wise - page object modal.
-tool for extracting selector from application
-add new input for action in test case creation page
-filter skip actions in test-case-execute api response
-placeholders in xpath
-sort inputs, actions, flows, and test-cases by created_by value by default.
-newly created flow's actions are not updated in the global flows object - fix that
-create a new table to track the live updates from RF
+Assertion related TODO:
+    assertion logic in RF - Done - need to test more scenario
+    Check if the action is set to skip, and mark the mapped assertion as removed one.
+    Unique identifier (display) to identify the source and target names from the list
+
+Live update TODO:
+    fix connectivity from node.js and react app to show live updates
+    display live updates of the test-case-run
+
+Good to have TODO:
+    add new input for action in test case creation page
+
+Selectors related TODO:
+    Store selectors - page wise - page object modal.
+    tool for extracting selector from application
+    placeholders in xpath
