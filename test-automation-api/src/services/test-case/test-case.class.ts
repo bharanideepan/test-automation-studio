@@ -11,7 +11,7 @@ export class TestCase extends Service {
 
   async updateTestCaseData(data: any, params: any) {
     try {
-      let { testCase, sequences: { removedSequences, updatedSequences, newSequences }, assertions } = data as any;
+      let { testCase, sequences, assertions } = data as any;
       const updatedTestCase = await this.app.service('test-case').patch(testCase.id, testCase);
       if (assertions && assertions.length) {
         await Promise.all(assertions.filter((assertion: any) => (assertion.isRemoved)).map(async (assertion: any) => {
@@ -19,8 +19,8 @@ export class TestCase extends Service {
         }))
         assertions = assertions.filter((assertion: any) => !assertion.isRemoved)
       }
-      if (removedSequences && removedSequences.length) {
-        removedSequences = await Promise.all(removedSequences.map(async (sequence: any) => {
+      if (sequences.removedSequences && sequences.removedSequences.length) {
+        sequences.removedSequences = await Promise.all(sequences.removedSequences.map(async (sequence: any) => {
           await Promise.all(sequence.flow.flowActionSequences.map(async (flowActionSequence: any) => {
             if (flowActionSequence.testCaseFlowSequenceActionInput) {
               await this.app.service('test-case-flow-sequence-action-input').remove(flowActionSequence.testCaseFlowSequenceActionInput.id);
@@ -29,8 +29,8 @@ export class TestCase extends Service {
           return await this.app.service('test-case-flow-sequence').remove(sequence.id);
         }))
       }
-      if (newSequences && newSequences.length) {
-        newSequences = await Promise.all(newSequences.map(async (sequence: any) => {
+      if (sequences.newSequences && sequences.newSequences.length) {
+        sequences.newSequences = await Promise.all(sequences.newSequences.map(async (sequence: any) => {
           const newSequence = await this.app.service('test-case-flow-sequence').create(sequence);
           await Promise.all(sequence.flow.flowActionSequences.map(async (flowActionSequence: any) => {
             await this.app.service('test-case-flow-sequence-action-input').create({
@@ -62,8 +62,8 @@ export class TestCase extends Service {
           return newSequence;
         }))
       }
-      if (updatedSequences && updatedSequences.length) {
-        updatedSequences = await Promise.all(updatedSequences.map(async (sequence: any) => {
+      if (sequences.updatedSequences && sequences.updatedSequences.length) {
+        sequences.updatedSequences = await Promise.all(sequences.updatedSequences.map(async (sequence: any) => {
           await Promise.all(sequence.flow.flowActionSequences.map(async (flowActionSequence: any) => {
             const testCaseFlowSequenceActionInput = flowActionSequence.testCaseFlowSequenceActionInput;
             if (testCaseFlowSequenceActionInput) {
@@ -88,7 +88,7 @@ export class TestCase extends Service {
           return await this.app.service('assertion').create(assertion);
         }))
       }
-      return { testCase: updatedTestCase, sequences: { removedSequences, newSequences, updatedSequences }, assertions }
+      return { testCase: updatedTestCase, sequences: { removedSequences: sequences.removedSequences, newSequences: sequences.newSequences, updatedSequences: sequences.updatedSequences }, assertions }
     } catch (err) {
       throw new Error(`Error while updating test-case-flow-sequence list: ${err}`);
     }

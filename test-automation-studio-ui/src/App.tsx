@@ -6,7 +6,7 @@ import GlobalStyles from "./components/GlobalStyles";
 import AppLayout from "./layouts/AppLayout";
 import ProjectDetail from "./pages/ProjectDetail";
 import AppLoader from "./components/AppLoader";
-import CreateTestCaseView from "./pages/CreateTestCaseView";
+import TestCaseDetail from "./pages/TestCaseDetail";
 
 const AppRouter = () => {
   const element = useRoutes([
@@ -19,8 +19,8 @@ const AppRouter = () => {
           element: <ProjectDetail />,
         },
         {
-          path: "/project/:projectId/new-test-case",
-          element: <CreateTestCaseView />,
+          path: "/test-case/:testCaseId",
+          element: <TestCaseDetail />,
         },
       ],
     }

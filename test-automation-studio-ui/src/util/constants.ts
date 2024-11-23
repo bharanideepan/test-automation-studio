@@ -31,11 +31,19 @@ export const ACTION_TYPES = [
   { label: "Get text", value: "GET_TEXT" },
 ];
 
+export const INPUT_ACTION_TYPES = [
+  "SET_DROPDOWN_VALUE",
+  "TYPE_TEXT",
+  "SET_CHECKBOX_VALUE",
+  "SET_RADIO_VALUE",
+]
+
 export const OUTPUT_ACTION_TYPES = [
   "GET_DROPDOWN_VALUE",
   "GET_TEXTBOX_VALUE",
   "GET_CHECKBOX_VALUE",
   "GET_RADIO_VALUE",
+  "IS_ELEMENT_VISIBLE",
   "GET_TEXT"
 ]
 
@@ -81,7 +89,7 @@ export const DEFAULT_ASSERTION: Assertion = {
   errorMessage: ""
 }
 
-export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCaseFlowSequence[], excludeRemovedSequences?: boolean) => {
+export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCaseFlowSequence[], excludeRemovedSequences?: boolean, forSource?: boolean) => {
   const options = selectedFlowSequences?.filter((flowSequence: TestCaseFlowSequence) => {
     if (excludeRemovedSequences) {
       if (flowSequence.isRemoved) {
@@ -98,13 +106,24 @@ export const GET_ASSERTION_OPTIONS_FORMATTED = (selectedFlowSequences?: TestCase
     }[] = [];
     flowSequence.flow.flowActionSequences?.map((actionSequence: FlowActionSequence) => {
       const flowActionSequenceId = actionSequence.id ?? "";
-      if (OUTPUT_ACTION_TYPES.includes(actionSequence.action.type)) {
-        arr.push({
-          ...(flowSequence.id && { testCaseFlowSequenceId: flowSequence.id }),
-          ...(flowSequence.testCaseFlowSequenceTempId && { testCaseFlowSequenceTempId: flowSequence.testCaseFlowSequenceTempId }),
-          flowActionSequenceId,
-          actionName: actionSequence.action.name
-        });
+      if (forSource) {
+        if (OUTPUT_ACTION_TYPES.includes(actionSequence.action.type)) {
+          arr.push({
+            ...(flowSequence.id && { testCaseFlowSequenceId: flowSequence.id }),
+            ...(flowSequence.testCaseFlowSequenceTempId && { testCaseFlowSequenceTempId: flowSequence.testCaseFlowSequenceTempId }),
+            flowActionSequenceId,
+            actionName: actionSequence.action.name
+          });
+        }
+      } else {
+        if (OUTPUT_ACTION_TYPES.includes(actionSequence.action.type) || INPUT_ACTION_TYPES.includes(actionSequence.action.type)) {
+          arr.push({
+            ...(flowSequence.id && { testCaseFlowSequenceId: flowSequence.id }),
+            ...(flowSequence.testCaseFlowSequenceTempId && { testCaseFlowSequenceTempId: flowSequence.testCaseFlowSequenceTempId }),
+            flowActionSequenceId,
+            actionName: actionSequence.action.name
+          });
+        }
       }
     })
     return arr;

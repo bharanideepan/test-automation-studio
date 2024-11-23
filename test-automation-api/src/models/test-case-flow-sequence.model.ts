@@ -27,9 +27,10 @@ export default function (app: Application): typeof Model {
     }
   });
   (testCaseFlowSequence as any).associate = function (models: any): void {
-    testCaseFlowSequence.belongsTo(models["testCase"], {foreignKey: "testCaseId",})
-    testCaseFlowSequence.belongsTo(models["flow"], {foreignKey: "flowId",})
+    testCaseFlowSequence.belongsTo(models["testCase"], { foreignKey: "testCaseId", })
+    testCaseFlowSequence.belongsTo(models["flow"], { foreignKey: "flowId", })
     testCaseFlowSequence.hasMany(models["testCaseFlowSequenceActionInput"], { foreignKey: "testCaseFlowSequenceId", onDelete: 'CASCADE' })
+    testCaseFlowSequence.hasMany(models["testCaseFlowSequenceHistory"], { foreignKey: "testCaseFlowSequenceId" })
   };
   return testCaseFlowSequence;
 }

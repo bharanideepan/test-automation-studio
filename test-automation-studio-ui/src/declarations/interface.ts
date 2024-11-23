@@ -21,6 +21,7 @@ export interface TestCase {
   projectId: string;
   testCaseFlowSequences?: TestCaseFlowSequence[];
   assertions?: Assertion[];
+  testCaseRuns?: TestCaseRun[];
 }
 
 export interface Assertion {
@@ -87,4 +88,34 @@ export interface Input {
 export interface LabelValue {
   label: string;
   value: string;
+}
+
+export interface TestCaseRun {
+  id: string;
+  status: string;
+  errorMessage?: string;
+  createdAt: string;
+  testCaseId: string;
+  testCaseFlowSequenceHistories?: TestCaseFlowSequenceHistory[]
+}
+
+export interface TestCaseFlowSequenceHistory {
+  id: string;
+  status: string;
+  errorMessage?: string;
+  createdAt: string;
+  testCaseFlowSequence?: TestCaseFlowSequence;
+  flowActionSequenceHistories?: FlowActionSequenceHistory[];
+}
+
+export interface FlowActionSequenceHistory {
+  actionName: string;
+  actionType: string;
+  actionXpath: string;
+  createdAt: string;
+  errorMessage: string;
+  id: string;
+  inputValue: string;
+  status: string;
+  updatedAt: string;
 }

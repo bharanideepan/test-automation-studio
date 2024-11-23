@@ -521,6 +521,13 @@ const Assertions: React.FC<{
     setAssertions((prev: Assertion[] | undefined) => {
       return prev?.map((prevAssertion: Assertion, prevIndex: number) => {
         if (prevIndex === index) {
+          if (field === 'useCustomTargetValue') {
+            return {
+              ...prevAssertion,
+              [field]: value,
+              target: undefined
+            }
+          }
           return {
             ...prevAssertion,
             [field]: value
@@ -531,8 +538,8 @@ const Assertions: React.FC<{
     })
   }
 
-  const getOptions = (excludeValue?: string) => {
-    const options = GET_ASSERTION_OPTIONS_FORMATTED(selectedFlowSequences, true).filter((x) => x.value !== excludeValue) ?? []
+  const getOptions = (excludeValue?: string, forSource?: boolean) => {
+    const options = GET_ASSERTION_OPTIONS_FORMATTED(selectedFlowSequences, true, forSource).filter((x) => x.value !== excludeValue) ?? []
     return options
   }
 
@@ -598,7 +605,7 @@ const Assertions: React.FC<{
                               value={row.source ?? ""}
                               onChange={(event) => {
                                 setAssertInput(event, index, "source");
-                              }} options={getOptions(row.target)} label="Source" disabled={row.isRemoved} />
+                              }} options={getOptions(row.target, true)} label="Source" disabled={row.isRemoved} />
                             <AppSelect
                               id={`action-input-dropdown`}
                               value={row.operator ?? ""}
@@ -611,6 +618,7 @@ const Assertions: React.FC<{
                               onChange={(event) => {
                                 setAssertInput(event, index, "target");
                               }} options={getOptions(row.source)} label="Target" disabled={row.isRemoved} />}
+                            {/* TODO: custom input as dropdown for selected action types */}
                             {row.useCustomTargetValue && <AppTextbox
                               label="Target"
                               placeholder="Enter Custom target value"

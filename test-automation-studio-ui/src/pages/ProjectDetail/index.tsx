@@ -14,7 +14,7 @@ import {
 import useSnackbar from "../../hooks/useSnackbar";
 import ActionContainer from "./ActionContainer";
 import FlowContainer from "./FlowContainer";
-import TestCaseContaier from "./TestCaseContainer";
+import TestCaseContainer from "./TestCaseContainer";
 
 type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS";
 
@@ -81,7 +81,7 @@ const ProjectDetail = () => {
   useEffect(() => {
     dispatch(getProjectById(projectId));
   }, [projectId]);
-  
+
   useEffect(() => {
     if (status) {
       notify({
@@ -120,7 +120,7 @@ const ProjectDetail = () => {
             />
           )}
           {activeTab === "TEST_CASES" && (
-            <TestCaseContaier
+            <TestCaseContainer
               list={project.testCases ?? []}
               projectId={project.id}
             />

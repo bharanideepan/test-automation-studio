@@ -11,20 +11,26 @@ import {
   IconButton,
   Button,
   Grid,
-  Card
+  Card,
+  Link
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
+import NewTabIcon from "../../assets/images/new-tab-icon.png";
 import AddIcon from "../../assets/images/add-icon-white.svg";
+import PlayIcon from "../../assets/images/play-icon.png";
 import { TestCase, TestCaseFlowSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import { getTestCaseById } from "../../slices/testCase";
+import { actions, executeRun } from "../../slices/testCaseRun";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import AddTestCase from "./AddTestCase";
 import io from 'socket.io-client';
+import useSnackbar from "../../hooks/useSnackbar";
 
 // const socket = io('http://localhost:3030'); // Update with your server URL
 
@@ -75,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const TestCaseContaier: React.FC<{
+const TestCaseContainer: React.FC<{
   list: TestCase[];
   projectId: string;
 }> = ({ list, projectId }) => {
@@ -84,8 +90,14 @@ const TestCaseContaier: React.FC<{
   const [count, setCount] = useState(0);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | undefined>(undefined);
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
+  const { status } = useSelector((state: RootState) => state.testCaseRun);
+  const { notify, hideNotification } = useSnackbar();
   const [updates, setUpdates] = useState<any>([]);
 
+  const handleSnackbarClose = () => {
+    hideNotification();
+    dispatch(actions.clearStatus());
+  };
   useEffect(() => {
     if (selectedTestCase) dispatch(getTestCaseById(selectedTestCase?.id))
   }, [selectedTestCase]);
@@ -95,27 +107,36 @@ const TestCaseContaier: React.FC<{
   }, [list]);
 
   useEffect(() => {
-    if(list) {
-      if(list.length !== count) {
-        setSelectedTestCase(list[list.length-1])
+    if (list) {
+      if (list.length !== count) {
+        setSelectedTestCase(list[list.length - 1])
       }
       setCount(list.length)
     }
   }, [list])
 
-//   useEffect(() => {
-//     const event = `testCaseRunUpdates`;
-//     socket.on('connect', () => {
-//         console.log('Connected to server');
-//     });
-//     socket.on(event, (update) => {
-//         console.log(update);
-//     });
-//     return () => {
-//         socket.off(event);
-//     };
-// }, []);
-  
+  useEffect(() => {
+    if (status) {
+      notify({
+        message: status.message,
+        onClose: handleSnackbarClose,
+        type: status.type,
+      });
+    }
+  }, [status]);
+  //   useEffect(() => {
+  //     const event = `testCaseRunUpdates`;
+  //     socket.on('connect', () => {
+  //         console.log('Connected to server');
+  //     });
+  //     socket.on(event, (update) => {
+  //         console.log(update);
+  //     });
+  //     return () => {
+  //         socket.off(event);
+  //     };
+  // }, []);
+
   return (
     <>
       {list.length === 0 && (
@@ -161,6 +182,10 @@ const TestCasesListView: React.FC<{
 }) => {
     const classes = useStyles();
     const [editTestCase, setEditTestCase] = useState<TestCase | undefined>(undefined);
+    const dispatch = useDispatch();
+    const handleRun = (id: string) => {
+      dispatch(executeRun(id))
+    }
     return (
       <>
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -192,7 +217,7 @@ const TestCasesListView: React.FC<{
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
                         setSelectedTestCase(row);
                       }} className={selectedTestCase?.id == row.id ? classes.active : ''}>
-                        <TableCell style={{ width: "90%" }} align="left">
+                        <TableCell style={{ width: "85%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             color="primary"
@@ -203,7 +228,32 @@ const TestCasesListView: React.FC<{
                             {row.name}
                           </Typography>
                         </TableCell>
-                        <TableCell style={{ width: "10%" }} align="left">
+                        <TableCell style={{ width: "5%" }} align="left">
+                          <Box
+                            display={"flex"}
+                            justifyContent={"start"}
+                            alignItems={"center"}
+                            gap={2}
+                          >
+                            <Tooltip title={"Run"}>
+                              <IconButton
+                                sx={{ padding: 0.5, opacity: 0.6 }}
+                                onClick={() => {
+                                  handleRun(row.id);
+                                }}
+                                data-testid="edit-testcase"
+                              >
+                                <img
+                                  src={PlayIcon}
+                                  alt="close"
+                                  height="20"
+                                  width="20"
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                        <TableCell style={{ width: "5%" }} align="left">
                           <Box
                             display={"flex"}
                             justifyContent={"start"}
@@ -228,6 +278,33 @@ const TestCasesListView: React.FC<{
                             </Tooltip>
                           </Box>
                         </TableCell>
+                        <TableCell style={{ width: "5%" }} align="left">
+                          <Tooltip title={"Test case run history"}>
+                            <Link
+                              color="inherit"
+                              to={`/test-case/${row.id}`}
+                              component={RouterLink}
+                              underline="none"
+                              target="_blank"
+                            >
+                              <IconButton
+                                sx={{ padding: 0.5, opacity: 0.6 }}
+                                onClick={() => {
+                                  console.log("clicked new tab")
+                                }}
+                                data-testid="open-testcase"
+                              >
+                                <img
+                                  src={NewTabIcon}
+                                  alt="close"
+                                  height="24"
+                                  width="24"
+                                />
+                              </IconButton>
+                            </Link>
+                          </Tooltip>
+                        </TableCell>
+
                       </TableRow>
                     );
                   })}
@@ -290,4 +367,4 @@ const FlowListView: React.FC<{ testCaseName?: string; testCaseFlowSequences?: Te
     </>
   );
 };
-export default TestCaseContaier;
+export default TestCaseContainer;

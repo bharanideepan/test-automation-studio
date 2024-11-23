@@ -33,8 +33,40 @@ export class TestCaseRun extends Service {
         testCaseId,
         status: "ADDED_TO_QUEUE"
       });
-      const testCase = await this.app.service('test-case').getExecutableTestCaseData(testCaseId, params);
-      const message = { type: 'START_RUN', payload: { testCaseRun, testCase } };
+      const testCase = await this.app.service('test-case').get(testCaseId, params);
+      const testCaseData = JSON.parse(JSON.stringify(testCase));
+      testCaseData.testCaseFlowSequences = await Promise.all(testCaseData.testCaseFlowSequences.map(async (testCaseFlowSequence: any) => {
+        const testCaseFlowSequenceHistory = await this.app.service('test-case-flow-sequence-history').create({
+          testCaseRunId: testCaseRun.id,
+          testCaseFlowSequenceId: testCaseFlowSequence.id,
+          status: '',
+          order: testCaseFlowSequence.order
+        })
+        testCaseFlowSequence.flow.flowActionSequences =
+          await Promise.all(testCaseFlowSequence.flow.flowActionSequences.filter((flowActionSequence: any) => {
+            return !flowActionSequence.testCaseFlowSequenceActionInput.skip;
+          }).map(async (flowActionSequence: any) => {
+            const flowActionSequenceHistory = await this.app.service('flow-action-sequence-history').create({
+              testCaseRunId: testCaseRun.id,
+              testCaseFlowSequenceHistoryId: testCaseFlowSequenceHistory.id,
+              flowActionSequenceId: flowActionSequence.id,
+              status: '',
+              actionName: flowActionSequence.action.name,
+              actionType: flowActionSequence.action.type,
+              actionXpath: flowActionSequence.action.xpath,
+              order: flowActionSequence.order
+            })
+            return {
+              ...flowActionSequence,
+              flowActionSequenceHistoryId: flowActionSequenceHistory.id
+            };
+          }))
+        return {
+          ...testCaseFlowSequence,
+          testCaseFlowSequenceHistoryId: testCaseFlowSequenceHistory.id
+        };
+      }))
+      const message = { type: 'START_RUN', payload: { testCaseRun, testCase: testCaseData } };
       // if (this.app.io) {
       //   console.log("IO exists")
       //   this.app.io?.emit(`testCaseRunUpdates:26`, { status: "success" });
@@ -43,7 +75,7 @@ export class TestCaseRun extends Service {
       // this.consume();
       return testCaseRun;
     } catch (err) {
-      throw new Error(`Error while creating test-case-data: ${err}`);
+      throw new Error(`Error while creating test-case-run-data: ${err}`);
     }
   }
 
@@ -63,19 +95,14 @@ export class TestCaseRun extends Service {
         if (message.value) {
           const response = JSON.parse(message.value.toString("utf8"));
           console.log("Response from RPA received.", response);
-          if (response.flowActionSequenceId) {
-            const { testCaseRunId, flowActionSequenceId, status, errorMessage } = response;
-            this.app.service('flow-action-sequence-history').create({
-              testCaseRunId,
-              flowActionSequenceId,
-              status,
-              errorMessage
+          if (response.flowActionSequenceHistoryId) {
+            const { flowActionSequenceHistoryId, actionName, actionType, actionXpath, inputValue, status, errorMessage } = response;
+            this.app.service('flow-action-sequence-history').patch(flowActionSequenceHistoryId, {
+              status, errorMessage, actionName, actionType, actionXpath, inputValue
             })
-          } else if (response.testCaseFlowSequenceId) {
-            const { testCaseRunId, testCaseFlowSequenceId, status, errorMessage } = response;
-            this.app.service('test-case-flow-sequence-history').create({
-              testCaseRunId,
-              testCaseFlowSequenceId,
+          } else if (response.testCaseFlowSequenceHistoryId) {
+            const { testCaseFlowSequenceHistoryId, status, errorMessage } = response;
+            this.app.service('test-case-flow-sequence-history').patch(testCaseFlowSequenceHistoryId, {
               status,
               errorMessage
             })

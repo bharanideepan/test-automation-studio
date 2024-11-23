@@ -10,9 +10,12 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+import { useSelector, useDispatch } from "react-redux";
 
 import AddIcon from "../../assets/images/add-icon-white.svg";
 import EditableTextField from "../../components/EditableTextField";
+import { RootState } from "../../store/rootReducer";
+import { updateTestCase } from "../../slices/project";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -68,40 +71,36 @@ const CustomButton: React.FC<{
   );
 };
 
-const Header: React.FC<{
-  projectId: string | number;
-  projectName: string;
-  testCaseName: string;
-  onTestCaseNameUpdate: (updatedName: string) => void;
-  handleSave: () => void;
-  saveEnabled: boolean;
-}> = ({
-  projectId,
-  projectName,
-  testCaseName,
-  onTestCaseNameUpdate,
-  handleSave,
-  saveEnabled,
-}) => {
+const Header: React.FC = () => {
   const classes = useStyles();
-
+  const { testCase } = useSelector((state: RootState) => state.testCase);
+  const { project } = useSelector((state: RootState) => state.project);
+  const dispatch = useDispatch();
+  const onTestCaseNameUpdate = (name: string) => {
+    dispatch(updateTestCase({
+      testCase: {
+        ...testCase, name
+      }, sequences: {}, assertions: []
+    }));
+  }
   return (
     <Box className={classes.root}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2.5}
-      >
-        <Box>
-          <TestCaseBreadcrumb
-            projectId={projectId}
-            projectName={projectName}
-            testCaseName={testCaseName}
-            onTestCaseNameUpdate={onTestCaseNameUpdate}
-          />
-        </Box>
-        <Box>
+      {testCase && project &&
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2.5}
+        >
+          <Box>
+            <TestCaseBreadcrumb
+              projectId={testCase.projectId}
+              projectName={project.name}
+              testCaseName={testCase.name}
+              onTestCaseNameUpdate={onTestCaseNameUpdate}
+            />
+          </Box>
+          {/* <Box>
           <CustomButton
             variant="outlined"
             color="primary"
@@ -116,8 +115,8 @@ const Header: React.FC<{
             handleClick={handleSave}
             disabled={!saveEnabled}
           />
-        </Box>
-      </Box>
+        </Box> */}
+        </Box>}
     </Box>
   );
 };
@@ -152,16 +151,6 @@ const TestCaseBreadcrumb: React.FC<{
       />
     </Breadcrumbs>
   );
-};
-
-Header.propTypes = {
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    .isRequired,
-  projectName: PropTypes.string.isRequired,
-  testCaseName: PropTypes.string.isRequired,
-  onTestCaseNameUpdate: PropTypes.func.isRequired,
-  handleSave: PropTypes.func.isRequired,
-  saveEnabled: PropTypes.bool.isRequired,
 };
 
 export default Header;

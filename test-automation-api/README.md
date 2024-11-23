@@ -2,6 +2,12 @@
 
 > Rest api service for managing test automation workflow data
 
+# Install node v18.20.4
+
+## Setup PostgreSQL server.
+
+### Create a database and update default.json config file to configure.
+
 ## About
 
 This project uses [Feathers](http://feathersjs.com). An open source web framework for building modern real-time applications.

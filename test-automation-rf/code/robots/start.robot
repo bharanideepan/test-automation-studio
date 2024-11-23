@@ -38,6 +38,7 @@ ${SET_RADIO_VALUE}    SET_RADIO_VALUE
 ${IS_ELEMENT_VISIBLE}    IS_ELEMENT_VISIBLE
 ${GET_TEXT}    GET_TEXT
 
+&{ACCUMULATION}
 
 *** Tasks ***
 initialize-fb-worker
@@ -49,6 +50,7 @@ execute-functional-block
     [Documentation]    To execute fb
     [Tags]    to-initialize-library
     WHILE    '${TERMINATION_FLAG}' == 'False'
+        ${ACCUMULATION}=    Create Dictionary
         COMP_BrowserContext.launch-browser
         Log To Console    <===Polling message===>
         ${json}=    CommandConsumer.Get A Command    ${5}
@@ -79,6 +81,7 @@ execute-test-case
         END
         ${testCase}=    Set Variable    ${input}[payload][testCase]
         ${testCaseRun}=    Set Variable    ${input}[payload][testCaseRun]
+        ${assertions}=    Set Variable    ${testCase}[assertions]
         Log To Console    Test Case Name: ${testCase}[name]
         TRY
             ${is_test_case_flow_sequences_exists}=    UTIL_Collection.is-value-not-none    ${testCase}    testCaseFlowSequences
@@ -100,19 +103,20 @@ execute-test-case
                                         Log To Console    Input not found for this action. Terminate the test case here!!!
                                         EX_Exception.ex-fail    INPUT_NOT_FOUND_IN_ACTION
                                     END
-                                    execute-action    ${action}    ${input}
-                                    send-action-sequence-message    ${flowActionSequence}[id]    ${testCaseRun}[id]    COMPLETED
+                                    ${value}=    execute-action    ${action}    ${input}
+                                    perform-assertion    ${assertions}    ${testCaseFlowSequence}[id]    ${flowActionSequence}[id]    ${value}
+                                    send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    COMPLETED    ${action}    ${input}
                                 EXCEPT    AS    ${error_message}
                                     Log To Console    ${error_message}
-                                    send-action-sequence-message    ${flowActionSequence}[id]    ${testCaseRun}[id]    FAILED    ${error_message}
+                                    send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    FAILED    ${action}    ${input}    ${error_message}
                                     EX_Exception.ex-fail    ${error_message}
                                 END
                             END
                         END
-                        send-flow-sequence-message    ${testCaseFlowSequence}[id]    ${testCaseRun}[id]    COMPLETED
+                        send-flow-sequence-message    ${testCaseFlowSequence}[testCaseFlowSequenceHistoryId]    COMPLETED
                     EXCEPT    AS    ${error_message}
                         Log To Console    ${error_message}
-                        send-flow-sequence-message    ${testCaseFlowSequence}[id]    ${testCaseRun}[id]    FAILED    ${error_message}
+                        send-flow-sequence-message    ${testCaseFlowSequence}[testCaseFlowSequenceHistoryId]    FAILED    ${error_message}
                         EX_Exception.ex-fail    ${error_message}
                     END
                 END
@@ -169,6 +173,11 @@ execute-action
         COMP_Checkbox.set-value    ${action}[xpath]    ${select}
     ELSE IF    '${action}[type]' == '${IS_ELEMENT_VISIBLE}'
         ${value}=    Util_BrowserHelper.is-attached-after-wait    ${action}[xpath]
+        IF    ${value}
+            ${value}=    Set Variable    VISIBLE
+        ELSE
+            ${value}=    Set Variable    NOT_VISIBLE
+        END
     ELSE IF    '${action}[type]' == '${GET_TEXT}'
         ${value}=    Util_BrowserHelper.get-property    ${action}[xpath]    innerText
     ELSE
@@ -177,21 +186,61 @@ execute-action
     END
     Log To Console    ${value}
     BuiltIn.Sleep    ${input}[waitAfterAction]s
+    RETURN    ${value}
+
+perform-assertion
+    [Arguments]    ${assertions}    ${testCaseFlowSequenceId}    ${flowActionSequenceId}    ${value}
+    ${key}=    Set Variable    testCaseFlowSequenceId:${testCaseFlowSequenceId}::flowActionSequenceId:${flowActionSequenceId}
+    FOR    ${assertion}    IN    @{assertions}
+        ${source}=    Set Variable    ${assertion}[source]
+        ${target}=    Set Variable    ${assertion}[target]
+        ${skip}=    Set Variable    ${assertion}[skip]
+        ${operator}=    Set Variable    ${assertion}[operator]
+        ${useCustomTargetValue}=    Set Variable    ${assertion}[useCustomTargetValue]
+        ${customTargetValue}=    Set Variable    ${assertion}[customTargetValue]
+        ${errorMessage}=    Set Variable    ${assertion}[errorMessage]
+        Set To Dictionary    ${ACCUMULATION}    ${key}=${value}
+        ${is_source_exists}=    UTIL_Collection.is-value-not-none    ${ACCUMULATION}    ${source}
+        ${is_target_exists}=    UTIL_Collection.is-value-not-none    ${ACCUMULATION}    ${target}
+        IF    '${source}' == '${key}' and '${is_source_exists}' == '${True}'
+            IF    $useCustomTargetValue
+                BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${errorMessage}
+            END
+            IF    $is_target_exists
+                BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${errorMessage}
+            END
+        END
+        IF     '${target}' == '${key}' and '${is_target_exists}' == '${True}'
+            IF    $useCustomTargetValue
+                Log To Console    No need to assert here.
+            END
+            IF    $is_source_exists
+                BuiltIn.Should Be Equal    ${ACCUMULATION}[${target}]    ${ACCUMULATION}[${source}]    ${errorMessage}
+            END
+        END
+    END
 
 send-action-sequence-message
-    [Arguments]    ${flowActionSequenceId}    ${testCaseRunId}    ${status}    ${errorMessage}=${EMPTY}
+    [Arguments]
+    ...    ${flowActionSequenceHistoryId}
+    ...    ${status}
+    ...    ${action}
+    ...    ${input}
+    ...    ${errorMessage}=${EMPTY}
     ${response_message}=    Create Dictionary    
-    ...    flowActionSequenceId=${flowActionSequenceId}   
-    ...    testCaseRunId=${testCaseRunId}   
+    ...    flowActionSequenceHistoryId=${flowActionSequenceHistoryId}   
     ...    status=${status}    
+    ...    actionName=${action}[name]
+    ...    actionType=${action}[type]
+    ...    actionXpath=${action}[xpath]
+    ...    inputValue=${input}[value]
     ...    errorMessage=${errorMessage}
     UTIL_Common.Push response message to kafka topic    ${response_message}
 
 send-flow-sequence-message
-    [Arguments]    ${testCaseFlowSequenceId}    ${testCaseRunId}    ${status}    ${errorMessage}=${EMPTY}
+    [Arguments]    ${testCaseFlowSequenceHistoryId}    ${status}    ${errorMessage}=${EMPTY}
     ${response_message}=    Create Dictionary    
-    ...    testCaseFlowSequenceId=${testCaseFlowSequenceId}   
-    ...    testCaseRunId=${testCaseRunId}   
+    ...    testCaseFlowSequenceHistoryId=${testCaseFlowSequenceHistoryId}   
     ...    status=${status}    
     ...    errorMessage=${errorMessage}
     UTIL_Common.Push response message to kafka topic    ${response_message}

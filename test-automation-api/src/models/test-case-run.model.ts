@@ -27,6 +27,8 @@ export default function (app: Application): typeof Model {
   });
   (testCaseRun as any).associate = function (models: any): void {
     testCaseRun.belongsTo(models["testCase"], { foreignKey: "testCaseId" });
+    testCaseRun.hasMany(models["testCaseFlowSequenceHistory"], { foreignKey: "testCaseRunId" });
+    testCaseRun.hasMany(models["flowActionSequenceHistory"], { foreignKey: "testCaseRunId" });
   };
   return testCaseRun;
 }
