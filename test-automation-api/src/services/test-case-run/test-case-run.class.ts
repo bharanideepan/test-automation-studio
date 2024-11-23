@@ -1,15 +1,21 @@
 import { Service, SequelizeServiceOptions } from 'feathers-sequelize';
 import { Application } from '../../declarations';
-import { Kafka } from "kafkajs";
+import { Kafka, PartitionAssigners } from "kafkajs";
 
-const clientId = "test-automation-rf";
+const clientId = "test-automation-node";
 const brokers = ["localhost:9092"];
 const commandTopic = "request_topic";
 const eventTopic = "response_topic";
 
 const kafka = new Kafka({ clientId, brokers });
 const producer = kafka.producer();
-const consumer = kafka.consumer({ groupId: clientId });
+const consumer = kafka.consumer({
+  groupId: clientId,
+  retry: {
+    retries: 5, // Retry logic to handle transient errors
+  },
+  partitionAssigners: [PartitionAssigners.roundRobin]
+});
 
 export class TestCaseRun extends Service {
   //eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,9 +60,9 @@ export class TestCaseRun extends Service {
     await consumer.subscribe({ topic: eventTopic, fromBeginning: true });
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        console.log("Response from RPA received.");
         if (message.value) {
           const response = JSON.parse(message.value.toString("utf8"));
+          console.log("Response from RPA received.", response);
           if (response.flowActionSequenceId) {
             const { testCaseRunId, flowActionSequenceId, status, errorMessage } = response;
             this.app.service('flow-action-sequence-history').create({

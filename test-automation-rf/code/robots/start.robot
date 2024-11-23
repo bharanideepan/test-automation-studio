@@ -60,7 +60,7 @@ execute-functional-block
         EXCEPT    AS    ${error_message}
             Log To Console    ${error_message}
         END
-        # COMP_BrowserContext.close-browser
+        COMP_BrowserContext.close-browser
     END
 
 execute-test-case
