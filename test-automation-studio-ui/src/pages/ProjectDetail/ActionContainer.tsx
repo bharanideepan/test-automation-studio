@@ -118,9 +118,9 @@ const ActionContainer: React.FC<{
   };
 
   useEffect(() => {
-    if(list) {
-      if(list.length !== count) {
-        setSelectedAction(list[list.length-1])
+    if (list) {
+      if (list.length !== count) {
+        setSelectedAction(list[list.length - 1])
       }
       setCount(list.length)
     }
@@ -382,7 +382,7 @@ const ActionsListView: React.FC<{
                             textOverflow="ellipsis"
                             maxWidth="300px"
                           >
-                            {row.xpath}
+                            {row.selector?.xpath}
                           </Typography>
                         </TableCell>
                         <TableCell style={{ width: "20%" }} align="left">

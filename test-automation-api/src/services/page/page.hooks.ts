@@ -1,10 +1,10 @@
+import { HooksObject } from '@feathersjs/feathers';
 const populateFields = (hook: any) => {
   const sequelize = hook.app.get("sequelizeClient");
-  const { input, selector } = sequelize.models;
+  const { selector } = sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
-      { model: input },
       { model: selector },
     ],
   };
@@ -15,7 +15,7 @@ export default {
     all: [],
     find: [populateFields],
     get: [populateFields],
-    create: [populateFields],
+    create: [],
     update: [populateFields],
     patch: [populateFields],
     remove: []

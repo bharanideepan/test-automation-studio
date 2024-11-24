@@ -25,6 +25,7 @@ set-value
     ...    UNKNOWN_ERROR_OCCURRED
     [Tags]    component
     [Arguments]    ${selector}    ${value}    ${retry_count}=3
+    Log To Console    selector::${selector}
     COMP_Textbox.validate-precondition    ${selector}
     UTIL_Validation.fail-if-not-editable-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}

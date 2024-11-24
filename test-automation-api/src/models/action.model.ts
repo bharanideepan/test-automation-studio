@@ -21,9 +21,9 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING(5000),
       allowNull: false,
     },
-    xpath: {
-      type: DataTypes.STRING(5000),
-      allowNull: true,
+    selectorId: {
+      type: DataTypes.BIGINT,
+      allowNull: true
     },
     valueRegex: {
       type: DataTypes.STRING(5000),
@@ -36,6 +36,7 @@ export default function (app: Application): typeof Model {
   });
   (action as any).associate = function (models: any): void {
     action.belongsTo(models["project"], { foreignKey: "projectId" });
+    action.belongsTo(models["selector"], { foreignKey: "selectorId" });
     action.hasMany(models["input"], { foreignKey: "actionId" });
     action.hasMany(models["flowActionSequence"], { foreignKey: "actionId" });
   };

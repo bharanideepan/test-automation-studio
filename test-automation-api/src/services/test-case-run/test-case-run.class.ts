@@ -53,7 +53,7 @@ export class TestCaseRun extends Service {
               status: '',
               actionName: flowActionSequence.action.name,
               actionType: flowActionSequence.action.type,
-              actionXpath: flowActionSequence.action.xpath,
+              actionXpath: flowActionSequence.action.selector?.xpath,
               order: flowActionSequence.order
             })
             return {

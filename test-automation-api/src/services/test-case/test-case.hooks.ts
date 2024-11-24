@@ -55,6 +55,14 @@ const filterTestCaseInputMapping = async (hook: any) => {
           actionId: flowActionSequence.dataValues.action.id
         }
       });
+      if (flowActionSequence.dataValues.action.dataValues.selectorI) {
+        const selector = await hook.app.service('selector').get(flowActionSequence.dataValues.action.dataValues.selectorI);
+        flowActionSequence.dataValues.action.dataValues.selector = selector;
+      }
+      if (flowActionSequence.dataValues.action.dataValues.selectorId) {
+        const selector = await hook.app.service('selector').get(flowActionSequence.dataValues.action.dataValues.selectorId);
+        flowActionSequence.dataValues.action.dataValues.selector = selector;
+      }
       const inputs = await hook.app.service('test-case-flow-sequence-action-input').find({
         query: {
           testCaseFlowSequenceId: testCaseFlowSequenceId,

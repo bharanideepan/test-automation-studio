@@ -29,7 +29,7 @@ import CollapseIcon from "../../assets/images/down-arrow.svg";
 import ProjectIcon from "../../assets/images/project-icon.svg";
 import RecordingIcon from "../../assets/images/recordings-icon.svg";
 import PlayIcon from "../../assets/images/play-icon.png";
-import { socket } from "../../services/util";
+// import { socket } from "../../services/util";
 import { actions } from "../../slices/testCase";
 
 const useTreeItemStyles = makeStyles((theme) => ({
@@ -157,18 +157,18 @@ const TestCaseRunContainer: React.FC<{
     }
   }, [addedTestCaseRun])
 
-  useEffect(() => {
-    const event = `testCaseRunUpdates`;
-    socket.on('connection', () => {
-      console.log('Connected to server');
-    });
-    socket.on('test-case-run-updates', (update) => {
-      console.log(update);
-    });
-    return () => {
-      socket.off(event);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const event = `testCaseRunUpdates`;
+  //   socket.on('connection', () => {
+  //     console.log('Connected to server');
+  //   });
+  //   socket.on('test-case-run-updates', (update) => {
+  //     console.log(update);
+  //   });
+  //   return () => {
+  //     socket.off(event);
+  //   };
+  // }, []);
 
   return (
     <>

@@ -5,13 +5,13 @@ import {
 } from "../declarations/interface";
 
 export const getTestCaseRunById: any = createAsyncThunk(
-  "testCase/getTestCaseRunById",
+  "testCaseRun/getTestCaseRunById",
   async (id: string) => {
     return TestCaseRunService.getTestCaseRunById(id);
   }
 );
 export const executeRun: any = createAsyncThunk(
-  "testCase/executeRun",
+  "testCaseRun/executeRun",
   async (id: string) => {
     return TestCaseRunService.executeRun(id);
   }

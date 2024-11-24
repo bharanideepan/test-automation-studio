@@ -5,7 +5,7 @@ import { Application } from "../declarations";
 
 export default function (app: Application): any {
   const sequelizeClient: Sequelize = app.get("sequelizeClient");
-  const project = sequelizeClient.define("project", {
+  const page = sequelizeClient.define("page", {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -15,13 +15,15 @@ export default function (app: Application): any {
     name: {
       type: DataTypes.STRING,
     },
+    projectId: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    }
   });
-  (project as any).associate = function (models: any): void {
-    project.hasMany(models["flow"], { foreignKey: "projectId" });
-    project.hasMany(models["testCase"], { foreignKey: "projectId" });
-    project.hasMany(models["action"], { foreignKey: "projectId" });
-    project.hasMany(models["page"], { foreignKey: "projectId" });
+  (page as any).associate = function (models: any): void {
+    page.belongsTo(models["project"], { foreignKey: "projectId" });
+    page.hasMany(models["selector"], { foreignKey: "pageId" });
   };
-  return project;
+  return page;
 }
 

@@ -36,55 +36,57 @@ const Header: React.FC<{
   count,
   handleTabChange,
 }) => {
-  const classes = useStyles();
-  return (
-    <Box className={classes.root}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2.5}
-      >
-        <Box>
-          <EditableTextField
-            value={projectName}
-            onSubmit={onProjectNameUpdate}
-            className={classes.heading}
-          />
-        </Box>
-        <Box>
-          {/* {activeTab === "TEST_CASES" && (
+    const classes = useStyles();
+    return (
+      <Box className={classes.root}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2.5}
+        >
+          <Box>
+            <EditableTextField
+              value={projectName}
+              onSubmit={onProjectNameUpdate}
+              className={classes.heading}
+            />
+          </Box>
+          <Box>
+            {/* {activeTab === "TEST_CASES" && (
             <AddTestCase projectId={projectId} onModalClose={() => {console.log("Test case add/edit modal closed")}} />
           )} */}
+          </Box>
+          {/* search component comes here */}
         </Box>
-        {/* search component comes here */}
-      </Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Box>
-          <AppTabs value={activeTab} onChange={handleTabChange}>
-            <AppTab value="ACTIONS" label="ACTIONS" />
-            <AppTab disabled className="divider" icon={DividerIcon} />
-            <AppTab value="FLOWS" label="FLOWS" />
-            <AppTab disabled className="divider" icon={DividerIcon} />
-            <AppTab value="TEST_CASES" label="TEST_CASES" />
-          </AppTabs>
-        </Box>
-        {/* <Typography
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box>
+            <AppTabs value={activeTab} onChange={handleTabChange}>
+              <AppTab value="ACTIONS" label="ACTIONS" />
+              <AppTab disabled className="divider" icon={DividerIcon} />
+              <AppTab value="FLOWS" label="FLOWS" />
+              <AppTab disabled className="divider" icon={DividerIcon} />
+              <AppTab value="TEST_CASES" label="TEST_CASES" />
+              <AppTab disabled className="divider" icon={DividerIcon} />
+              <AppTab value="XPATHS" label="XPATHS" />
+            </AppTabs>
+          </Box>
+          {/* <Typography
           variant="body1"
           color="primary"
           sx={{ textTransform: "capitalize" }}
         >
           {count} {activeTab.toLowerCase()} found
         </Typography> */}
+        </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  };
 
 Header.propTypes = {
   projectName: PropTypes.string.isRequired,
   onProjectNameUpdate: PropTypes.func.isRequired,
-  activeTab: PropTypes.oneOf(["TEST_CASES", "FLOWS", "ACTIONS"]).isRequired,
+  activeTab: PropTypes.oneOf(["TEST_CASES", "FLOWS", "ACTIONS", "XPATHS"]).isRequired,
   count: PropTypes.number.isRequired,
 };
 

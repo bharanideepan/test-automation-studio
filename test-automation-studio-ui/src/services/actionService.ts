@@ -7,12 +7,19 @@ class ActionService extends BaseService {
   }
 
   async updateAction(action: Action) {
-    return this.patch(`/${action.id}`, action);
+    const newAction = { ...action } as any;
+    if (newAction.selectorId.length <= 0) {
+      delete newAction.selectorId;
+    }
+    return this.patch(`/${action.id}`, newAction);
   }
 
   async createAction(action: Action) {
-    const newAction = {...action} as any;
+    const newAction = { ...action } as any;
     delete newAction.id;
+    if (newAction.selectorId.length <= 0) {
+      delete newAction.selectorId;
+    }
     return this.post("", newAction);
   }
 

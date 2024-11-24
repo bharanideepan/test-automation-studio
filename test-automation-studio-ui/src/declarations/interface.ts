@@ -42,10 +42,25 @@ export interface Action {
   id: string;
   name: string;
   type: string;
-  xpath: string;
   valueRegex?: string;
   projectId: string;
   inputs?: Input[];
+  selector?: Selector;
+  selectorId: string;
+}
+
+export interface Page {
+  id: string;
+  name: string;
+  selectors?: Selector[];
+  projectId: String;
+}
+
+export interface Selector {
+  id: string;
+  name: string;
+  xpath: string;
+  pageId: string;
 }
 
 export interface FlowActionSequence {

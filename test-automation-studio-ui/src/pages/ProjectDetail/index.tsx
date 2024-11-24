@@ -15,8 +15,10 @@ import useSnackbar from "../../hooks/useSnackbar";
 import ActionContainer from "./ActionContainer";
 import FlowContainer from "./FlowContainer";
 import TestCaseContainer from "./TestCaseContainer";
+import { getPagesByProjectId } from "../../slices/pages";
+import SelectorContainer from "./SelectorContainer";
 
-type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS";
+type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATHS";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -44,6 +46,7 @@ const ProjectDetail = () => {
   const { notify, hideNotification } = useSnackbar();
 
   const { project, status } = useSelector((state: RootState) => state.project);
+  const { pages } = useSelector((state: RootState) => state.pages);
   const dispatch = useDispatch();
 
   const handleNameUpdate = (name: string) => {
@@ -53,6 +56,7 @@ const ProjectDetail = () => {
     const params = { tab: "1" };
     if (tab === "FLOWS") params.tab = "2";
     if (tab === "TEST_CASES") params.tab = "3";
+    if (tab === "XPATHS") params.tab = "4";
     setSearchParams(params);
   };
   const getCount = () => {
@@ -75,12 +79,15 @@ const ProjectDetail = () => {
       setActiveTab("FLOWS");
     } else if (tab === "3") {
       setActiveTab("TEST_CASES");
+    } else if (tab === "4") {
+      setActiveTab("XPATHS");
     }
   }, [searchParams, setSearchParams, setActiveTab]);
 
   useEffect(() => {
     dispatch(getProjectById(projectId));
-  }, [projectId]);
+    dispatch(getPagesByProjectId(projectId));
+  }, [projectId, activeTab]);
 
   useEffect(() => {
     if (status) {
@@ -122,6 +129,12 @@ const ProjectDetail = () => {
           {activeTab === "TEST_CASES" && (
             <TestCaseContainer
               list={project.testCases ?? []}
+              projectId={project.id}
+            />
+          )}
+          {activeTab === "XPATHS" && (
+            <SelectorContainer
+              list={pages ?? []}
               projectId={project.id}
             />
           )}

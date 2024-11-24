@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Typography, Button, Box, Tooltip, TextField, IconButton, SelectChangeEvent } from "@mui/material";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
 import { actions } from "../../slices/projects";
@@ -8,8 +8,9 @@ import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action } from "../../declarations/interface";
 import { createAction, updateAction } from "../../slices/project";
-import AppSelect from "../../components/AppSelect";
+import AppSelect, { AppGroupSelect } from "../../components/AppSelect";
 import { ACTION_TYPES, DEFAULT_ACTION } from "../../util/constants";
+import { RootState } from "../../store/rootReducer";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -72,6 +73,7 @@ const AddAction: React.FC<{
   const [data, setData] = useState<Action | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { pages, status } = useSelector((state: RootState) => state.pages);
 
   const [nameError, setNameError] = useState<
     ActionErrorKey | undefined
@@ -105,7 +107,7 @@ const AddAction: React.FC<{
   const handleSubmit = () => {
     handleFieldChange({ target: { value: data?.name ?? "" } }, "name")
     handleFieldChange({ target: { value: data?.type ?? "" } }, "type")
-    handleFieldChange({ target: { value: data?.xpath ?? "" } }, "xpath")
+    handleFieldChange({ target: { value: data?.selectorId ?? "" } }, "selectorId")
     handleFieldChange({ target: { value: data?.valueRegex ?? "" } }, "valueRegex")
     setSubmitted(true);
   };
@@ -129,9 +131,9 @@ const AddAction: React.FC<{
     }
     if (field === "type") {
       validateType(value);
-      if(data) validateXpath(data.xpath, value);
+      if (data) validateXpath(data.selectorId, value);
     }
-    if (field === "xpath") {
+    if (field === "selectorId") {
       validateXpath(value, data?.type ?? "");
     }
     if (field === "valueRegex") {
@@ -165,7 +167,7 @@ const AddAction: React.FC<{
 
   const validateXpath = (xpath: string, type: string) => {
     xpath = xpath ?? "";
-    if (xpath?.length === 0 && type !== "LAUNCH_BROWSER") {
+    if (xpath?.length === 0 && (type !== "LAUNCH_BROWSER" && type !== "NEW_PAGE")) {
       setXpathError("REQUIRED");
     } else if (!isValidXpath(xpath)) {
       setXpathError("INVALID");
@@ -219,7 +221,7 @@ const AddAction: React.FC<{
   }, [modalOpen, data]);
 
   useEffect(() => {
-    if(!!nameError || !!typeError || !!xpathError || !!valueRegexError) return
+    if (!!nameError || !!typeError || !!xpathError || !!valueRegexError) return
     if (submitted) submitData();
   }, [submitted]);
 
@@ -273,12 +275,28 @@ const AddAction: React.FC<{
                 }}
                 error={!!typeError}
                 helperText={
-                  typeError ? errorMsg.xpath[typeError] : ""
+                  typeError ? errorMsg.type[typeError] : ""
                 }
                 options={ACTION_TYPES} label="Select Action Type" />
             </Box>
-            {data.type !== "LAUNCH_BROWSER" && <Box mt={2}>
-              <AppTextbox
+            {(data.type !== "LAUNCH_BROWSER" && data.type !== "NEW_PAGE") && <Box mt={2}>
+              <AppGroupSelect
+                id={`xpath-dropdown`}
+                value={data.selectorId ?? ""}
+                onChange={(event) => {
+                  handleFieldChange(event, "selectorId");
+                }}
+                error={!!xpathError}
+                helperText={
+                  xpathError ? errorMsg.xpath[xpathError] : ""
+                }
+                options={
+                  pages?.map((page) => ({
+                    category: page.name,
+                    options: page.selectors?.map((selector) => ({ label: `${selector.name} - ${selector.xpath}`, value: selector.id })) ?? []
+                  })) ?? []
+                } label="Select Xpath" />
+              {/* <AppTextbox
                 label="Xpath"
                 placeholder="Enter Xpath"
                 value={data.xpath}
@@ -290,9 +308,9 @@ const AddAction: React.FC<{
                 helperText={
                   xpathError ? errorMsg.xpath[xpathError] : ""
                 }
-              />
+              /> */}
             </Box>}
-            {data.type !== "LAUNCH_BROWSER" && <Box mt={2}>
+            {(data.type !== "LAUNCH_BROWSER" && data.type !== "NEW_PAGE") && <Box mt={2}>
               <AppTextbox
                 label="Value Regex"
                 placeholder="Enter Value Regex"

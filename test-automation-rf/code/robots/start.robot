@@ -138,20 +138,20 @@ execute-action
     ELSE IF    '${action}[type]' == '${NEW_PAGE}'
         COMP_BrowserContext.new-page    ${input}[value]
     ELSE IF    '${action}[type]' == '${CLICK}'
-        COMP_Button.left-click    ${action}[xpath]
+        COMP_Button.left-click    ${action}[selector][xpath]
     ELSE IF    '${action}[type]' == '${DOUBLE_CLICK}'
-        COMP_Button.left-click    ${action}[xpath]
-        COMP_Button.left-click    ${action}[xpath]
+        COMP_Button.left-click    ${action}[selector][xpath]
+        COMP_Button.left-click    ${action}[selector][xpath]
     ELSE IF    '${action}[type]' == '${GET_DROPDOWN_VALUE}'
-        ${value}=    COMP_Select.get-selected-option    ${action}[xpath]
+        ${value}=    COMP_Select.get-selected-option    ${action}[selector][xpath]
     ELSE IF    '${action}[type]' == '${SET_DROPDOWN_VALUE}'
-        COMP_Select.select-single-option    ${action}[xpath]    ${input}[value]
+        COMP_Select.select-single-option    ${action}[selector][xpath]    ${input}[value]
     ELSE IF    '${action}[type]' == '${TYPE_TEXT}'
-        COMP_Textbox.set-value    ${action}[xpath]    ${input}[value]
+        COMP_Textbox.set-value    ${action}[selector][xpath]    ${input}[value]
     ELSE IF    '${action}[type]' == '${GET_TEXTBOX_VALUE}'
-        ${value}=    COMP_Textbox.get-value    ${action}[xpath]
+        ${value}=    COMP_Textbox.get-value    ${action}[selector][xpath]
     ELSE IF    '${action}[type]' == '${GET_CHECKBOX_VALUE}'
-        ${value}=    COMP_Checkbox.get-value    ${action}[xpath]
+        ${value}=    COMP_Checkbox.get-value    ${action}[selector][xpath]
         IF    ${value}
             ${value}=    Set Variable    TRUE
         ELSE
@@ -159,9 +159,9 @@ execute-action
         END
     ELSE IF    '${action}[type]' == '${SET_CHECKBOX_VALUE}'
         ${select}=    evaluate(${input}[value] == TRUE)
-        COMP_Checkbox.set-value    ${action}[xpath]    ${select}
+        COMP_Checkbox.set-value    ${action}[selector][xpath]    ${select}
     ELSE IF    '${action}[type]' == '${GET_RADIO_VALUE}'
-        ${value}=    COMP_Checkbox.get-value    ${action}[xpath]
+        ${value}=    COMP_Checkbox.get-value    ${action}[selector][xpath]
         IF    ${value}
             ${value}=    Set Variable    TRUE
         ELSE
@@ -169,16 +169,16 @@ execute-action
         END
     ELSE IF    '${action}[type]' == '${SET_RADIO_VALUE}'
         ${select}=    evaluate(${input}[value] == TRUE)
-        COMP_Checkbox.set-value    ${action}[xpath]    ${select}
+        COMP_Checkbox.set-value    ${action}[selector][xpath]    ${select}
     ELSE IF    '${action}[type]' == '${IS_ELEMENT_VISIBLE}'
-        ${value}=    Util_BrowserHelper.is-attached-after-wait    ${action}[xpath]
+        ${value}=    Util_BrowserHelper.is-attached-after-wait    ${action}[selector][xpath]
         IF    ${value}
             ${value}=    Set Variable    TRUE
         ELSE
             ${value}=    Set Variable    FALSE
         END
     ELSE IF    '${action}[type]' == '${GET_TEXT}'
-        ${value}=    Util_BrowserHelper.get-property    ${action}[xpath]    innerText
+        ${value}=    Util_BrowserHelper.get-property    ${action}[selector][xpath]    innerText
     ELSE
         Log To Message    Action not developed. Terminate the TestCase here!!!
         EX_Exception.ex-fail    ACTION_NOT_DEVELOPED
@@ -251,12 +251,21 @@ send-action-sequence-message
     ...    ${input}
     ...    ${errorMessage}=${EMPTY}
     ...    ${assertionMessage}=${EMPTY}
+    
+    
+    ${is_selector_exists}=    UTIL_Collection.is-value-not-none    ${action}    selector
+    IF    $is_selector_exists
+        ${xpath}=    Set Variable    ${action}[selector][xpath]
+    ELSE
+        ${xpath}=    Set Variable    ${EMPTY}
+    END
+
     ${response_message}=    Create Dictionary    
     ...    flowActionSequenceHistoryId=${flowActionSequenceHistoryId}   
     ...    status=${status}    
     ...    actionName=${action}[name]
     ...    actionType=${action}[type]
-    ...    actionXpath=${action}[xpath]
+    ...    actionXpath=${xpath}
     ...    inputValue=${input}[value]
     ...    errorMessage=${errorMessage}
     ...    assertionMessage=${assertionMessage}

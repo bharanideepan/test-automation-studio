@@ -1,6 +1,6 @@
 const populateFields = (hook: any) => {
   const sequelize = hook.app.get("sequelizeClient");
-  const { flow, testCase, action, input, flowActionSequence } = sequelize.models;
+  const { flow, testCase, action, input, flowActionSequence, page, selector } = sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
@@ -26,8 +26,15 @@ const populateFields = (hook: any) => {
       {
         model: action, include: [{
           model: input
+        }, {
+          model: selector
         }]
       },
+      {
+        model: page, include: [{
+          model: selector
+        }]
+      }
     ],
     order: [
       [{ model: flow }, 'createdAt', 'ASC'],

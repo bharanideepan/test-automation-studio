@@ -1,4 +1,4 @@
-import { Action, Assertion, Flow, FlowActionSequence, Input, TestCase, TestCaseFlowSequence } from "../declarations/interface";
+import { Action, Assertion, Flow, FlowActionSequence, Input, Page, Selector, TestCase, TestCaseFlowSequence } from "../declarations/interface";
 
 export default {
   dateDisplayFormat: "DD MMM, YYYY (HH:mm A)"
@@ -16,7 +16,7 @@ export const OPERATOR_TYPES = [
 
 export const ACTION_TYPES = [
   { label: "Launch Browser", value: "LAUNCH_BROWSER" },
-  { label: "New Page", value: "NEW_PAGE" },
+  // { label: "New Page", value: "NEW_PAGE" },
   { label: "Click", value: "CLICK" },
   { label: "Double Click", value: "DOUBLE_CLICK" },
   { label: "Get dropdown value", value: "GET_DROPDOWN_VALUE" },
@@ -53,14 +53,27 @@ export const BOOLEAN_ACITON_TYPES = [
   "IS_ELEMENT_VISIBLE",
 ]
 
+export const DEFAULT_SELECTOR: Selector = {
+  id: "",
+  pageId: "",
+  name: "",
+  xpath: ""
+};
+
+export const DEFAULT_PAGE: Page = {
+  id: "",
+  projectId: "",
+  name: "",
+};
+
 export const DEFAULT_ACTION: Action = {
   id: "",
   projectId: "",
   name: "",
   type: "",
-  xpath: "",
   valueRegex: "",
   inputs: [],
+  selectorId: ""
 };
 
 export const DEFAULT_INPUT: Input = {
