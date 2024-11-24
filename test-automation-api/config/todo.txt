@@ -11,6 +11,8 @@ Good to have TODO:
     add new input for action in test case creation page
 
 Selectors related TODO:
-    Store selectors - page wise - page object modal.
     tool for extracting selector from application
     placeholders in xpath
+
+Bug
+    Testcaseflowactioninput not creating
