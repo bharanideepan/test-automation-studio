@@ -97,24 +97,27 @@ export class TestCaseRun extends Service {
           console.log("Response from RPA received.", response);
           if (response.flowActionSequenceHistoryId) {
             const { flowActionSequenceHistoryId, actionName, actionType, actionXpath, inputValue, status, errorMessage, assertionMessage } = response;
-            this.app.service('flow-action-sequence-history').patch(flowActionSequenceHistoryId, {
+            const flowActionSequenceHistory = await this.app.service('flow-action-sequence-history').patch(flowActionSequenceHistoryId, {
               status, errorMessage, actionName, actionType, actionXpath, inputValue, assertionMessage
             })
           } else if (response.testCaseFlowSequenceHistoryId) {
             const { testCaseFlowSequenceHistoryId, status, errorMessage } = response;
-            this.app.service('test-case-flow-sequence-history').patch(testCaseFlowSequenceHistoryId, {
+            const testCaseFlowSequenceHistory = await this.app.service('test-case-flow-sequence-history').patch(testCaseFlowSequenceHistoryId, {
               status,
               errorMessage
             })
           } else {
             const { testCaseRunId, status, errorMessage } = response;
-            this.app.service('test-case-run').patch(testCaseRunId, {
+            const testCaseRun = await this.app.service('test-case-run').patch(testCaseRunId, {
               status,
               errorMessage
             })
           }
           // Send real-time updates to the front-end
-          // this.app.io.emit('test-case-run-updates', { testCaseRunId, status, message: updateMessage });
+          if (this.app.io) {
+            console.log("app io exists")
+            this.app.io.emit('test-case-run-updates', response);
+          }
         }
       },
     });

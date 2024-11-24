@@ -18,6 +18,7 @@ export const executeRun: any = createAsyncThunk(
 )
 const DEFAULT: {
   testCaseRun?: TestCaseRun;
+  addedTestCaseRun?: TestCaseRun;
   status: {
     type: "SUCCESS" | "FAILURE" | "ERROR";
     message: string;
@@ -45,7 +46,7 @@ const slice = createSlice({
       };
     })
     builder.addCase(executeRun.fulfilled, (state, action) => {
-      // state.testCase = action.payload;
+      state.addedTestCaseRun = action.payload;
       state.status = {
         type: "SUCCESS",
         message: "Run executed successfully",

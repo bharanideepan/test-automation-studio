@@ -27,6 +27,9 @@ const slice = createSlice({
     clearStatus(state) {
       state.status = null;
     },
+    addTestCaseRun(state, action) {
+      state.testCase?.testCaseRuns?.unshift(action.payload)
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(getTestCaseById.fulfilled, (state, action) => {

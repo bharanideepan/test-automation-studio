@@ -38,8 +38,6 @@ ${SET_RADIO_VALUE}    SET_RADIO_VALUE
 ${IS_ELEMENT_VISIBLE}    IS_ELEMENT_VISIBLE
 ${GET_TEXT}    GET_TEXT
 
-&{ACCUMULATION}
-
 *** Tasks ***
 initialize-fb-worker
     execute-functional-block
@@ -50,7 +48,6 @@ execute-functional-block
     [Documentation]    To execute fb
     [Tags]    to-initialize-library
     WHILE    '${TERMINATION_FLAG}' == 'False'
-        ${ACCUMULATION}=    Create Dictionary
         COMP_BrowserContext.launch-browser
         Log To Console    <===Polling message===>
         ${json}=    CommandConsumer.Get A Command    ${5}
@@ -88,6 +85,7 @@ execute-test-case
             ${test_case_run_response_message}=    Create Dictionary    testCaseRunId=${testCaseRun}[id]    status=STARTED
             UTIL_Common.Push response message to kafka topic    ${test_case_run_response_message}
             IF    $is_test_case_flow_sequences_exists
+                ${ACCUMULATION}=    Create Dictionary
                 FOR    ${testCaseFlowSequence}    IN    @{testCase}[testCaseFlowSequences]
                     TRY
                         ${flow}=    Set Variable    ${testCaseFlowSequence}[flow]
@@ -104,7 +102,7 @@ execute-test-case
                                         EX_Exception.ex-fail    INPUT_NOT_FOUND_IN_ACTION
                                     END
                                     ${value}=    execute-action    ${action}    ${input}
-                                    ${assertion_message}=    perform-assertion    ${assertions}    ${testCaseFlowSequence}[id]    ${flowActionSequence}[id]    ${value}
+                                    ${assertion_message}=    perform-assertion    ${ACCUMULATION}    ${assertions}    ${testCaseFlowSequence}[id]    ${flowActionSequence}[id]    ${value}
                                     Log To Console    ${assertion_message}
                                     send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    COMPLETED    ${action}    ${input}    ${EMPTY}    ${assertion_message}
                                 EXCEPT    AS    ${error_message}
@@ -190,7 +188,7 @@ execute-action
     RETURN    ${value}
 
 perform-assertion
-    [Arguments]    ${assertions}    ${testCaseFlowSequenceId}    ${flowActionSequenceId}    ${value}
+    [Arguments]    ${ACCUMULATION}    ${assertions}    ${testCaseFlowSequenceId}    ${flowActionSequenceId}    ${value}
     ${key}=    Set Variable    testCaseFlowSequenceId:${testCaseFlowSequenceId}::flowActionSequenceId:${flowActionSequenceId}
     FOR    ${assertion}    IN    @{assertions}
         ${source}=    Set Variable    ${assertion}[source]
@@ -251,8 +249,8 @@ send-action-sequence-message
     ...    ${status}
     ...    ${action}
     ...    ${input}
-    ...    ${errorMessage}
-    ...    ${assertionMessage}
+    ...    ${errorMessage}=${EMPTY}
+    ...    ${assertionMessage}=${EMPTY}
     ${response_message}=    Create Dictionary    
     ...    flowActionSequenceHistoryId=${flowActionSequenceHistoryId}   
     ...    status=${status}    

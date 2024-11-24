@@ -21,22 +21,20 @@ import { TestCase, TestCaseFlowSequence, TestCaseRun, } from "../../declarations
 import clsx from "clsx";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
-import AppCard from "../../components/cards/AppCard";
-import io from 'socket.io-client';
-import { getTestCaseRunById } from "../../slices/testCaseRun";
+import { executeRun, getTestCaseRunById } from "../../slices/testCaseRun";
 import constants, { ACTION_TYPES } from "../../util/constants";
 import moment from "moment";
 import ExpandIcon from "../../assets/images/right-arrow.svg";
 import CollapseIcon from "../../assets/images/down-arrow.svg";
 import ProjectIcon from "../../assets/images/project-icon.svg";
 import RecordingIcon from "../../assets/images/recordings-icon.svg";
-import FlowIcon from "../../assets/images/flow-icon.svg";
-
-// const socket = io('http://localhost:3030'); // Update with your server URL
+import PlayIcon from "../../assets/images/play-icon.png";
+import { socket } from "../../services/util";
+import { actions } from "../../slices/testCase";
 
 const useTreeItemStyles = makeStyles((theme) => ({
   label: {
-    padding: `${theme.spacing(0.5)} 0px`,
+    padding: `${theme.spacing(2)} 0px`,
   },
   iconContainer: {
     marginRight: "0 !important",
@@ -131,10 +129,11 @@ const TestCaseRunContainer: React.FC<{
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
   const [selectedTestCaseRun, setSelectedTestCaseRun] = useState<TestCaseRun | undefined>(undefined);
-  const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
-  const { testCaseRun: fetchedTestCaseRun } = useSelector((state: RootState) => state.testCaseRun);
+  const { addedTestCaseRun } = useSelector((state: RootState) => state.testCaseRun);
   const [updates, setUpdates] = useState<any>([]);
-
+  const handleRun = (id: string) => {
+    dispatch(executeRun(id))
+  }
   useEffect(() => {
     if (selectedTestCaseRun) dispatch(getTestCaseRunById(selectedTestCaseRun?.id))
   }, [selectedTestCaseRun]);
@@ -146,24 +145,30 @@ const TestCaseRunContainer: React.FC<{
   useEffect(() => {
     if (list) {
       if (list.length !== count) {
-        setSelectedTestCaseRun(list[list.length - 1])
+        setSelectedTestCaseRun(list[0])
       }
       setCount(list.length)
     }
   }, [list])
 
-  //   useEffect(() => {
-  //     const event = `testCaseRunUpdates`;
-  //     socket.on('connect', () => {
-  //         console.log('Connected to server');
-  //     });
-  //     socket.on(event, (update) => {
-  //         console.log(update);
-  //     });
-  //     return () => {
-  //         socket.off(event);
-  //     };
-  // }, []);
+  useEffect(() => {
+    if (addedTestCaseRun) {
+      dispatch(actions.addTestCaseRun(addedTestCaseRun))
+    }
+  }, [addedTestCaseRun])
+
+  useEffect(() => {
+    const event = `testCaseRunUpdates`;
+    socket.on('connection', () => {
+      console.log('Connected to server');
+    });
+    socket.on('test-case-run-updates', (update) => {
+      console.log(update);
+    });
+    return () => {
+      socket.off(event);
+    };
+  }, []);
 
   return (
     <>
@@ -189,7 +194,7 @@ const TestCaseRunContainer: React.FC<{
           }}
         >
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <TestCaseRunsListView testCaseId={testCaseId} testCaseRuns={list} selectedTestCaseRun={list.find((testCaseRun: TestCaseRun) => testCaseRun.id == selectedTestCaseRun?.id)} setSelectedTestCaseRun={setSelectedTestCaseRun} />
+            <TestCaseRunsListView testCaseId={testCaseId} testCaseRuns={list} selectedTestCaseRun={list.find((testCaseRun: TestCaseRun) => testCaseRun.id == selectedTestCaseRun?.id)} setSelectedTestCaseRun={setSelectedTestCaseRun} handleRun={handleRun} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
             <TestCaseRunHistoryView />
@@ -205,22 +210,33 @@ const TestCaseRunsListView: React.FC<{
   setSelectedTestCaseRun: (testCaseRun?: TestCaseRun) => void
   selectedTestCaseRun: TestCaseRun | undefined;
   testCaseId: string;
+  handleRun: (id: string) => void;
 }> = ({
-  testCaseRuns, selectedTestCaseRun, setSelectedTestCaseRun, testCaseId
+  testCaseRuns, selectedTestCaseRun, setSelectedTestCaseRun, testCaseId, handleRun
 }) => {
     const classes = useStyles();
-    const [editTestCase, setEditTestCase] = useState<TestCase | undefined>(undefined);
     return (
       <>
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
               <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
-                {/* <AddTestCase
-                  testCase={editTestCase}
-                  projectId={projectId}
-                  onModalClose={() => { setEditTestCase(undefined) }}
-                /> */}
+                <Tooltip title={"Trigger New Run"}>
+                  <IconButton
+                    sx={{ padding: 0.5, opacity: 0.6 }}
+                    onClick={() => {
+                      handleRun(testCaseId);
+                    }}
+                    data-testid="edit-testcase"
+                  >
+                    <img
+                      src={PlayIcon}
+                      alt="close"
+                      height="20"
+                      width="20"
+                    />
+                  </IconButton>
+                </Tooltip>
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                   Test Case Runs: {testCaseRuns.length}
                 </Typography>
@@ -348,7 +364,7 @@ const TestCaseRunHistoryView: React.FC = () => {
         </Box>
       </Box>
       <Box className={classes.listContainer} pt={2}>
-        <Box className={classes.body} px={5}>
+        <Box className={classes.body} px={2}>
           <MuiTreeView
             aria-label="multi-select"
             defaultCollapseIcon={
@@ -498,7 +514,6 @@ const TestCaseRunHistoryView: React.FC = () => {
                           console.log("Clicked tree item")
                         }}
                       >
-
                       </TreeItem>
                     </TreeItem>)
                 )}

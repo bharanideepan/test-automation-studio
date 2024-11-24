@@ -6,6 +6,9 @@ type RequestBody = {
   payload?: { refreshToken?: string; accessToken?: string; flowId?: string };
 };
 
+const URL = 'http://localhost:3030';
+export const socket = io(URL);
+
 export const sendMessageToExtension = (request: RequestBody) => {
   try {
     try {

@@ -32,7 +32,7 @@ const populateFields = (hook: any) => {
       }
     ],
     order: [
-      [{ model: testCaseRun }, 'createdAt', 'ASC'],
+      [{ model: testCaseRun }, 'createdAt', 'DESC'],
       [{ model: testCaseFlowSequence }, 'order', 'ASC'],
       [
         { model: testCaseFlowSequence },
