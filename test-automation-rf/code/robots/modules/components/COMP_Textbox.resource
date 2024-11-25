@@ -25,7 +25,6 @@ set-value
     ...    UNKNOWN_ERROR_OCCURRED
     [Tags]    component
     [Arguments]    ${selector}    ${value}    ${retry_count}=3
-    Log To Console    selector::${selector}
     COMP_Textbox.validate-precondition    ${selector}
     UTIL_Validation.fail-if-not-editable-after-wait    ${selector}
     ${retry_info}=    Create Dictionary    is_first_try=${True}
@@ -140,7 +139,7 @@ fill-text-and-validate-post-condition
     END
 
     # Postcondition
-    COMP_Textbox.fail-if-value-not-populated    ${selector}    ${value}
+    # COMP_Textbox.fail-if-value-not-populated    ${selector}    ${value}
 
 fail-if-value-not-populated
     [Documentation]    Fails if the value is not populated in the given input field

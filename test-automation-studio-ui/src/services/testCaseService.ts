@@ -6,6 +6,10 @@ class TestCaseService extends BaseService {
     super("/test-case");
   }
 
+  async getByProjectId(projectId: string) {
+    return this.get("", { projectId })
+  }
+
   async updateTestCase(testCase: TestCase) {
     return this.patch(`/${testCase.id}`, testCase);
   }

@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Typography, Button, Box, Tooltip, TextField, IconButton, Grid } from "@mui/material";
+import { Typography, Button, Box, Tooltip, IconButton, Grid } from "@mui/material";
 import {
   DragDropContext,
   Draggable,
@@ -8,12 +8,11 @@ import {
   Droppable,
 } from "react-beautiful-dnd";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
-import { actions } from "../../slices/projects";
+import { createFlow, updateFlow, actions as flowsActions } from "../../slices/flows";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action, Flow, FlowActionSequence } from "../../declarations/interface";
-import { createFlow, updateFlow } from "../../slices/project";
 import { RootState } from "../../store/rootReducer";
 import { getFlowById } from "../../slices/flow";
 import AppCard from "../../components/cards/AppCard";
@@ -99,6 +98,7 @@ const AddFlow: React.FC<{
   const [title, setTitle] = useState("Add Flow");
   const { flow: fetchedFlow } = useSelector((state: RootState) => state.flow);
   const { project } = useSelector((state: RootState) => state.project);
+  const { actions } = useSelector((state: RootState) => state.actions);
 
   const dispatch = useDispatch();
 
@@ -109,7 +109,7 @@ const AddFlow: React.FC<{
     setModalOpen(false);
     setNameError(undefined);
     onModalClose();
-    dispatch(actions.clearStatus());
+    dispatch(flowsActions.clearStatus());
     setSelectedFlowActionSequences(undefined);
     setData(undefined);
   };
@@ -197,7 +197,7 @@ const AddFlow: React.FC<{
 
   const removeFlowActionSequence = (removeIndex: number) => {
     setSelectedFlowActionSequences((prev: FlowActionSequence[] | undefined) => {
-      const updatedSequences =  prev?.map((sequence: FlowActionSequence, index) => {
+      const updatedSequences = prev?.map((sequence: FlowActionSequence, index) => {
         if (removeIndex === index) {
           return {
             ...sequence,
@@ -315,7 +315,7 @@ const AddFlow: React.FC<{
               >
                 <Grid item xs={6} classes={{ item: classes.gridItem }} py={2}>
                   <AvailableActionsView
-                    actions={project?.actions}
+                    actions={actions}
                     addAction={addNewAction}
                     projectId={project?.id} />
                 </Grid>
@@ -389,25 +389,37 @@ const SelectedActionsView: React.FC<{
                                 opacity: row.isRemoved ? 0.5 : 1
                               }}>
                                 <AppCard id={`${index}`}>
-                                  <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5} position="relative">
-                                  {!row.id && <Typography
+                                  <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={3} position="relative">
+                                    {!row.id && <Typography
                                       variant="h6"
                                       color="secondary"
                                       position="absolute"
-                                      right={"-40px"}
-                                      top={"-40px"}
+                                      right={"-24px"}
+                                      top={"-24px"}
                                     >
                                       New
                                     </Typography>}
-                                    <Typography
-                                      variant="subtitle1"
-                                      color="primary"
-                                      overflow="hidden"
-                                      textOverflow="ellipsis"
-                                      maxWidth="300px"
-                                    >
-                                      {row.action.name}
-                                    </Typography>
+                                    <Box display={"flex"} alignItems={"center"} justifyContent={"center"} flexDirection={"column"}>
+                                      <Typography
+                                        variant="subtitle1"
+                                        color="primary"
+                                        overflow="hidden"
+                                        textOverflow="ellipsis"
+                                        maxWidth="300px"
+                                      >
+                                        {row.action.name}
+                                      </Typography>
+                                      <Typography
+                                        variant="subtitle1"
+                                        color="primary"
+                                        overflow="hidden"
+                                        textOverflow="ellipsis"
+                                        maxWidth="300px"
+                                        mt={2}
+                                      >
+                                        {row.action.selector?.xpath}
+                                      </Typography>
+                                    </Box>
                                   </Box>
                                 </AppCard>
                                 {flowActionSequences && flowActionSequences.length - 1 > index &&
@@ -496,16 +508,28 @@ const AvailableActionsView: React.FC<{
               <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
                 <Box width={"100%"}>
                   <AppCard id={`${index}`}>
-                    <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5}>
-                      <Typography
-                        variant="subtitle1"
-                        color="primary"
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        maxWidth="300px"
-                      >
-                        {row.name}
-                      </Typography>
+                    <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={3}>
+                      <Box display={"flex"} alignItems={"center"} justifyContent={"center"} flexDirection={"column"}>
+                        <Typography
+                          variant="subtitle1"
+                          color="primary"
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          maxWidth="300px"
+                        >
+                          {row.name}
+                        </Typography>
+                        <Typography
+                          variant="subtitle1"
+                          color="primary"
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          maxWidth="300px"
+                          mt={2}
+                        >
+                          {row.selector?.xpath}
+                        </Typography>
+                      </Box>
                     </Box>
                   </AppCard>
                   {actions && actions.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>

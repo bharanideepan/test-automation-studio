@@ -6,6 +6,10 @@ class FlowService extends BaseService {
     super("/flow");
   }
 
+  async getByProjectId(projectId: string) {
+    return this.get("", { projectId })
+  }
+
   async updateFlow(flow: Flow) {
     return this.patch(`/${flow.id}`, flow);
   }

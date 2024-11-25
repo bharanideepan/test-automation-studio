@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Typography, Button, Box, Tooltip, TextField, IconButton, Grid, Accordion, AccordionDetails, AccordionSummary, InputLabel, FormControlLabel, Checkbox } from "@mui/material";
+import { Typography, Button, Box, Tooltip, IconButton, Grid, InputLabel, Checkbox } from "@mui/material";
 import {
   DragDropContext,
   Draggable,
@@ -8,13 +8,12 @@ import {
   Droppable,
 } from "react-beautiful-dnd";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
-import AddIconWhite from "../../assets/images/add-icon-white.svg";
 import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Assertion, Flow, FlowActionSequence, Input, TestCase, TestCaseFlowSequence } from "../../declarations/interface";
-import { createTestCase, updateTestCase } from "../../slices/project";
+import { createTestCase, updateTestCase } from "../../slices/testCases";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
@@ -23,6 +22,7 @@ import { getTestCaseById } from "../../slices/testCase";
 import AppSelect from "../../components/AppSelect";
 import AddInput from "./AddInput";
 import { BOOLEAN_ACITON_TYPES, DEFAULT_ASSERTION, DEFAULT_TEST_CASE, GET_ASSERTION_OPTIONS_FORMATTED, OPERATOR_TYPES } from "../../util/constants";
+import AddFlow from "./AddFlow";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -103,7 +103,7 @@ const AddTestCase: React.FC<{
   >();
   const [title, setTitle] = useState("Add Test Case");
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
-  const { project } = useSelector((state: RootState) => state.project);
+  const { flows } = useSelector((state: RootState) => state.flows);
 
   const dispatch = useDispatch();
 
@@ -455,8 +455,8 @@ const AddTestCase: React.FC<{
               >
                 {step === 0 && <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
                   <AvailableFlowsView
-                    flows={project?.flows}
-                    addFlow={addNewFlow} />
+                    flows={flows}
+                    addFlow={addNewFlow} projectId={projectId} />
                 </Grid>}
                 <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
                   <SelectedFlowsView
@@ -827,15 +827,27 @@ const SequenceInputForm: React.FC<{
                     <AppCard id={`${index}`}>
                       <Box>
                         <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={2} position="relative">
-                          <Typography
-                            variant="subtitle1"
-                            color="primary"
-                            overflow="hidden"
-                            textOverflow="ellipsis"
-                            maxWidth="300px"
-                          >
-                            {flowActionSequence.action.name}
-                          </Typography>
+                          <Box display={"flex"} alignItems={"center"} justifyContent={"center"} flexDirection={"column"}>
+                            <Typography
+                              variant="subtitle1"
+                              color="primary"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                              maxWidth="300px"
+                            >
+                              {flowActionSequence.action.name}
+                            </Typography>
+                            <Typography
+                              variant="subtitle1"
+                              color="primary"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                              maxWidth="300px"
+                              mt={2}
+                            >
+                              {flowActionSequence.action.selector?.xpath}
+                            </Typography>
+                          </Box>
                         </Box>
                         <Grid container>
                           <Grid item xs={3} >
@@ -1092,7 +1104,8 @@ const RemoveSequenceModal: React.FC<{
 const AvailableFlowsView: React.FC<{
   flows?: Flow[];
   addFlow: (flow: Flow) => void;
-}> = ({ flows, addFlow }) => {
+  projectId?: string;
+}> = ({ flows, addFlow, projectId }) => {
   const classes = useStyles();
   const handleAdd = (flow: Flow) => {
     addFlow(flow)
@@ -1103,6 +1116,10 @@ const AvailableFlowsView: React.FC<{
         <Box flexGrow={1}>
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"start"} gap={2}>
+              {projectId && <AddFlow
+                projectId={projectId}
+                onModalClose={() => { console.log("Add/edit action modal closed") }}
+              />}
               {flows && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                   Available flows: {flows?.length ?? 0}

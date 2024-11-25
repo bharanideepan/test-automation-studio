@@ -1,7 +1,6 @@
 import {
   TableContainer,
   Table,
-  TableHead,
   TableRow,
   TableCell,
   Typography,
@@ -9,14 +8,12 @@ import {
   Box,
   Tooltip,
   IconButton,
-  Button,
   Grid,
-  Card
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
-import { Action, Flow, FlowActionSequence, } from "../../declarations/interface";
+import { Flow, FlowActionSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import AddFlow from "./AddFlow";
 import { getFlowById } from "../../slices/flow";
@@ -72,27 +69,28 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const FlowContainer: React.FC<{
-  list: Flow[];
   projectId: string;
-}> = ({ list, projectId }) => {
+}> = ({ projectId }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
   const [selectedFlow, setSelectedFlow] = useState<Flow | undefined>(undefined);
   const { flow: fetchedFlow } = useSelector((state: RootState) => state.flow);
+  const { flows: list } = useSelector((state: RootState) => state.flows);
 
   useEffect(() => {
+    console.log(selectedFlow)
     if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
   }, [selectedFlow]);
 
-  useEffect(() => {
-    if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
-  }, [list]);
+  // useEffect(() => {
+  //   if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
+  // }, [list]);
 
   useEffect(() => {
-    if(list) {
-      if(list.length !== count) {
-        setSelectedFlow(list[list.length-1])
+    if (list) {
+      if (list.length !== count) {
+        setSelectedFlow(list[list.length - 1])
       }
       setCount(list.length)
     }
@@ -100,7 +98,7 @@ const FlowContainer: React.FC<{
 
   return (
     <>
-      {list.length === 0 && (
+      {list?.length === 0 && (
         <Box className={clsx(classes.contentCenter, classes.body)}>
           <Box mr={1}>
             <AddFlow
@@ -113,7 +111,7 @@ const FlowContainer: React.FC<{
           </Typography>
         </Box>
       )}
-      {list.length > 0 && (
+      {list && list.length !== 0 && (
         <Grid
           container
           classes={{ container: classes.container }}
@@ -250,16 +248,28 @@ const ActionListView: React.FC<{ flowName?: string; actionSequences?: FlowAction
           {actionSequences && actionSequences.map((row, index) => (
             <Box mx={5} key={index}>
               <AppCard id={`${index}`}>
-                <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5}>
-                  <Typography
-                    variant="subtitle1"
-                    color="primary"
-                    overflow="hidden"
-                    textOverflow="ellipsis"
-                    maxWidth="300px"
-                  >
-                    {row.action.name}
-                  </Typography>
+                <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={3}>
+                  <Box display={"flex"} alignItems={"center"} justifyContent={"center"} flexDirection={"column"}>
+                    <Typography
+                      variant="subtitle1"
+                      color="primary"
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                      maxWidth="300px"
+                    >
+                      {row.action.name}
+                    </Typography>
+                    <Typography
+                      variant="subtitle1"
+                      color="primary"
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                      maxWidth="300px"
+                      mt={2}
+                    >
+                      {row.action.selector?.xpath}
+                    </Typography>
+                  </Box>
                 </Box>
               </AppCard>
               {actionSequences.length - 1 > index && <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>

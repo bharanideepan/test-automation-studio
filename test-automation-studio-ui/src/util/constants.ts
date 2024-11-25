@@ -1,7 +1,7 @@
 import { Action, Assertion, Flow, FlowActionSequence, Input, Page, Selector, TestCase, TestCaseFlowSequence } from "../declarations/interface";
 
 export default {
-  dateDisplayFormat: "DD MMM, YYYY (HH:mm A)"
+  dateDisplayFormat: "DD MMM, YYYY (HH:mm:ss A)"
 }
 
 export const OPERATOR_TYPES = [

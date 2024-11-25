@@ -1,7 +1,6 @@
-import { HooksObject } from '@feathersjs/feathers';
 const populateFields = (hook: any) => {
   const sequelize = hook.app.get("sequelizeClient");
-  const { flowActionSequence, action } = sequelize.models;
+  const { flowActionSequence, action, selector, input } = sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
@@ -9,7 +8,15 @@ const populateFields = (hook: any) => {
         model: flowActionSequence,
         include: [
           {
-            model: action
+            model: action,
+            include: [
+              {
+                model: selector
+              },
+              {
+                model: input
+              }
+            ]
           }
         ]
       },
@@ -23,7 +30,7 @@ const populateFields = (hook: any) => {
 export default {
   before: {
     all: [],
-    find: [],
+    find: [populateFields],
     get: [populateFields],
     create: [populateFields],
     update: [populateFields],

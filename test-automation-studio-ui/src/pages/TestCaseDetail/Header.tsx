@@ -1,21 +1,18 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
-import PropTypes from "prop-types";
 import {
   Box,
   Button,
   Typography,
   Breadcrumbs,
   Link,
-  SelectChangeEvent,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useSelector, useDispatch } from "react-redux";
 
-import AddIcon from "../../assets/images/add-icon-white.svg";
 import EditableTextField from "../../components/EditableTextField";
 import { RootState } from "../../store/rootReducer";
-import { updateTestCase } from "../../slices/project";
+import { updateTestCase } from "../../slices/testCases";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -74,7 +71,7 @@ const CustomButton: React.FC<{
 const Header: React.FC = () => {
   const classes = useStyles();
   const { testCase } = useSelector((state: RootState) => state.testCase);
-  const { project } = useSelector((state: RootState) => state.project);
+  // const { project } = useSelector((state: RootState) => state.project);
   const dispatch = useDispatch();
   const onTestCaseNameUpdate = (name: string) => {
     dispatch(updateTestCase({
@@ -85,7 +82,7 @@ const Header: React.FC = () => {
   }
   return (
     <Box className={classes.root}>
-      {testCase && project &&
+      {testCase &&
         <Box
           display="flex"
           justifyContent="space-between"
@@ -95,7 +92,7 @@ const Header: React.FC = () => {
           <Box>
             <TestCaseBreadcrumb
               projectId={testCase.projectId}
-              projectName={project.name}
+              projectName={testCase.project?.name}
               testCaseName={testCase.name}
               onTestCaseNameUpdate={onTestCaseNameUpdate}
             />
@@ -123,14 +120,14 @@ const Header: React.FC = () => {
 
 const TestCaseBreadcrumb: React.FC<{
   projectId: string | number;
-  projectName: string;
+  projectName?: string;
   testCaseName: string;
   onTestCaseNameUpdate: (value: string) => void;
 }> = ({ projectId, projectName, testCaseName, onTestCaseNameUpdate }) => {
   const classes = useStyles();
   return (
     <Breadcrumbs classes={{ separator: classes.separator }}>
-      <Link
+      {projectName && <Link
         color="inherit"
         to={`/project/${projectId}`}
         component={RouterLink}
@@ -143,7 +140,7 @@ const TestCaseBreadcrumb: React.FC<{
         >
           {projectName}
         </Typography>
-      </Link>
+      </Link>}
       <EditableTextField
         value={testCaseName}
         onSubmit={onTestCaseNameUpdate}

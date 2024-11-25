@@ -1,22 +1,29 @@
 import React, { useState, useEffect, SyntheticEvent } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { Box, Typography } from "@mui/material";
+import { useParams, useSearchParams } from "react-router-dom";
+import { Box } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useSelector, useDispatch } from "react-redux";
 
 import Header from "./Header";
 import { RootState } from "../../store/rootReducer";
-import {
-  actions,
-  getProjectById,
-  updateProjectName,
-} from "../../slices/project";
 import useSnackbar from "../../hooks/useSnackbar";
 import ActionContainer from "./ActionContainer";
 import FlowContainer from "./FlowContainer";
 import TestCaseContainer from "./TestCaseContainer";
-import { getPagesByProjectId, actions as pageActions } from "../../slices/pages";
 import SelectorContainer from "./SelectorContainer";
+import {
+  actions as projectActions,
+  getProjectById,
+  updateProjectName,
+} from "../../slices/project";
+import { getByProjectId as getFlowsByProjectId, actions as flowsActions } from "../../slices/flows";
+import { actions as projectsActions } from "../../slices/projects";
+import { actions as flowActions } from "../../slices/flow";
+import { actions as testCaseActions } from "../../slices/testCase";
+import { actions as testCaseRunActions } from "../../slices/testCaseRun";
+import { getByProjectId as getActionsByProjectId, actions as actionsActions } from "../../slices/actions";
+import { getByProjectId as getTestCasesByProjectId, actions as testCasesActions } from "../../slices/testCases";
+import { getByProjectId as getPagesByProjectId, actions as pagesActions } from "../../slices/pages";
 
 type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATHS";
 
@@ -45,8 +52,15 @@ const ProjectDetail = () => {
 
   const { notify, hideNotification } = useSnackbar();
 
-  const { project, status } = useSelector((state: RootState) => state.project);
+  const { project, status: projectStatus } = useSelector((state: RootState) => state.project);
+  const { status: projectsStatus } = useSelector((state: RootState) => state.projects);
   const { pages, status: pageStatus } = useSelector((state: RootState) => state.pages);
+  const { status: actionsStatus } = useSelector((state: RootState) => state.actions);
+  const { status: flowsStatus } = useSelector((state: RootState) => state.flows);
+  const { status: flowStatus } = useSelector((state: RootState) => state.flow);
+  const { status: testCasesStatus } = useSelector((state: RootState) => state.testCases);
+  const { status: testCaseRunStatus } = useSelector((state: RootState) => state.testCaseRun);
+  const { status: testCaseStatus } = useSelector((state: RootState) => state.testCase);
   const dispatch = useDispatch();
 
   const handleNameUpdate = (name: string) => {
@@ -68,8 +82,15 @@ const ProjectDetail = () => {
   };
   const handleSnackbarClose = () => {
     hideNotification();
-    dispatch(actions.clearStatus());
-    dispatch(pageActions.clearStatus());
+    dispatch(projectActions.clearStatus())
+    dispatch(flowsActions.clearStatus())
+    dispatch(projectsActions.clearStatus())
+    dispatch(flowActions.clearStatus())
+    dispatch(testCaseActions.clearStatus())
+    dispatch(testCaseRunActions.clearStatus())
+    dispatch(actionsActions.clearStatus())
+    dispatch(testCasesActions.clearStatus())
+    dispatch(pagesActions.clearStatus())
   };
 
   useEffect(() => {
@@ -87,11 +108,29 @@ const ProjectDetail = () => {
 
   useEffect(() => {
     dispatch(getProjectById(projectId));
-    dispatch(getPagesByProjectId(projectId));
+  }, [projectId]);
+
+  useEffect(() => {
+    if (projectId) {
+      dispatch(getFlowsByProjectId(projectId));
+      dispatch(getActionsByProjectId(projectId));
+      dispatch(getPagesByProjectId(projectId));
+      dispatch(getTestCasesByProjectId(projectId));
+    }
   }, [projectId, activeTab]);
 
   useEffect(() => {
-    const notifyStatus = status ?? pageStatus;
+    const notifyStatus =
+      projectStatus
+      ?? projectsStatus
+      ?? pageStatus
+      ?? actionsStatus
+      ?? flowsStatus
+      ?? flowStatus
+      ?? testCasesStatus
+      ?? testCaseRunStatus
+      ?? testCaseStatus
+
     if (notifyStatus) {
       notify({
         message: notifyStatus.message,
@@ -99,7 +138,15 @@ const ProjectDetail = () => {
         type: notifyStatus.type,
       });
     }
-  }, [status, pageStatus]);
+  }, [projectStatus,
+    projectsStatus,
+    pageStatus,
+    actionsStatus,
+    flowsStatus,
+    flowStatus,
+    testCasesStatus,
+    testCaseRunStatus,
+    testCaseStatus,]);
 
   return (
     <Box height="100%">
@@ -118,19 +165,19 @@ const ProjectDetail = () => {
         <Box className={classes.body}>
           {activeTab === "FLOWS" && (
             <FlowContainer
-              list={project.flows ?? []}
+              // list={project.flows ?? []}
               projectId={project.id}
             />
           )}
           {activeTab === "ACTIONS" && (
             <ActionContainer
-              list={project.actions ?? []}
+              // list={project.actions ?? []}
               projectId={project.id}
             />
           )}
           {activeTab === "TEST_CASES" && (
             <TestCaseContainer
-              list={project.testCases ?? []}
+              // list={project.testCases ?? []}
               projectId={project.id}
             />
           )}

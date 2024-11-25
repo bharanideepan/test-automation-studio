@@ -1,13 +1,13 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Typography, Button, Box, Tooltip, TextField, IconButton, SelectChangeEvent } from "@mui/material";
+import { Typography, Button, Box, Tooltip, IconButton, SelectChangeEvent, Checkbox } from "@mui/material";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
 import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action } from "../../declarations/interface";
-import { createAction, updateAction } from "../../slices/project";
+import { createAction, updateAction } from "../../slices/actions";
 import AppSelect, { AppGroupSelect } from "../../components/AppSelect";
 import { ACTION_TYPES, DEFAULT_ACTION } from "../../util/constants";
 import { RootState } from "../../store/rootReducer";
@@ -273,7 +273,7 @@ const AddAction: React.FC<{
                 }
               />
             </Box>
-            <Box mt={2}>
+            <Box mt={2} display={"flex"} alignItems={"center"} justifyContent={"center"} gap={2}>
               <AppSelect
                 id={`action-type-dropdown`}
                 value={data.type}
@@ -285,6 +285,14 @@ const AddAction: React.FC<{
                   typeError ? errorMsg.type[typeError] : ""
                 }
                 options={ACTION_TYPES} label="Select Action Type" />
+              {data.type === "TYPE_TEXT" && <Box display={"flex"} alignItems={"center"} justifyContent={"center"} position="relative">
+                <Tooltip title={"Press enter after typing"}>
+                  <Checkbox checked={data.enter} onChange={(event) => {
+                    handleFieldChange(event, "enter");
+                  }} />
+                </Tooltip>
+                <Typography variant="subtitle1">Press Enter</Typography>
+              </Box>}
             </Box>
             {(data.type !== "LAUNCH_BROWSER" && data.type !== "NEW_PAGE") && <Box mt={2}>
               <AppGroupSelect

@@ -6,7 +6,7 @@ class PageService extends BaseService {
     super("/page");
   }
 
-  async getPagesByProjectId(projectId: string) {
+  async getByProjectId(projectId: string) {
     return this.get(``, {
       projectId
     });

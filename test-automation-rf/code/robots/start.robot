@@ -48,12 +48,12 @@ execute-functional-block
     [Documentation]    To execute fb
     [Tags]    to-initialize-library
     WHILE    '${TERMINATION_FLAG}' == 'False'
-        COMP_BrowserContext.launch-browser
         Log To Console    <===Polling message===>
         ${json}=    CommandConsumer.Get A Command    ${5}
         IF    '${json}[type]' == 'KILL'
             BREAK
         END
+        COMP_BrowserContext.launch-browser
         TRY
             execute-test-case    ${json}
         EXCEPT    AS    ${error_message}
@@ -148,6 +148,9 @@ execute-action
         COMP_Select.select-single-option    ${action}[selector][xpath]    ${input}[value]
     ELSE IF    '${action}[type]' == '${TYPE_TEXT}'
         COMP_Textbox.set-value    ${action}[selector][xpath]    ${input}[value]
+        IF    ${action}[enter]
+            RPA.Browser.Playwright.Keyboard key    press    Enter
+        END
     ELSE IF    '${action}[type]' == '${GET_TEXTBOX_VALUE}'
         ${value}=    COMP_Textbox.get-value    ${action}[selector][xpath]
     ELSE IF    '${action}[type]' == '${GET_CHECKBOX_VALUE}'

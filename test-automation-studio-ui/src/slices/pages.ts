@@ -6,10 +6,10 @@ import {
   Selector
 } from "../declarations/interface";
 
-export const getPagesByProjectId: any = createAsyncThunk(
-  "pages/getPagesByProjectId",
+export const getByProjectId: any = createAsyncThunk(
+  "pages/getByProjectId",
   async (projectId: string) => {
-    return PageService.getPagesByProjectId(projectId);
+    return PageService.getByProjectId(projectId);
   }
 );
 
@@ -69,10 +69,10 @@ const slice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getPagesByProjectId.fulfilled, (state, action) => {
+    builder.addCase(getByProjectId.fulfilled, (state, action) => {
       state.pages = action.payload.data;
     })
-    builder.addCase(getPagesByProjectId.rejected, (state) => {
+    builder.addCase(getByProjectId.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while fetching pages",

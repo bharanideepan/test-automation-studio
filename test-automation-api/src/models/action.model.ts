@@ -32,6 +32,10 @@ export default function (app: Application): typeof Model {
     projectId: {
       type: DataTypes.BIGINT,
       allowNull: false,
+    },
+    enter: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true
     }
   });
   (action as any).associate = function (models: any): void {

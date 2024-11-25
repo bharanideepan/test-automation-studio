@@ -16,15 +16,15 @@ import {
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
-import DeleteIcon from "../../assets/images/delete-icon.svg";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import { Action, Input } from "../../declarations/interface";
-import { useDispatch } from "react-redux";
-import { deleteAction, setDefaultInput } from "../../slices/project";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteAction, setDefaultInput } from "../../slices/actions";
 import clsx from "clsx";
 import AddAction from "./AddAction";
 import AddInput from "./AddInput";
 import { ACTION_TYPES } from "../../util/constants";
+import { RootState } from "../../store/rootReducer";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -69,9 +69,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ActionContainer: React.FC<{
-  list: Action[];
   projectId: string;
-}> = ({ list, projectId }) => {
+}> = ({ projectId }) => {
   const classes = useStyles();
   const [count, setCount] = useState(0);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -80,6 +79,7 @@ const ActionContainer: React.FC<{
   const [deleteInputModalOpen, setDeleteInputModalOpen] = useState(false);
   const [selectedInputId, setSelectedInputId] = useState("");
   const [selectedInput, setSelectedInput] = useState<Input | undefined>(undefined);
+  const { actions: list } = useSelector((state: RootState) => state.actions);
   const dispatch = useDispatch();
   const handleDeleteAction = (id: string) => {
     handleDeleteModalOpen();
@@ -128,7 +128,7 @@ const ActionContainer: React.FC<{
 
   return (
     <>
-      {list.length === 0 && (
+      {list?.length === 0 && (
         <Box className={clsx(classes.contentCenter, classes.body)}>
           <Box mr={1}>
             <AddAction
@@ -141,7 +141,7 @@ const ActionContainer: React.FC<{
           </Typography>
         </Box>
       )}
-      {list.length > 0 && (
+      {list && list.length > 0 && (
         <Grid
           container
           classes={{ container: classes.container }}

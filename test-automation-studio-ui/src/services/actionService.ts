@@ -6,6 +6,10 @@ class ActionService extends BaseService {
     super("/action");
   }
 
+  async getByProjectId(projectId: string) {
+    return this.get("", { projectId })
+  }
+
   async updateAction(action: Action) {
     const newAction = { ...action } as any;
     if (newAction.selectorId.length <= 0) {

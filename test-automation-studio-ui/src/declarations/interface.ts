@@ -3,9 +3,6 @@ export interface Project {
   id: string;
   createdAt: string;
   updatedAt: string;
-  flows: Flow[];
-  testCases: TestCase[];
-  actions: Action[];
 }
 
 export interface Flow {
@@ -22,6 +19,7 @@ export interface TestCase {
   testCaseFlowSequences?: TestCaseFlowSequence[];
   assertions?: Assertion[];
   testCaseRuns?: TestCaseRun[];
+  project?: Project;
 }
 
 export interface Assertion {
@@ -47,6 +45,7 @@ export interface Action {
   inputs?: Input[];
   selector?: Selector;
   selectorId: string;
+  enter?: boolean;
 }
 
 export interface Page {

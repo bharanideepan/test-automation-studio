@@ -12,3 +12,5 @@ Selectors related TODO:
 Good to have TODO:
     add new input for action in test case creation page
     placeholders in xpath (dynamic xpath)
+
+Fetching flow twice

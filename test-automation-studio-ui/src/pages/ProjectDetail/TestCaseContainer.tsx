@@ -1,7 +1,6 @@
 import {
   TableContainer,
   Table,
-  TableHead,
   TableRow,
   TableCell,
   Typography,
@@ -9,9 +8,7 @@ import {
   Box,
   Tooltip,
   IconButton,
-  Button,
   Grid,
-  Card,
   Link
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
@@ -19,18 +16,16 @@ import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import NewTabIcon from "../../assets/images/new-tab-icon.png";
-import AddIcon from "../../assets/images/add-icon-white.svg";
 import PlayIcon from "../../assets/images/play-icon.png";
 import { TestCase, TestCaseFlowSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import { getTestCaseById } from "../../slices/testCase";
-import { actions, executeRun } from "../../slices/testCaseRun";
+import { executeRun } from "../../slices/testCaseRun";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import AddTestCase from "./AddTestCase";
 import io from 'socket.io-client';
-import useSnackbar from "../../hooks/useSnackbar";
 
 // const socket = io('http://localhost:3030'); // Update with your server URL
 
@@ -82,22 +77,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TestCaseContainer: React.FC<{
-  list: TestCase[];
   projectId: string;
-}> = ({ list, projectId }) => {
+}> = ({ projectId }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
   const [selectedTestCase, setSelectedTestCase] = useState<TestCase | undefined>(undefined);
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
-  const { status } = useSelector((state: RootState) => state.testCaseRun);
-  const { notify, hideNotification } = useSnackbar();
+  const { testCases: list } = useSelector((state: RootState) => state.testCases);
   const [updates, setUpdates] = useState<any>([]);
 
-  const handleSnackbarClose = () => {
-    hideNotification();
-    dispatch(actions.clearStatus());
-  };
   useEffect(() => {
     if (selectedTestCase) dispatch(getTestCaseById(selectedTestCase?.id))
   }, [selectedTestCase]);
@@ -115,15 +104,6 @@ const TestCaseContainer: React.FC<{
     }
   }, [list])
 
-  useEffect(() => {
-    if (status) {
-      notify({
-        message: status.message,
-        onClose: handleSnackbarClose,
-        type: status.type,
-      });
-    }
-  }, [status]);
   //   useEffect(() => {
   //     const event = `testCaseRunUpdates`;
   //     socket.on('connect', () => {
@@ -139,7 +119,7 @@ const TestCaseContainer: React.FC<{
 
   return (
     <>
-      {list.length === 0 && (
+      {list?.length === 0 && (
         <Box className={clsx(classes.contentCenter, classes.body)}>
           <Box mr={1}>
             <AddTestCase
@@ -152,7 +132,7 @@ const TestCaseContainer: React.FC<{
           </Typography>
         </Box>
       )}
-      {list.length > 0 && (
+      {list && list.length > 0 && (
         <Grid
           container
           classes={{ container: classes.container }}
