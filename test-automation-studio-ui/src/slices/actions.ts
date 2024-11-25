@@ -62,6 +62,7 @@ export const setDefaultInput: any = createAsyncThunk(
 
 const DEFAULT: {
   actions?: Action[];
+  newInput?: Input;
   status: {
     type: "SUCCESS" | "FAILURE" | "ERROR";
     message: string;
@@ -147,6 +148,7 @@ const slice = createSlice({
     })
     builder.addCase(createInput.fulfilled, (state, action) => {
       const createdInput = action.payload;
+      state.newInput = createdInput;
       if (state.actions) {
         state.actions = state.actions.map(
           (action: Action) => {

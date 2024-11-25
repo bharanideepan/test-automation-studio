@@ -7,6 +7,10 @@ const populateFields = (hook: any) => {
     include: [
       { model: selector },
     ],
+    order: [
+      ['createdAt', 'ASC'],
+      [{ model: selector }, 'createdAt', 'ASC']
+    ],
   };
 };
 

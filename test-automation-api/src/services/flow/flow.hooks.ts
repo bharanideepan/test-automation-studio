@@ -22,7 +22,8 @@ const populateFields = (hook: any) => {
       },
     ],
     order: [
-      [flowActionSequence, 'order', 'ASC'],
+      ['createdAt', 'ASC'],
+      [{ model: flowActionSequence }, 'order', 'ASC'],
     ],
   };
 };

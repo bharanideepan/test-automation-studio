@@ -8,13 +8,13 @@ import {
   Droppable,
 } from "react-beautiful-dnd";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
-import { createFlow, updateFlow, actions as flowsActions } from "../../slices/flows";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action, Flow, FlowActionSequence } from "../../declarations/interface";
 import { RootState } from "../../store/rootReducer";
-import { getFlowById } from "../../slices/flow";
+import { createFlow, updateFlow, actions as flowsActions } from "../../slices/flows";
+import { getFlowById, actions as flowActions } from "../../slices/flow";
 import AppCard from "../../components/cards/AppCard";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
 import { reorder } from "../../util/UtilService";
@@ -110,6 +110,7 @@ const AddFlow: React.FC<{
     setNameError(undefined);
     onModalClose();
     dispatch(flowsActions.clearStatus());
+    dispatch(flowActions.clearStatus());
     setSelectedFlowActionSequences(undefined);
     setData(undefined);
   };

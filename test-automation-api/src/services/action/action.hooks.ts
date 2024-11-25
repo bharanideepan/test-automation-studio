@@ -7,6 +7,9 @@ const populateFields = (hook: any) => {
       { model: input },
       { model: selector },
     ],
+    order: [
+      ['createdAt', 'ASC'],
+    ],
   };
 };
 

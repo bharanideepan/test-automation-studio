@@ -2,12 +2,11 @@ import React, { useState, ChangeEvent, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Typography, Button, Box, Tooltip, IconButton, SelectChangeEvent } from "@mui/material";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
-import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Action, Input } from "../../declarations/interface";
-import { createInput, updateInput } from "../../slices/actions";
+import { actions, createInput, updateInput } from "../../slices/actions";
 import { DEFAULT_INPUT } from "../../util/constants";
 import { AppSelect } from "../../components/AppSelect";
 

@@ -7,6 +7,10 @@ export default {
 export const OPERATOR_TYPES = [
   { label: "Should be equal to", value: "SHOULD_BE_EQUAL_TO" },
   { label: "Should not be Equal to", value: "SHOULD_NOT_BE_EQUAL_TO" },
+  { label: "Contains", value: "CONTAINS" },
+  { label: "Target Contains Source", value: "TARGET_CONTAINS_SOURCE" },
+  { label: "Should not Contain", value: "SHOULD_NOT_CONTAIN" },
+  { label: "Target Should not Contain Source", value: "TARGET_SHOULD_NOT_CONTAIN_SOURCE" },
   // {label: "List should contain", value: "LIST_SHOULD_CONTAIN"},
   // {label: "List should not contain", value: "LIST_SHOULD_NOT_CONTAIN"},
   // {label: "List count should be equal to", value: "LIST_COUNT_SHOULD_BE_EQUAL_TO"},

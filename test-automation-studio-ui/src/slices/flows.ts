@@ -54,6 +54,24 @@ const slice = createSlice({
     clearStatus(state) {
       state.status = null;
     },
+    addNewInput(state, action) {
+      if (state.flows) {
+        state.flows.map((flow) => {
+          if (flow.flowActionSequences) {
+            flow.flowActionSequences = flow.flowActionSequences?.map((flowActionSequence) => {
+              if (flowActionSequence.action.id === action.payload.actionId) {
+                if (flowActionSequence.action.inputs) {
+                  flowActionSequence.action.inputs = [...flowActionSequence.action.inputs, action.payload]
+                } else {
+                  flowActionSequence.action.inputs = [action.payload]
+                }
+              }
+              return flowActionSequence;
+            })
+          }
+        })
+      }
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(getByProjectId.fulfilled, (state, action) => {

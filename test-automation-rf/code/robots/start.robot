@@ -209,22 +209,12 @@ perform-assertion
                 RETURN    Skipped assertion!!
             END
             IF    $useCustomTargetValue
-                IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
-                    BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${errorMessage}
-                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] == ${customTargetValue}
-                ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
-                    BuiltIn.Should Not Be Equal    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${errorMessage}
-                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] != ${customTargetValue}
-                END
+                ${message}=    assert    ${ACCUMULATION}[${source}]    ${customTargetValue}    ${operator}    ${errorMessage}
+                RETURN    ${message}
             END
             IF    $is_target_exists
-                IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
-                    BuiltIn.Should Be Equal    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${errorMessage}
-                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] == ${ACCUMULATION}[${target}]
-                ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
-                    BuiltIn.Should Not Be Equal    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${errorMessage}
-                    RETURN    Assertion passed: ${ACCUMULATION}[${source}] != ${ACCUMULATION}[${target}]
-                END
+                ${message}=    assert    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${operator}    ${errorMessage}
+                RETURN    ${message}
             END
         END
         IF     '${target}' == '${key}' and '${is_target_exists}' == '${True}'
@@ -235,15 +225,45 @@ perform-assertion
                 Log To Console    No need to assert here.
             END
             IF    $is_source_exists
-                IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
-                    BuiltIn.Should Be Equal    ${ACCUMULATION}[${target}]    ${ACCUMULATION}[${source}]    ${errorMessage}
-                    RETURN    Assertion passed: ${ACCUMULATION}[${target}] == ${ACCUMULATION}[${source}]
-                ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
-                    BuiltIn.Should Not Be Equal    ${ACCUMULATION}[${target}]    ${ACCUMULATION}[${source}]    ${errorMessage}
-                    RETURN    Assertion passed: ${ACCUMULATION}[${target}] != ${ACCUMULATION}[${source}]
-                END
+                ${message}=    assert    ${ACCUMULATION}[${source}]    ${ACCUMULATION}[${target}]    ${operator}    ${errorMessage}
+                RETURN    ${message}
             END
         END
+    END
+
+assert
+    [Documentation]    Method used to assert and return assertion message
+    [Arguments]    ${source}    ${target}    ${operator}    ${errorMessage}
+    IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
+        BuiltIn.Should Be Equal    ${source}    ${target}    ${errorMessage}: ${source} != ${target}
+        RETURN    Assertion passed: ${source} == ${target}
+    ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
+        BuiltIn.Should Not Be Equal    ${source}    ${target}    ${errorMessage}: ${source} == ${target}
+        RETURN    Assertion passed: ${source} != ${target}
+    ELSE IF    '${operator}' == 'CONTAINS'
+        ${contains}=    UTIL_String.check-string-contains    ${source}    ${target}
+        IF    $contains
+            RETURN    Assertion passed: ${source} contains ${target}
+        END
+        Fail    ${errorMessage}: ${source} does not contain ${target}
+    ELSE IF    '${operator}' == 'TARGET_CONTAINS_SOURCE'
+        ${contains}=    UTIL_String.check-string-contains    ${target}    ${source}
+        IF    $contains
+            RETURN    Assertion passed: ${target} contains ${source}
+        END
+        Fail    ${errorMessage}: ${target} does not contain ${source}
+    ELSE IF    '${operator}' == 'SHOULD_NOT_CONTAIN'
+        ${contains}=    UTIL_String.check-string-contains    ${source}    ${target}
+        IF    $contains
+            Fail    ${errorMessage}: ${source} contains ${target}
+        END
+        RETURN    Assertion passed: ${source} does not contain ${target}
+    ELSE IF    '${operator}' == 'TARGET_SHOULD_NOT_CONTAIN_SOURCE'
+        ${contains}=    UTIL_String.check-string-contains    ${target}    ${source}
+        IF    $contains
+            Fail    ${errorMessage}: ${target} contains ${source}
+        END
+        RETURN    Assertion passed: ${target} does not contain (${source})
     END
 
 send-action-sequence-message

@@ -8,17 +8,17 @@ import {
   Droppable,
 } from "react-beautiful-dnd";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
-import { actions } from "../../slices/projects";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
 import { Assertion, Flow, FlowActionSequence, Input, TestCase, TestCaseFlowSequence } from "../../declarations/interface";
 import { createTestCase, updateTestCase } from "../../slices/testCases";
+import { actions as flowsActions } from "../../slices/flows";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import DeleteIcon from "../../assets/images/delete-icon.svg";
 import { reorder } from "../../util/UtilService";
-import { getTestCaseById } from "../../slices/testCase";
+import { actions, getTestCaseById } from "../../slices/testCase";
 import AppSelect from "../../components/AppSelect";
 import AddInput from "./AddInput";
 import { BOOLEAN_ACITON_TYPES, DEFAULT_ASSERTION, DEFAULT_TEST_CASE, GET_ASSERTION_OPTIONS_FORMATTED, OPERATOR_TYPES } from "../../util/constants";
@@ -104,6 +104,7 @@ const AddTestCase: React.FC<{
   const [title, setTitle] = useState("Add Test Case");
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
   const { flows } = useSelector((state: RootState) => state.flows);
+  const { newInput } = useSelector((state: RootState) => state.actions);
 
   const dispatch = useDispatch();
 
@@ -321,6 +322,13 @@ const AddTestCase: React.FC<{
     if (nameError) return
     if (submitted) submitData();
   }, [submitted]);
+
+  useEffect(() => {
+    if (newInput) {
+      dispatch(flowsActions.addNewInput(newInput))
+      dispatch(actions.addNewInput(newInput))
+    }
+  }, [newInput]);
 
   useEffect(() => {
     if (testCase) {
@@ -870,8 +878,7 @@ const SequenceInputForm: React.FC<{
                               </InputLabel>
                             </Box>
                           </Grid>}
-                          <Grid item xs={2}></Grid>
-                          {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Grid item xs={3} >
+                          {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Grid item xs={4} >
                             <Box minWidth={"25px"}>
                               <AppSelect
                                 id={`action-input-dropdown`}
@@ -881,6 +888,11 @@ const SequenceInputForm: React.FC<{
                                 }} options={getInputOptions(flowActionSequence.action.inputs ?? [])} label="Select Action Input" />
                             </Box>
                           </Grid>}
+                          <Grid item xs={1}>
+                            <Box display={"flex"} alignItems={"center"} justifyItems={"center"} flexDirection={"column"}>
+                              <AddInput action={flowActionSequence.action} onModalClose={() => { console.log("Input model closed") }} />
+                            </Box>
+                          </Grid>
                         </Grid>
                       </Box>
                     </AppCard>

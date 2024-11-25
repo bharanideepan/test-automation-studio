@@ -1,8 +1,17 @@
+const populateFields = (hook: any) => {
+  hook.params.sequelize = {
+    raw: false,
+    order: [
+      ['createdAt', 'ASC'],
+    ],
+  };
+};
+
 export default {
   before: {
     all: [],
-    find: [],
-    get: [],
+    find: [populateFields],
+    get: [populateFields],
     create: [],
     update: [],
     patch: [],

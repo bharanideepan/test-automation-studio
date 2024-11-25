@@ -29,6 +29,41 @@ const slice = createSlice({
     },
     addTestCaseRun(state, action) {
       state.testCase?.testCaseRuns?.unshift(action.payload)
+    },
+    addNewInput(state, action) {
+      if (state.testCase) {
+        if (state.testCase.testCaseFlowSequences) {
+          state.testCase.testCaseFlowSequences = state.testCase.testCaseFlowSequences.map((testCaseFlowSequence) => {
+            if (testCaseFlowSequence.flow.flowActionSequences) {
+              testCaseFlowSequence.flow.flowActionSequences = testCaseFlowSequence.flow.flowActionSequences.map((flowActionSequence) => {
+                if (flowActionSequence.action.id === action.payload.actionId) {
+                  if (flowActionSequence.action.inputs) {
+                    flowActionSequence.action.inputs = [...flowActionSequence.action.inputs, action.payload]
+                  } else {
+                    flowActionSequence.action.inputs = [action.payload]
+                  }
+                }
+                return flowActionSequence;
+              })
+            }
+            return testCaseFlowSequence;
+          })
+        }
+        // state.flows.map((flow) => {
+        //   if (flow.flowActionSequences) {
+        //     flow.flowActionSequences = flow.flowActionSequences?.map((flowActionSequence) => {
+        //       if (flowActionSequence.action.id === action.payload.actionId) {
+        //         if (flowActionSequence.action.inputs) {
+        //           flowActionSequence.action.inputs = [...flowActionSequence.action.inputs, action.payload]
+        //         } else {
+        //           flowActionSequence.action.inputs = [action.payload]
+        //         }
+        //       }
+        //       return flowActionSequence;
+        //     })
+        //   }
+        // })
+      }
     }
   },
   extraReducers: (builder) => {

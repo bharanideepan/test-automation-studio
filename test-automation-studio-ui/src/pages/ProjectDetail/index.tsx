@@ -117,7 +117,7 @@ const ProjectDetail = () => {
       dispatch(getPagesByProjectId(projectId));
       dispatch(getTestCasesByProjectId(projectId));
     }
-  }, [projectId, activeTab]);
+  }, [projectId]);
 
   useEffect(() => {
     const notifyStatus =

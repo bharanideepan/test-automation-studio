@@ -1,9 +1,8 @@
 import React, { useState, ChangeEvent } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Typography, Button, Box, IconButton } from "@mui/material";
 import AppModal from "../AppModal";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
-import { RootState } from "../../store/rootReducer";
 import { actions, createProject } from "../../slices/projects";
 import AppTextbox from "../AppTextbox";
 import { makeStyles } from "@mui/styles";
@@ -21,7 +20,6 @@ const AddProject = () => {
   const [projectName, setProjectName] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { status } = useSelector((state: RootState) => state.projects);
   const dispatch = useDispatch();
 
   const handleModalOpen = () => {
