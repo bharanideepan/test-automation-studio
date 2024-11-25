@@ -44,7 +44,11 @@ export class TestCaseRun extends Service {
         })
         testCaseFlowSequence.flow.flowActionSequences =
           await Promise.all(testCaseFlowSequence.flow.flowActionSequences.filter((flowActionSequence: any) => {
-            return !flowActionSequence.testCaseFlowSequenceActionInput.skip;
+            if (flowActionSequence.testCaseFlowSequenceActionInput) {
+              return !flowActionSequence.testCaseFlowSequenceActionInput.skip;
+            } else {
+              return true;
+            }
           }).map(async (flowActionSequence: any) => {
             const flowActionSequenceHistory = await this.app.service('flow-action-sequence-history').create({
               testCaseRunId: testCaseRun.id,

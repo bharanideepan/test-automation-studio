@@ -57,7 +57,8 @@ export const DEFAULT_SELECTOR: Selector = {
   id: "",
   pageId: "",
   name: "",
-  xpath: ""
+  xpath: "",
+  pageName: ""
 };
 
 export const DEFAULT_PAGE: Page = {

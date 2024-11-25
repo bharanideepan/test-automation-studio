@@ -29,8 +29,16 @@ export const updatePage: any = createAsyncThunk(
 
 export const createSelector: any = createAsyncThunk(
   "pages/createSelector",
-  async (selector: Selector) => {
-    return SelectorService.createSelector(selector);
+  async (payload: { selector: Selector, projectId?: string }) => {
+    if (payload.selector.pageId !== "NEW") {
+      const newSelector = await SelectorService.createSelector(payload.selector);
+      return { newSelector };
+    }
+    if (payload.selector.pageId === "NEW" && payload.selector.pageName && payload.projectId) {
+      const newPage: any = await PageService.createPage({ name: payload.selector.pageName, projectId: payload.projectId, id: "" })
+      const newSelector: any = await SelectorService.createSelector({ ...payload.selector, pageId: newPage.id, id: "" });
+      return { newSelector, newPage }
+    }
   }
 );
 
@@ -43,6 +51,7 @@ export const updateSelector: any = createAsyncThunk(
 
 const DEFAULT: {
   pages?: Page[];
+  newSelector?: Selector;
   status: {
     type: "SUCCESS" | "FAILURE" | "ERROR";
     message: string;
@@ -98,20 +107,38 @@ const slice = createSlice({
       };
     })
     builder.addCase(createSelector.fulfilled, (state, action) => {
-      if (state.pages) {
-        state.pages = state.pages?.map((page) => {
-          if (page.id == action.payload.pageId) {
-            if (page.selectors) {
-              page.selectors = [...page.selectors, action.payload];
+      const { newPage, newSelector } = action.payload;
+      state.newSelector = newSelector;
+      if (newPage) {
+        if (state.pages) {
+          state.pages = [...state.pages, {
+            ...newPage, selectors: [newSelector]
+          }];
+        } else {
+          state.pages = [{
+            ...newPage, selectors: [newSelector]
+          }];
+        }
+      } else {
+        if (state.pages) {
+          state.pages = state.pages?.map((page) => {
+            if (page.id == newSelector.pageId) {
+              if (page.selectors) {
+                page.selectors = [...page.selectors, newSelector];
+              } else {
+                page.selectors = [newSelector];
+              }
+              return page;
             } else {
-              page.selectors = [action.payload];
+              return page;
             }
-            return page;
-          } else {
-            return page;
-          }
-        })
+          })
+        }
       }
+      state.status = {
+        type: "SUCCESS",
+        message: "Selector created successfully",
+      };
     })
     builder.addCase(createSelector.rejected, (state) => {
       state.status = {

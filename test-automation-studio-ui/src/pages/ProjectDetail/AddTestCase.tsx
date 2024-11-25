@@ -96,6 +96,7 @@ const AddTestCase: React.FC<{
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [step, setStep] = useState(0);
+  const [skipActionInfo, setSkipActionInfo] = useState<{ id: string; skip: boolean } | undefined>(undefined);
 
   const [nameError, setNameError] = useState<
     NameErrorKey | undefined
@@ -466,10 +467,10 @@ const AddTestCase: React.FC<{
                 </Grid>
                 <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
                   <SequenceInputForm
-                    selectedFlowSequences={selectedFlowSequences} setselectedFlowSequences={setselectedFlowSequences} />
+                    selectedFlowSequences={selectedFlowSequences} setselectedFlowSequences={setselectedFlowSequences} setSkipActionInfo={setSkipActionInfo} />
                 </Grid>
                 {step === 1 && <Grid item xs={4} classes={{ item: classes.gridItem }} py={2}>
-                  <Assertions assertions={assertions} setAssertions={setAssertions} selectedFlowSequences={selectedFlowSequences} fetchedTestCase={fetchedTestCase} />
+                  <Assertions assertions={assertions} setAssertions={setAssertions} selectedFlowSequences={selectedFlowSequences} fetchedTestCase={fetchedTestCase} skipActionInfo={skipActionInfo} />
                 </Grid>}
               </Grid>
             </Box>
@@ -485,7 +486,8 @@ const Assertions: React.FC<{
   setAssertions: React.Dispatch<React.SetStateAction<Assertion[] | undefined>>;
   selectedFlowSequences: TestCaseFlowSequence[] | undefined;
   fetchedTestCase?: TestCase;
-}> = ({ assertions, setAssertions, selectedFlowSequences, fetchedTestCase }) => {
+  skipActionInfo?: { id: string; skip: boolean };
+}> = ({ assertions, setAssertions, selectedFlowSequences, fetchedTestCase, skipActionInfo }) => {
   const classes = useStyles();
 
   const restoreAssertion = (restoreIndex: number) => {
@@ -587,6 +589,17 @@ const Assertions: React.FC<{
       classes={{ root: classes.input }} disabled={row.isRemoved}
     />
   }
+
+  useEffect(() => {
+    if (skipActionInfo) {
+      const { id, skip } = skipActionInfo
+      assertions?.map((assertion, index) => {
+        if (assertion.source === id || assertion.target === id) {
+          setAssertInput({ target: { checked: skip } }, index, 'skip')
+        }
+      })
+    }
+  }, [skipActionInfo])
 
   return (
     <>
@@ -723,10 +736,20 @@ const Assertions: React.FC<{
 const SequenceInputForm: React.FC<{
   selectedFlowSequences?: TestCaseFlowSequence[];
   setselectedFlowSequences: React.Dispatch<React.SetStateAction<TestCaseFlowSequence[] | undefined>>;
-}> = ({ selectedFlowSequences, setselectedFlowSequences }) => {
+  setSkipActionInfo: React.Dispatch<React.SetStateAction<{ id: string; skip: boolean } | undefined>>;
+}> = ({ selectedFlowSequences, setselectedFlowSequences, setSkipActionInfo }) => {
   const classes = useStyles();
   const setActionInput = (event: any, flowActionSequence: FlowActionSequence, testCaseFlowSequence: TestCaseFlowSequence, updateType?: string) => {
     const newValue = (updateType === "default" || updateType === "skip") ? event.target.checked : event.target.value;
+    if (updateType === "skip") {
+      let tempId = `flowActionSequenceId:${flowActionSequence.id}`;
+      if (testCaseFlowSequence.testCaseFlowSequenceTempId) {
+        tempId = `testCaseFlowSequenceTempId:${testCaseFlowSequence.testCaseFlowSequenceTempId}::${tempId}`;
+      } else {
+        tempId = `testCaseFlowSequenceId:${testCaseFlowSequence.id}::${tempId}`;
+      }
+      setSkipActionInfo({ id: tempId, skip: newValue })
+    }
     setselectedFlowSequences((prevTestCaseFlowSequences: TestCaseFlowSequence[] | undefined) => {
       let prev = JSON.parse(JSON.stringify(prevTestCaseFlowSequences))
       prev = prev?.map((prevTestCaseFlowSequence: TestCaseFlowSequence) => {

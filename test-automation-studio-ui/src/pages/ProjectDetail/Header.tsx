@@ -62,13 +62,13 @@ const Header: React.FC<{
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
             <AppTabs value={activeTab} onChange={handleTabChange}>
+              <AppTab value="XPATHS" label="XPATHS" />
+              <AppTab disabled className="divider" icon={DividerIcon} />
               <AppTab value="ACTIONS" label="ACTIONS" />
               <AppTab disabled className="divider" icon={DividerIcon} />
               <AppTab value="FLOWS" label="FLOWS" />
               <AppTab disabled className="divider" icon={DividerIcon} />
               <AppTab value="TEST_CASES" label="TEST_CASES" />
-              <AppTab disabled className="divider" icon={DividerIcon} />
-              <AppTab value="XPATHS" label="XPATHS" />
             </AppTabs>
           </Box>
           {/* <Typography

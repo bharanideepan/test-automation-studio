@@ -15,7 +15,7 @@ import useSnackbar from "../../hooks/useSnackbar";
 import ActionContainer from "./ActionContainer";
 import FlowContainer from "./FlowContainer";
 import TestCaseContainer from "./TestCaseContainer";
-import { getPagesByProjectId } from "../../slices/pages";
+import { getPagesByProjectId, actions as pageActions } from "../../slices/pages";
 import SelectorContainer from "./SelectorContainer";
 
 type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATHS";
@@ -41,22 +41,22 @@ const ProjectDetail = () => {
   const classes = useStyles();
   const { projectId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<ProjectTab>("ACTIONS");
+  const [activeTab, setActiveTab] = useState<ProjectTab>("TEST_CASES");
 
   const { notify, hideNotification } = useSnackbar();
 
   const { project, status } = useSelector((state: RootState) => state.project);
-  const { pages } = useSelector((state: RootState) => state.pages);
+  const { pages, status: pageStatus } = useSelector((state: RootState) => state.pages);
   const dispatch = useDispatch();
 
   const handleNameUpdate = (name: string) => {
     dispatch(updateProjectName({ id: projectId, name }));
   };
   const handleTabChange = (_: SyntheticEvent<Element, Event>, tab: string) => {
-    const params = { tab: "1" };
-    if (tab === "FLOWS") params.tab = "2";
-    if (tab === "TEST_CASES") params.tab = "3";
-    if (tab === "XPATHS") params.tab = "4";
+    const params = { tab: "TEST_CASES" };
+    if (tab === "FLOWS") params.tab = "FLOWS";
+    if (tab === "ACTIONS") params.tab = "ACTIONS";
+    if (tab === "XPATHS") params.tab = "XPATHS";
     setSearchParams(params);
   };
   const getCount = () => {
@@ -69,17 +69,18 @@ const ProjectDetail = () => {
   const handleSnackbarClose = () => {
     hideNotification();
     dispatch(actions.clearStatus());
+    dispatch(pageActions.clearStatus());
   };
 
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab === "1") {
+    if (tab === "ACTIONS") {
       setActiveTab("ACTIONS");
-    } else if (tab === "2") {
+    } else if (tab === "FLOWS") {
       setActiveTab("FLOWS");
-    } else if (tab === "3") {
+    } else if (tab === "TEST_CASES") {
       setActiveTab("TEST_CASES");
-    } else if (tab === "4") {
+    } else if (tab === "XPATHS") {
       setActiveTab("XPATHS");
     }
   }, [searchParams, setSearchParams, setActiveTab]);
@@ -90,14 +91,15 @@ const ProjectDetail = () => {
   }, [projectId, activeTab]);
 
   useEffect(() => {
-    if (status) {
+    const notifyStatus = status ?? pageStatus;
+    if (notifyStatus) {
       notify({
-        message: status.message,
+        message: notifyStatus.message,
         onClose: handleSnackbarClose,
-        type: status.type,
+        type: notifyStatus.type,
       });
     }
-  }, [status]);
+  }, [status, pageStatus]);
 
   return (
     <Box height="100%">

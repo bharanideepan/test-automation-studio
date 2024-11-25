@@ -141,7 +141,11 @@ export class TestCase extends Service {
       const testCaseData = await this.app.service('test-case').get(id, params);
       testCaseData.dataValues.testCaseFlowSequences = testCaseData.dataValues.testCaseFlowSequences.map((testCaseFlowSequence: any) => {
         testCaseFlowSequence.dataValues.flow.dataValues.flowActionSequences = testCaseFlowSequence.dataValues.flow.dataValues.flowActionSequences.filter((flowActionSequence: any) => {
-          return !flowActionSequence.dataValues.testCaseFlowSequenceActionInput.skip;
+          if (flowActionSequence.dataValues.testCaseFlowSequenceActionInput) {
+            return !flowActionSequence.dataValues.testCaseFlowSequenceActionInput.skip;
+          } else {
+            return true;
+          }
         })
         return testCaseFlowSequence;
       })

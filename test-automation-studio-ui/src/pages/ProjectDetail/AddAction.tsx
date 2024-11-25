@@ -11,6 +11,7 @@ import { createAction, updateAction } from "../../slices/project";
 import AppSelect, { AppGroupSelect } from "../../components/AppSelect";
 import { ACTION_TYPES, DEFAULT_ACTION } from "../../util/constants";
 import { RootState } from "../../store/rootReducer";
+import AddSelector from "./AddSelector";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -73,7 +74,7 @@ const AddAction: React.FC<{
   const [data, setData] = useState<Action | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const { pages, status } = useSelector((state: RootState) => state.pages);
+  const { pages, status, newSelector } = useSelector((state: RootState) => state.pages);
 
   const [nameError, setNameError] = useState<
     ActionErrorKey | undefined
@@ -225,6 +226,12 @@ const AddAction: React.FC<{
     if (submitted) submitData();
   }, [submitted]);
 
+  useEffect(() => {
+    if (newSelector) {
+      handleFieldChange({ target: { value: newSelector.id } }, "selectorId")
+    }
+  }, [newSelector]);
+
   return (
     <Box>
       <Tooltip title={"Add new action for this project"}>
@@ -296,19 +303,11 @@ const AddAction: React.FC<{
                     options: page.selectors?.map((selector) => ({ label: `${selector.name} - ${selector.xpath}`, value: selector.id })) ?? []
                   })) ?? []
                 } label="Select Xpath" />
-              {/* <AppTextbox
-                label="Xpath"
-                placeholder="Enter Xpath"
-                value={data.xpath}
-                onChange={(event) => {
-                  handleFieldChange(event, "xpath");
-                }}
-                classes={{ root: classes.input }}
-                error={!!xpathError}
-                helperText={
-                  xpathError ? errorMsg.xpath[xpathError] : ""
-                }
-              /> */}
+              <Box display={"flex"} alignItems={"center"} gap={1} mt={1}>
+                <AddSelector label="Add New Selector" onModalClose={() => {
+                  console.log("Add selector modal closed")
+                }} />
+              </Box>
             </Box>}
             {(data.type !== "LAUNCH_BROWSER" && data.type !== "NEW_PAGE") && <Box mt={2}>
               <AppTextbox

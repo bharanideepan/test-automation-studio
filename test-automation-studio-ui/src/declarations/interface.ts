@@ -61,6 +61,7 @@ export interface Selector {
   name: string;
   xpath: string;
   pageId: string;
+  pageName?: string;
 }
 
 export interface FlowActionSequence {

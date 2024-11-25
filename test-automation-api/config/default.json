@@ -7,7 +7,7 @@
     "max": 1000
   },
   "postgres": {
-    "database": "test_automation_v4",
+    "database": "test_automation_v5",
     "username": "postgres",
     "password": "bharani",
     "host": "localhost",
