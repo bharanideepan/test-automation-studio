@@ -10,7 +10,4 @@ Selectors related TODO:
     tool for extracting selector from application
 
 Good to have TODO:
-    add new input for action in test case creation page
     placeholders in xpath (dynamic xpath)
-
-Fetching flow twice

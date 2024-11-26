@@ -326,7 +326,6 @@ const AddTestCase: React.FC<{
   useEffect(() => {
     if (newInput) {
       dispatch(flowsActions.addNewInput(newInput))
-      dispatch(actions.addNewInput(newInput))
     }
   }, [newInput]);
 
@@ -747,6 +746,29 @@ const SequenceInputForm: React.FC<{
   setSkipActionInfo: React.Dispatch<React.SetStateAction<{ id: string; skip: boolean } | undefined>>;
 }> = ({ selectedFlowSequences, setselectedFlowSequences, setSkipActionInfo }) => {
   const classes = useStyles();
+  const { newInput } = useSelector((state: RootState) => state.actions);
+  const [selectedActionInput, setSelectedActionInput] = useState<{
+    flowActionSequence: FlowActionSequence, testCaseFlowSequence: TestCaseFlowSequence, updateType?: string
+  } | undefined>(undefined);
+  const insertAddedInputInActions = (newInput: Input) => {
+    setselectedFlowSequences((testCaseFlowSequences: TestCaseFlowSequence[] | undefined) => {
+      let prev = JSON.parse(JSON.stringify(testCaseFlowSequences))
+      prev = prev?.map((testCaseFlowSequence: TestCaseFlowSequence) => {
+        testCaseFlowSequence.flow.flowActionSequences = testCaseFlowSequence.flow.flowActionSequences?.map((flowActionSequence: FlowActionSequence) => {
+          if (flowActionSequence.action.id === newInput.actionId) {
+            if (flowActionSequence.action.inputs) {
+              flowActionSequence.action.inputs = [...flowActionSequence.action.inputs, newInput]
+            } else {
+              flowActionSequence.action.inputs = [newInput]
+            }
+          }
+          return flowActionSequence;
+        })
+        return testCaseFlowSequence;
+      })
+      return prev;
+    })
+  }
   const setActionInput = (event: any, flowActionSequence: FlowActionSequence, testCaseFlowSequence: TestCaseFlowSequence, updateType?: string) => {
     const newValue = (updateType === "default" || updateType === "skip") ? event.target.checked : event.target.value;
     if (updateType === "skip") {
@@ -802,6 +824,17 @@ const SequenceInputForm: React.FC<{
   const getSelectedInput = (inputs: Input[], inputId?: string) => {
     return inputs.find((input) => input.id === inputId)?.id ?? ""
   }
+
+  useEffect(() => {
+    if (newInput && selectedActionInput) {
+      insertAddedInputInActions(newInput)
+      setActionInput({ target: { value: newInput.id } },
+        selectedActionInput.flowActionSequence,
+        selectedActionInput.testCaseFlowSequence,
+        selectedActionInput.updateType)
+    }
+  }, [newInput]);
+
   return (
     <>
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -889,8 +922,14 @@ const SequenceInputForm: React.FC<{
                             </Box>
                           </Grid>}
                           <Grid item xs={1}>
-                            <Box display={"flex"} alignItems={"center"} justifyItems={"center"} flexDirection={"column"}>
-                              <AddInput action={flowActionSequence.action} onModalClose={() => { console.log("Input model closed") }} />
+                            <Box display={"flex"} alignItems={"center"} justifyItems={"center"} flexDirection={"column"} onClick={() => {
+                              setSelectedActionInput(
+                                {
+                                  flowActionSequence: flowActionSequence, testCaseFlowSequence: row, updateType: "input"
+                                }
+                              )
+                            }}>
+                              <AddInput action={flowActionSequence.action} onModalClose={() => { console.log("add input closed") }} />
                             </Box>
                           </Grid>
                         </Grid>
