@@ -105,6 +105,7 @@ execute-test-case
                                     ${assertion_message}=    perform-assertion    ${ACCUMULATION}    ${assertions}    ${testCaseFlowSequence}[id]    ${flowActionSequence}[id]    ${value}
                                     Log To Console    ${assertion_message}
                                     send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    COMPLETED    ${action}    ${input}    ${EMPTY}    ${assertion_message}
+                                    BuiltIn.Sleep    ${input}[waitAfterAction]s
                                 EXCEPT    AS    ${error_message}
                                     Log To Console    ${error_message}
                                     send-action-sequence-message    ${flowActionSequence}[flowActionSequenceHistoryId]    FAILED    ${action}    ${input}    ${error_message}
@@ -187,7 +188,6 @@ execute-action
         EX_Exception.ex-fail    ACTION_NOT_DEVELOPED
     END
     Log To Console    ${value}
-    BuiltIn.Sleep    ${input}[waitAfterAction]s
     RETURN    ${value}
 
 perform-assertion

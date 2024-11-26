@@ -795,15 +795,22 @@ const SequenceInputForm: React.FC<{
                   skip: false
                 }
               }
+              let defaultInput = prevFlowActionSequence.testCaseFlowSequenceActionInput.defaultInput;
+              let inputId = prevFlowActionSequence.testCaseFlowSequenceActionInput.inputId;
+              const defaultActionInput = flowActionSequence.action.inputs?.find((input: Input) => input.isDefault);
+              if (defaultActionInput && updateType === "input") {
+                defaultInput = defaultActionInput.id == newValue;
+              } else if (defaultActionInput && updateType === "default" && newValue) {
+                inputId = defaultActionInput.id;
+              }
               return {
                 ...prevFlowActionSequence,
                 ...(prevFlowActionSequence.testCaseFlowSequenceActionInput && {
                   testCaseFlowSequenceActionInput: {
                     ...prevFlowActionSequence.testCaseFlowSequenceActionInput,
-                    ...(updateType === "default" && { defaultInput: newValue }),
+                    ...(updateType === "default" && { defaultInput: newValue, inputId }),
                     ...(updateType === "skip" && { skip: newValue }),
-                    // ...((updateType === "default" && !prevFlowActionSequence.testCaseFlowSequenceActionInput.inputId) && {inputId: getDefaultInputIdFromActionInputs}),
-                    ...(updateType === "input" && { inputId: newValue }),
+                    ...(updateType === "input" && { inputId: newValue, defaultInput }),
                   }
                 })
               }
@@ -922,7 +929,7 @@ const SequenceInputForm: React.FC<{
                             </Box>
                           </Grid>}
                           <Grid item xs={1}>
-                            <Box display={"flex"} alignItems={"center"} justifyItems={"center"} flexDirection={"column"} onClick={() => {
+                            {!flowActionSequence.testCaseFlowSequenceActionInput?.skip && <Box display={"flex"} alignItems={"center"} justifyItems={"center"} flexDirection={"column"} onClick={() => {
                               setSelectedActionInput(
                                 {
                                   flowActionSequence: flowActionSequence, testCaseFlowSequence: row, updateType: "input"
@@ -930,7 +937,7 @@ const SequenceInputForm: React.FC<{
                               )
                             }}>
                               <AddInput action={flowActionSequence.action} onModalClose={() => { console.log("add input closed") }} />
-                            </Box>
+                            </Box>}
                           </Grid>
                         </Grid>
                       </Box>

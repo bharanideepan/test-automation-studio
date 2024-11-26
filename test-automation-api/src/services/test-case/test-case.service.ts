@@ -35,6 +35,11 @@ export default function (app: Application): void {
       return await app.service('test-case').updateTestCaseData(data, params);
     }
   });
+  app.use('/test-case/duplicate', {
+    async create(data: any, params: any) {
+      return await app.service('test-case').duplicateTestCaseData(data, params);
+    }
+  });
 
   // Get our initialized service so that we can register hooks
   const service = app.service('test-case');

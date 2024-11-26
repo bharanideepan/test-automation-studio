@@ -21,6 +21,12 @@ class TestCaseService extends BaseService {
     });
   }
 
+  async duplicateTestCase(id: string) {
+    return this.post("/duplicate", {
+      testCaseId: id,
+    });
+  }
+
   async createTestCaseData(payload: { testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[] }) {
     return this.post("/create", {
       testCase: { projectId: payload.testCase.projectId, name: payload.testCase.name },

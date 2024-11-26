@@ -17,6 +17,7 @@ import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import NewTabIcon from "../../assets/images/new-tab-icon.png";
 import PlayIcon from "../../assets/images/play-icon.png";
+import DuplicateIcon from "../../assets/images/duplicate.png";
 import { TestCase, TestCaseFlowSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import { getTestCaseById } from "../../slices/testCase";
@@ -26,6 +27,7 @@ import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import AddTestCase from "./AddTestCase";
 import io from 'socket.io-client';
+import { duplicateTestCase } from "../../slices/testCases";
 
 // const socket = io('http://localhost:3030'); // Update with your server URL
 
@@ -166,6 +168,9 @@ const TestCasesListView: React.FC<{
     const handleRun = (id: string) => {
       dispatch(executeRun(id))
     }
+    const handleDuplicate = (id: string) => {
+      dispatch(duplicateTestCase(id))
+    }
     return (
       <>
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -197,7 +202,7 @@ const TestCasesListView: React.FC<{
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
                         setSelectedTestCase(row);
                       }} className={selectedTestCase?.id == row.id ? classes.active : ''}>
-                        <TableCell style={{ width: "85%" }} align="left">
+                        <TableCell style={{ width: "80%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             color="primary"
@@ -207,31 +212,6 @@ const TestCasesListView: React.FC<{
                           >
                             {row.name}
                           </Typography>
-                        </TableCell>
-                        <TableCell style={{ width: "5%" }} align="left">
-                          <Box
-                            display={"flex"}
-                            justifyContent={"start"}
-                            alignItems={"center"}
-                            gap={2}
-                          >
-                            <Tooltip title={"Run"}>
-                              <IconButton
-                                sx={{ padding: 0.5, opacity: 0.6 }}
-                                onClick={() => {
-                                  handleRun(row.id);
-                                }}
-                                data-testid="edit-testcase"
-                              >
-                                <img
-                                  src={PlayIcon}
-                                  alt="close"
-                                  height="20"
-                                  width="20"
-                                />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
                         </TableCell>
                         <TableCell style={{ width: "5%" }} align="left">
                           <Box
@@ -259,7 +239,57 @@ const TestCasesListView: React.FC<{
                           </Box>
                         </TableCell>
                         <TableCell style={{ width: "5%" }} align="left">
-                          <Tooltip title={"Test case run history"}>
+                          <Box
+                            display={"flex"}
+                            justifyContent={"start"}
+                            alignItems={"center"}
+                            gap={2}
+                          >
+                            <Tooltip title={"Duplicate"}>
+                              <IconButton
+                                sx={{ padding: 0.5, opacity: 0.6 }}
+                                onClick={() => {
+                                  handleDuplicate(row.id);
+                                }}
+                                data-testid="duplicate-testcase"
+                              >
+                                <img
+                                  src={DuplicateIcon}
+                                  alt="close"
+                                  height="20"
+                                  width="20"
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                        <TableCell style={{ width: "5%" }} align="left">
+                          <Box
+                            display={"flex"}
+                            justifyContent={"start"}
+                            alignItems={"center"}
+                            gap={2}
+                          >
+                            <Tooltip title={"Run"}>
+                              <IconButton
+                                sx={{ padding: 0.5, opacity: 0.6 }}
+                                onClick={() => {
+                                  handleRun(row.id);
+                                }}
+                                data-testid="run-testcase"
+                              >
+                                <img
+                                  src={PlayIcon}
+                                  alt="close"
+                                  height="20"
+                                  width="20"
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                        <TableCell style={{ width: "5%" }} align="left">
+                          <Tooltip title={"View run history"}>
                             <Link
                               color="inherit"
                               to={`/test-case/${row.id}`}
@@ -284,7 +314,6 @@ const TestCasesListView: React.FC<{
                             </Link>
                           </Tooltip>
                         </TableCell>
-
                       </TableRow>
                     );
                   })}

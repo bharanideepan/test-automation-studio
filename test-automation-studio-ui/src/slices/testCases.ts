@@ -31,6 +31,13 @@ export const updateTestCase: any = createAsyncThunk(
   }
 );
 
+export const duplicateTestCase: any = createAsyncThunk(
+  "testCases/duplicateTestCase",
+  async (id: string) => {
+    return TestCaseService.duplicateTestCase(id);
+  }
+)
+
 const DEFAULT: {
   testCases?: TestCase[];
   status: {
@@ -73,6 +80,22 @@ const slice = createSlice({
       state.status = {
         type: "FAILURE",
         message: "Error while creating Test Case",
+      };
+    })
+    builder.addCase(duplicateTestCase.fulfilled, (state, action) => {
+      const testCaseData = action.payload.testCase;
+      if (state.testCases) {
+        state.testCases = [...state.testCases, testCaseData];
+      }
+      state.status = {
+        type: "SUCCESS",
+        message: "Test Case duplicated successfully",
+      };
+    })
+    builder.addCase(duplicateTestCase.rejected, (state) => {
+      state.status = {
+        type: "FAILURE",
+        message: "Error while duplicating Test Case",
       };
     })
     builder.addCase(updateTestCase.fulfilled, (state, action) => {

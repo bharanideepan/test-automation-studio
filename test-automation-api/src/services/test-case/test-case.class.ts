@@ -122,6 +122,16 @@ export class TestCase extends Service {
               })
             }
           }
+          if (sequence.flow && sequence.flow.flowActionSequences) {
+            await Promise.all(sequence.flow.flowActionSequences.map(async (flowActionSequence: any) => {
+              if (flowActionSequence.testCaseFlowSequenceActionInput) {
+                await this.app.service('test-case-flow-sequence-action-input').create({
+                  ...flowActionSequence.testCaseFlowSequenceActionInput,
+                  testCaseFlowSequenceId: createdSequence.id
+                });
+              }
+            }))
+          }
           return createdSequence;
         }))
       }
@@ -131,6 +141,57 @@ export class TestCase extends Service {
         }))
       }
       return { testCase: createdTestCase, sequences, assertions };
+    } catch (err) {
+      throw new Error(`Error while creating test-case-data: ${err}`);
+    }
+  }
+
+  async duplicateTestCaseData(data: any, params: any) {
+    try {
+      let { testCaseId } = data as any;
+      let testCase = await this.app.service('test-case').get(testCaseId);
+      testCase = JSON.parse(JSON.stringify(testCase));
+      let [testCaseName] = testCase.name.split("::");
+      const newTestCase = await this.app.service("test-case").create({
+        name: `${testCaseName}::duplicate-${(new Date().toISOString())}`,
+        projectId: testCase.projectId
+      })
+      await Promise.all(await testCase.testCaseFlowSequences.map(async (testCaseFlowSequence: any) => {
+        const newTestCaseFlowSequence = await this.app.service("test-case-flow-sequence").create({
+          flowId: testCaseFlowSequence.flowId,
+          order: testCaseFlowSequence.order,
+          testCaseId: newTestCase.id
+        })
+        await Promise.all(await testCaseFlowSequence.flow.flowActionSequences.map(async (flowActionSequence: any) => {
+          const testCaseFlowSequenceActionInput = flowActionSequence.testCaseFlowSequenceActionInput;
+          delete testCaseFlowSequenceActionInput.id;
+          await this.app.service('test-case-flow-sequence-action-input').create({
+            ...testCaseFlowSequenceActionInput,
+            testCaseFlowSequenceId: newTestCaseFlowSequence.id
+          });
+          testCase.assertions = testCase.assertions.map((assertion: any) => {
+            const [x1, y1] = assertion.source.split("::");
+            let [a1, b1] = x1.split(":");
+            if (b1 == testCaseFlowSequence.id) {
+              b1 = newTestCaseFlowSequence.id
+            }
+            const source = `${a1}:${b1}::${y1}`;
+            const [x2, y2] = assertion.target.split("::");
+            let [a2, b2] = x2.split(":");
+            if (b2 == testCaseFlowSequence.id) {
+              b2 = newTestCaseFlowSequence.id
+            }
+            const target = `${a2}:${b2}::${y2}`;
+            return { ...assertion, source, target, testCaseId: newTestCase.id };
+          })
+        }))
+      }))
+      await Promise.all(testCase.assertions.map(async (assertion: any) => {
+        const newAssertion = JSON.parse(JSON.stringify(assertion));
+        delete newAssertion.id;
+        await this.app.service("assertion").create(newAssertion);
+      }))
+      return { testCase: newTestCase };
     } catch (err) {
       throw new Error(`Error while creating test-case-data: ${err}`);
     }
