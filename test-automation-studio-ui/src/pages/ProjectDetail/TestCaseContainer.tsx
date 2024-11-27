@@ -208,7 +208,7 @@ const TestCasesListView: React.FC<{
                             color="primary"
                             overflow="hidden"
                             textOverflow="ellipsis"
-                            maxWidth="300px"
+                          // maxWidth="300px"
                           >
                             {row.name}
                           </Typography>

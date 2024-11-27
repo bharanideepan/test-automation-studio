@@ -36,6 +36,13 @@ export const updateFlow: any = createAsyncThunk(
   }
 );
 
+export const duplicateFlow: any = createAsyncThunk(
+  "flows/duplicateFlow",
+  async (id: string) => {
+    return FlowService.duplicateFlow(id);
+  }
+)
+
 
 const DEFAULT: {
   flows?: Flow[];
@@ -97,6 +104,22 @@ const slice = createSlice({
       state.status = {
         type: "FAILURE",
         message: "Error while creating flow",
+      };
+    })
+    builder.addCase(duplicateFlow.fulfilled, (state, action) => {
+      const flowData = action.payload;
+      if (state.flows) {
+        state.flows = [...state.flows, flowData];
+      }
+      state.status = {
+        type: "SUCCESS",
+        message: "Test Case duplicated successfully",
+      };
+    })
+    builder.addCase(duplicateFlow.rejected, (state) => {
+      state.status = {
+        type: "FAILURE",
+        message: "Error while duplicating Test Case",
       };
     })
     builder.addCase(updateFlow.fulfilled, (state, action) => {

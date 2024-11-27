@@ -13,6 +13,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
+import DuplicateIcon from "../../assets/images/duplicate.png";
 import { Flow, FlowActionSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import AddFlow from "./AddFlow";
@@ -20,6 +21,7 @@ import { getFlowById } from "../../slices/flow";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
+import { duplicateFlow } from "../../slices/flows";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -141,6 +143,10 @@ const FlowsListView: React.FC<{
 }) => {
     const classes = useStyles();
     const [editFlow, setEditFlow] = useState<Flow | undefined>(undefined);
+    const dispatch = useDispatch();
+    const handleDuplicate = (id: string) => {
+      dispatch(duplicateFlow(id))
+    }
     return (
       <>
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -178,12 +184,12 @@ const FlowsListView: React.FC<{
                             color="primary"
                             overflow="hidden"
                             textOverflow="ellipsis"
-                            maxWidth="300px"
+                          // maxWidth="300px"
                           >
                             {row.name}
                           </Typography>
                         </TableCell>
-                        <TableCell style={{ width: "10%" }} align="left">
+                        <TableCell style={{ width: "5%" }} align="left">
                           <Box
                             display={"flex"}
                             justifyContent={"start"}
@@ -203,6 +209,31 @@ const FlowsListView: React.FC<{
                                   alt="close"
                                   height="24"
                                   width="24"
+                                />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                        <TableCell style={{ width: "5%" }} align="left">
+                          <Box
+                            display={"flex"}
+                            justifyContent={"start"}
+                            alignItems={"center"}
+                            gap={2}
+                          >
+                            <Tooltip title={"Duplicate"}>
+                              <IconButton
+                                sx={{ padding: 0.5, opacity: 0.6 }}
+                                onClick={() => {
+                                  handleDuplicate(row.id);
+                                }}
+                                data-testid="duplicate-testcase"
+                              >
+                                <img
+                                  src={DuplicateIcon}
+                                  alt="close"
+                                  height="20"
+                                  width="20"
                                 />
                               </IconButton>
                             </Tooltip>

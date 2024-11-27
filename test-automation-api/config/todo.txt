@@ -1,10 +1,8 @@
 Assertion related TODO:
     assertion logic in RF - Done - need to test more scenario
-    Unique identifier (display) to identify the source and target names from the list
 
 Live update TODO:
-    fix connectivity from node.js and react app to show live updates
-    display live updates of the test-case-run
+    display live updates (using socket)
 
 Selectors related TODO:
     tool for extracting selector from application

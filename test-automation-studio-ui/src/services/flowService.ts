@@ -28,6 +28,12 @@ class FlowService extends BaseService {
   async getFlowById(id: string) {
     return this.get(`/${id}`);
   }
+
+  async duplicateFlow(id: string) {
+    return this.post(`/duplicate`, {
+      flowId: id
+    });
+  }
 }
 
 export default new FlowService();
