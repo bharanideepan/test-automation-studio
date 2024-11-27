@@ -20,6 +20,7 @@ export interface TestCase {
   assertions?: Assertion[];
   testCaseRuns?: TestCaseRun[];
   project?: Project;
+  tags?: Tag[];
 }
 
 export interface Assertion {
@@ -135,4 +136,18 @@ export interface FlowActionSequenceHistory {
   inputValue: string;
   status: string;
   updatedAt: string;
+}
+
+export interface Tag {
+  name: string;
+  projectId: string;
+  id: string;
+  testCases?: TestCase[];
+  testCaseTag?: TestCaseTag
+}
+
+export interface TestCaseTag {
+  id: string;
+  testCaseId: string;
+  tagId: string;
 }

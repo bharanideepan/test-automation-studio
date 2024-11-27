@@ -2,7 +2,7 @@ import { HooksObject } from '@feathersjs/feathers';
 
 const populateFields = (hook: any) => {
   const Sequelize = hook.app.get("sequelizeClient");
-  const { flow, flowActionSequence, testCaseFlowSequence, action, assertion, testCaseRun, project } = Sequelize.models;
+  const { flow, flowActionSequence, testCaseFlowSequence, action, assertion, testCaseRun, project, tag, testCaseTag } = Sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
@@ -32,9 +32,14 @@ const populateFields = (hook: any) => {
       },
       {
         model: testCaseRun
+      },
+      {
+        model: tag,
+        through: { model: testCaseTag }
       }
     ],
     order: [
+      ['createdAt', 'ASC'],
       [{ model: testCaseRun }, 'createdAt', 'DESC'],
       [{ model: testCaseFlowSequence }, 'order', 'ASC'],
       [
@@ -84,7 +89,14 @@ const filterTestCaseInputMapping = async (hook: any) => {
 export default {
   before: {
     all: [],
-    find: [],
+    find: [(hook: any) => {
+      hook.params.sequelize = {
+        raw: false,
+        order: [
+          ['createdAt', 'ASC'],
+        ],
+      };
+    }],
     get: [populateFields],
     create: [],
     update: [],

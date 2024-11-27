@@ -1,4 +1,3 @@
-
 # Setup Steps
 
 ## Install Python 3.9 Version
@@ -30,7 +29,6 @@ Follow the installation guide for Conda:
 conda create -n env_name python=3.7 anaconda
 ```
 
-
 ## Conda Command to Activate Environment
 
 ```bash
@@ -47,10 +45,33 @@ conda activate env_name
 rfbrowser init
 ```
 
-
 ## Kafka installation and setup
 
 https://www.geeksforgeeks.org/how-to-install-and-run-apache-kafka-on-windows/
+
+
+##### To Start zookeeper server
+
+```
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+```
+
+##### To Start Kafka server
+
+```
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+```
+
+##### To post message in topic
+
+```
+./kafka-console-producer --bootstrap-server=localhost:9092 --topic request_topic
+```
+
+```
+./kafka-console-producer --bootstrap-server=localhost:9092 --topic response_topic
+```
+
 
 ## Create a topic
 

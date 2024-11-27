@@ -221,7 +221,7 @@ const FlowsListView: React.FC<{
                             alignItems={"center"}
                             gap={2}
                           >
-                            <Tooltip title={"Duplicate"}>
+                            <Tooltip title={"Clone"}>
                               <IconButton
                                 sx={{ padding: 0.5, opacity: 0.6 }}
                                 onClick={() => {

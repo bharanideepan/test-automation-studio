@@ -27,11 +27,12 @@ class TestCaseService extends BaseService {
     });
   }
 
-  async createTestCaseData(payload: { testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[] }) {
+  async createTestCaseData(payload: { testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[], tags: string[] }) {
     return this.post("/create", {
       testCase: { projectId: payload.testCase.projectId, name: payload.testCase.name },
       sequences: payload.sequences,
-      assertions: payload.assertions
+      assertions: payload.assertions,
+      tags: payload.tags
     });
   }
 

@@ -71,6 +71,12 @@ export const DEFAULT_PAGE: Page = {
   name: "",
 };
 
+export const DEFAULT_TAG: Page = {
+  id: "",
+  projectId: "",
+  name: "",
+};
+
 export const DEFAULT_ACTION: Action = {
   id: "",
   projectId: "",

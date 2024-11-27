@@ -24,8 +24,9 @@ import { actions as testCaseRunActions } from "../../slices/testCaseRun";
 import { getByProjectId as getActionsByProjectId, actions as actionsActions } from "../../slices/actions";
 import { getByProjectId as getTestCasesByProjectId, actions as testCasesActions } from "../../slices/testCases";
 import { getByProjectId as getPagesByProjectId, actions as pagesActions } from "../../slices/pages";
+import { getByProjectId as getTagsByProjectId, actions as tagsActions } from "../../slices/tags";
 
-type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATHS";
+type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATHS" | "TAGS";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -61,6 +62,7 @@ const ProjectDetail = () => {
   const { status: testCasesStatus } = useSelector((state: RootState) => state.testCases);
   const { status: testCaseRunStatus } = useSelector((state: RootState) => state.testCaseRun);
   const { status: testCaseStatus } = useSelector((state: RootState) => state.testCase);
+  const { status: tagsStatus } = useSelector((state: RootState) => state.tags);
   const dispatch = useDispatch();
 
   const handleNameUpdate = (name: string) => {
@@ -91,6 +93,7 @@ const ProjectDetail = () => {
     dispatch(actionsActions.clearStatus())
     dispatch(testCasesActions.clearStatus())
     dispatch(pagesActions.clearStatus())
+    dispatch(tagsActions.clearStatus())
   };
 
   useEffect(() => {
@@ -103,6 +106,8 @@ const ProjectDetail = () => {
       setActiveTab("TEST_CASES");
     } else if (tab === "XPATHS") {
       setActiveTab("XPATHS");
+    } else if (tab === "TAGS") {
+      setActiveTab("TAGS");
     }
   }, [searchParams, setSearchParams, setActiveTab]);
 
@@ -116,6 +121,7 @@ const ProjectDetail = () => {
       dispatch(getActionsByProjectId(projectId));
       dispatch(getPagesByProjectId(projectId));
       dispatch(getTestCasesByProjectId(projectId));
+      dispatch(getTagsByProjectId(projectId));
     }
   }, [projectId]);
 
@@ -130,6 +136,7 @@ const ProjectDetail = () => {
       ?? testCasesStatus
       ?? testCaseRunStatus
       ?? testCaseStatus
+      ?? tagsStatus
 
     if (notifyStatus) {
       notify({
@@ -146,7 +153,8 @@ const ProjectDetail = () => {
     flowStatus,
     testCasesStatus,
     testCaseRunStatus,
-    testCaseStatus,]);
+    testCaseStatus,
+    tagsStatus]);
 
   return (
     <Box height="100%">

@@ -1,14 +1,13 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Typography, Button, Box, Tooltip, TextField, IconButton, SelectChangeEvent } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { Typography, Button, Box, Tooltip, IconButton, SelectChangeEvent } from "@mui/material";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
-import { Page } from "../../declarations/interface";
-import { actions, createPage, updatePage } from "../../slices/pages";
-import { DEFAULT_PAGE } from "../../util/constants";
-import { RootState } from "../../store/rootReducer";
+import { Tag } from "../../declarations/interface";
+import { actions, createTag, updateTag } from "../../slices/tags";
+import { DEFAULT_TAG } from "../../util/constants";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -18,10 +17,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 const MAX_LIMIT = 250;
-type PageErrorKey = "REQUIRED" | "MAX_LIMIT";
+type TagErrorKey = "REQUIRED" | "MAX_LIMIT";
 
 type NameError = {
-  [key in PageErrorKey]?: string;
+  [key in TagErrorKey]?: string;
 };
 
 type ErrorMsg = {
@@ -35,25 +34,25 @@ const errorMsg: ErrorMsg = {
   },
 };
 
-const AddPage: React.FC<{
-  page?: Page;
+const AddTag: React.FC<{
+  tag?: Tag;
   projectId: string;
   onModalClose: () => void;
-}> = ({ page, projectId, onModalClose }) => {
+}> = ({ tag, projectId, onModalClose }) => {
   const classes = useStyles();
-  const [data, setData] = useState<Page | undefined>();
+  const [data, setData] = useState<Tag | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const [nameError, setNameError] = useState<
-    PageErrorKey | undefined
+    TagErrorKey | undefined
   >();
-  const [title, setTitle] = useState("Add Page");
+  const [title, setTitle] = useState("Add Tag");
 
   const dispatch = useDispatch();
 
   const handleModalOpen = () => {
-    setData({ ...DEFAULT_PAGE, projectId: projectId });
+    setData({ ...DEFAULT_TAG, projectId: projectId });
   };
   const handleModalClose = () => {
     setModalOpen(false);
@@ -70,14 +69,14 @@ const AddPage: React.FC<{
     setModalOpen(false);
     setSubmitted(false);
     if (data?.id.length) {
-      dispatch(updatePage(data));
+      dispatch(updateTag(data));
     } else {
-      dispatch(createPage(data));
+      dispatch(createTag(data));
     }
   };
   const handleFieldChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent | any,
-    field: keyof Page
+    field: keyof Tag
   ) => {
     setSubmitted(false);
     const value = event.target.value;
@@ -104,8 +103,8 @@ const AddPage: React.FC<{
   };
 
   useEffect(() => {
-    setData(page);
-  }, [page]);
+    setData(tag);
+  }, [tag]);
 
   useEffect(() => {
     if (data) {
@@ -115,9 +114,9 @@ const AddPage: React.FC<{
 
   useEffect(() => {
     if (data?.id.length) {
-      setTitle("Update Page");
+      setTitle("Update Tag");
     } else {
-      setTitle("Add Page");
+      setTitle("Add Tag");
     }
   }, [modalOpen, data]);
 
@@ -128,11 +127,11 @@ const AddPage: React.FC<{
 
   return (
     <Box>
-      <Tooltip title={"Add new page for this project"}>
+      <Tooltip title={"Add new tag for this project"}>
         <IconButton
           sx={{ padding: 0.5 }}
           onClick={handleModalOpen}
-          data-testid="add-another-page"
+          data-testid="add-another-tag"
         >
           <img src={AddIcon} alt="close" />
         </IconButton>
@@ -191,4 +190,4 @@ const AddPage: React.FC<{
   );
 };
 
-export default AddPage;
+export default AddTag;

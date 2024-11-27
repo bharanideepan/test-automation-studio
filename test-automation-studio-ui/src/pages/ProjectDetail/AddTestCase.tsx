@@ -23,6 +23,8 @@ import AppSelect from "../../components/AppSelect";
 import AddInput from "./AddInput";
 import { BOOLEAN_ACITON_TYPES, DEFAULT_ASSERTION, DEFAULT_TEST_CASE, GET_ASSERTION_OPTIONS_FORMATTED, OPERATOR_TYPES } from "../../util/constants";
 import AddFlow from "./AddFlow";
+import MultipleSelectChip from "../../components/AppMultipleSelectChip";
+import AddTag from "./AddTag";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -97,6 +99,7 @@ const AddTestCase: React.FC<{
   const [submitted, setSubmitted] = useState(false);
   const [step, setStep] = useState(0);
   const [skipActionInfo, setSkipActionInfo] = useState<{ id: string; skip: boolean } | undefined>(undefined);
+  const [selectedTags, setSelectedTags] = useState<string[] | undefined>([]);
 
   const [nameError, setNameError] = useState<
     NameErrorKey | undefined
@@ -104,6 +107,7 @@ const AddTestCase: React.FC<{
   const [title, setTitle] = useState("Add Test Case");
   const { testCase: fetchedTestCase } = useSelector((state: RootState) => state.testCase);
   const { flows } = useSelector((state: RootState) => state.flows);
+  const { tags, newTag } = useSelector((state: RootState) => state.tags);
   const { newInput } = useSelector((state: RootState) => state.actions);
 
   const dispatch = useDispatch();
@@ -120,6 +124,7 @@ const AddTestCase: React.FC<{
     setselectedFlowSequences(undefined);
     setAssertions(undefined);
     setData(undefined);
+    setSelectedTags(undefined);
   };
   const handleSubmit = () => {
     handleFieldChange({ target: { value: data?.name } }, "name")
@@ -139,12 +144,24 @@ const AddTestCase: React.FC<{
     const sequencePayload = {
       updatedSequences, newSequences, removedSequences
     }
+    const fetchedTagIds = new Set(fetchedTestCase?.tags?.map((tag) => tag.id));
+    const selectedTagIds = new Set(selectedTags);
+    const deletedTags = fetchedTestCase?.tags
+      ?.filter((tag) => !selectedTagIds.has(tag.id))
+      .map((tag) => tag.testCaseTag?.id);
+    const newTags = selectedTags
+      ?.filter((selectedTag) => !fetchedTagIds.has(selectedTag))
+      .map((newTag) => ({
+        tagId: newTag,
+        testCaseId: fetchedTestCase?.id,
+      }));
+    const tags = { deletedTags, newTags };
     setSubmitted(false);
     handleModalClose();
     if (data?.id.length) {
-      dispatch(updateTestCase({ testCase: data, sequences: sequencePayload, assertions: assertions ?? [] }));
+      dispatch(updateTestCase({ testCase: data, sequences: sequencePayload, assertions: assertions ?? [], tags }));
     } else {
-      dispatch(createTestCase({ testCase: data, sequences: newSequences, assertions: assertions ?? [] }));
+      dispatch(createTestCase({ testCase: data, sequences: newSequences, assertions: assertions ?? [], tags: selectedTags ?? [] }));
     }
   };
   const handleFieldChange = (
@@ -304,6 +321,35 @@ const AddTestCase: React.FC<{
     return prev;
   }
 
+  const getAssertions = () => {
+    return fetchedTestCase?.assertions?.map((assertion: Assertion) => {
+      const options = GET_ASSERTION_OPTIONS_FORMATTED(getSelectedFlowSequences());
+      let option = options.find((option) => option.value === assertion.source);
+      if (!option) {
+        return {
+          ...assertion,
+          isRemoved: true,
+          unRestorable: true
+        }
+      }
+      if (assertion.useCustomTargetValue) return assertion;
+      option = options.find((option) => option.value === assertion.target);
+      if (option) {
+        return assertion;
+      } else {
+        return {
+          ...assertion,
+          isRemoved: true,
+          unRestorable: true
+        }
+      }
+    })
+  }
+
+  const getTags = () => {
+    return fetchedTestCase?.tags?.map(({ id }) => id) ?? []
+  }
+
   useEffect(() => {
     if (data) {
       setModalOpen(true);
@@ -324,6 +370,15 @@ const AddTestCase: React.FC<{
   }, [submitted]);
 
   useEffect(() => {
+    if (newTag) {
+      setSelectedTags((prev) => {
+        if (prev) return [...prev, newTag.id];
+        return prev;
+      })
+    }
+  }, [newTag])
+
+  useEffect(() => {
     if (newInput) {
       dispatch(flowsActions.addNewInput(newInput))
     }
@@ -331,31 +386,10 @@ const AddTestCase: React.FC<{
 
   useEffect(() => {
     if (testCase) {
-      setData(fetchedTestCase)
-      setselectedFlowSequences(getSelectedFlowSequences())
-      const loadedAssertions = fetchedTestCase?.assertions?.map((assertion: Assertion) => {
-        const options = GET_ASSERTION_OPTIONS_FORMATTED(getSelectedFlowSequences());
-        let option = options.find((option) => option.value === assertion.source);
-        if (!option) {
-          return {
-            ...assertion,
-            isRemoved: true,
-            unRestorable: true
-          }
-        }
-        if (assertion.useCustomTargetValue) return assertion;
-        option = options.find((option) => option.value === assertion.target);
-        if (option) {
-          return assertion;
-        } else {
-          return {
-            ...assertion,
-            isRemoved: true,
-            unRestorable: true
-          }
-        }
-      })
-      setAssertions(loadedAssertions)
+      setData(fetchedTestCase);
+      setselectedFlowSequences(getSelectedFlowSequences());
+      setAssertions(getAssertions());
+      setSelectedTags(getTags());
     }
   }, [fetchedTestCase]);
 
@@ -391,20 +425,26 @@ const AddTestCase: React.FC<{
         {data && (
           <Box mb={0.5}>
             <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-              <Box>
-                <AppTextbox
-                  label="Test Case Name"
-                  placeholder="Enter Name"
-                  value={data.name}
-                  onChange={(event) => {
-                    handleFieldChange(event, "name");
-                  }}
-                  classes={{ root: classes.input }}
-                  error={!!nameError}
-                  helperText={
-                    nameError ? errorMsg.name[nameError] : ""
-                  }
-                />
+              <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+                <Box>
+                  <AppTextbox
+                    label="Test Case Name"
+                    placeholder="Enter Name"
+                    value={data.name}
+                    onChange={(event) => {
+                      handleFieldChange(event, "name");
+                    }}
+                    classes={{ root: classes.input }}
+                    error={!!nameError}
+                    helperText={
+                      nameError ? errorMsg.name[nameError] : ""
+                    }
+                  />
+                </Box>
+                <Box>
+                  <MultipleSelectChip label={"Tags"} options={tags?.map((tag) => ({ label: tag.name, value: tag.id })) ?? []} selected={selectedTags} setSelected={setSelectedTags} />
+                </Box>
+                <AddTag projectId={projectId} onModalClose={() => { console.log("Add tag modal closed") }} />
               </Box>
               <Box display={"flex"} gap={2} alignItems={"center"} justifyContent={"center"}>
                 {step === 0 && <Button

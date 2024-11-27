@@ -15,7 +15,7 @@ export const getByProjectId: any = createAsyncThunk(
 
 export const createTestCase: any = createAsyncThunk(
   "testCases/createTestCase",
-  async (payload: { testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[] }) => {
+  async (payload: { testCase: TestCase, sequences: TestCaseFlowSequence[], assertions: Assertion[], tags: string[] }) => {
     return await TestCaseService.createTestCaseData(payload);
   }
 );

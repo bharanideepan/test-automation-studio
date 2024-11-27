@@ -13,6 +13,9 @@ import testCaseFlowSequenceHistory from "./test-case-flow-sequence-history/test-
 import flowActionSequenceHistory from "./flow-action-sequence-history/flow-action-sequence-history.service";
 import selector from "./selector/selector.service";
 import page from "./page/page.service";
+import tag from "./tag/tag.service";
+import testCaseTag from "./test-case-tag/test-case-tag.service";
+import testSuitRun from "./test-suit-run/test-suit-run.service";
 // Don't remove this comment. It's needed to format import lines nicely.
 
 export default function (app: Application): void {
@@ -30,4 +33,7 @@ export default function (app: Application): void {
   app.configure(flowActionSequenceHistory);
   app.configure(selector);
   app.configure(page);
+  app.configure(tag);
+  app.configure(testCaseTag);
+  app.configure(testSuitRun);
 }

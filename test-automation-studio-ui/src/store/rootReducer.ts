@@ -8,6 +8,7 @@ import { reducer as pagesReducer } from "../slices/pages";
 import { reducer as flowsReducer } from "../slices/flows";
 import { reducer as actionsReducer } from "../slices/actions";
 import { reducer as testCasesReducer } from "../slices/testCases";
+import { reducer as tagsReducer } from "../slices/tags";
 
 const rootReducer = combineReducers({
   projects: projectsReducer,
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   flows: flowsReducer,
   actions: actionsReducer,
   testCases: testCasesReducer,
+  tags: tagsReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

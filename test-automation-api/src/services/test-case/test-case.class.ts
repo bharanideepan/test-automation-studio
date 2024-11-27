@@ -11,7 +11,7 @@ export class TestCase extends Service {
 
   async updateTestCaseData(data: any, params: any) {
     try {
-      let { testCase, sequences, assertions } = data as any;
+      let { testCase, sequences, assertions, tags } = data as any;
       const updatedTestCase = await this.app.service('test-case').patch(testCase.id, testCase);
       if (assertions && assertions.length) {
         await Promise.all(assertions.filter((assertion: any) => (assertion.isRemoved)).map(async (assertion: any) => {
@@ -88,6 +88,16 @@ export class TestCase extends Service {
           return await this.app.service('assertion').create(assertion);
         }))
       }
+      if (tags.deletedTags) {
+        await Promise.all(tags.deletedTags.map(async (testCaseTagId: any) => {
+          await this.app.service("test-case-tag").remove(testCaseTagId)
+        }))
+      }
+      if (tags.newTags) {
+        await Promise.all(tags.newTags.map(async (newTag: any) => {
+          await this.app.service("test-case-tag").create(newTag)
+        }))
+      }
       return { testCase: updatedTestCase, sequences: { removedSequences: sequences.removedSequences, newSequences: sequences.newSequences, updatedSequences: sequences.updatedSequences }, assertions }
     } catch (err) {
       throw new Error(`Error while updating test-case-flow-sequence list: ${err}`);
@@ -96,7 +106,7 @@ export class TestCase extends Service {
 
   async createTestCaseData(data: any, params: any) {
     try {
-      let { testCase, sequences, assertions } = data as any;
+      let { testCase, sequences, assertions, tags } = data as any;
       const createdTestCase = await this.app.service('test-case').create(testCase);
       if (sequences && sequences.length) {
         sequences = await Promise.all(sequences.map(async (sequence: any) => {
@@ -140,7 +150,15 @@ export class TestCase extends Service {
           return await this.app.service('assertion').create({ ...assertion, testCaseId: createdTestCase.id });
         }))
       }
-      return { testCase: createdTestCase, sequences, assertions };
+      if (tags) {
+        tags = await Promise.all(tags.map(async (tagId: string) => {
+          return await this.app.service("test-case-tag").create({
+            testCaseId: createdTestCase.id,
+            tagId
+          })
+        }))
+      }
+      return { testCase: createdTestCase, sequences, assertions, tags };
     } catch (err) {
       throw new Error(`Error while creating test-case-data: ${err}`);
     }
@@ -190,6 +208,9 @@ export class TestCase extends Service {
         const newAssertion = JSON.parse(JSON.stringify(assertion));
         delete newAssertion.id;
         await this.app.service("assertion").create(newAssertion);
+      }))
+      await Promise.all(testCase.tags.map(async (tag: any) => {
+        await this.app.service("test-case-tag").create({ tagId: tag.testCaseTag.tagId, testCaseId: newTestCase.id })
       }))
       return { testCase: newTestCase };
     } catch (err) {
