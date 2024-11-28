@@ -21,6 +21,8 @@ export default function (app: Application): any {
     project.hasMany(models["testCase"], { foreignKey: "projectId" });
     project.hasMany(models["action"], { foreignKey: "projectId" });
     project.hasMany(models["page"], { foreignKey: "projectId" });
+    project.hasMany(models["tag"], { foreignKey: "projectId" });
+    project.hasMany(models["testSuite"], { foreignKey: "projectId" });
   };
   return project;
 }

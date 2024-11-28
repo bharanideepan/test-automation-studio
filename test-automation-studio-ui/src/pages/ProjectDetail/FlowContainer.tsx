@@ -85,9 +85,9 @@ const FlowContainer: React.FC<{
     if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
   }, [selectedFlow]);
 
-  // useEffect(() => {
-  //   if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
-  // }, [list]);
+  useEffect(() => {
+    if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
+  }, [list]);
 
   useEffect(() => {
     if (list) {

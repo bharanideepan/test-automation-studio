@@ -5,26 +5,32 @@ import { Application } from "../declarations";
 
 export default function (app: Application): any {
   const sequelizeClient: Sequelize = app.get("sequelizeClient");
-  const tag = sequelizeClient.define("tag", {
+  const testSuiteTag = sequelizeClient.define("testSuiteTag", {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: DataTypes.STRING,
-    },
-    projectId: {
+    testSuiteId: {
       type: DataTypes.BIGINT,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: sequelizeClient.models["testSuite"],
+        key: 'id',
+      },
+    },
+    tagId: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: sequelizeClient.models["tag"],
+        key: 'id',
+      },
     },
   });
-  (tag as any).associate = function (models: any): void {
-    tag.belongsTo(models["project"], { foreignKey: "projectId" });
-    tag.belongsToMany(models["testCase"], { through: { model: models["testCaseTag"] } });
-    tag.belongsToMany(models["testSuite"], { through: { model: models["testSuiteTag"] } });
+  (testSuiteTag as any).associate = function (models: any): void {
   };
-  return tag;
+  return testSuiteTag;
 }
 

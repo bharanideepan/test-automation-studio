@@ -62,13 +62,15 @@ const Header: React.FC<{
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
             <AppTabs value={activeTab} onChange={handleTabChange}>
-              <AppTab value="XPATHS" label="XPATHS" />
+              <AppTab value="XPATH" label="XPATH" />
               <AppTab disabled className="divider" icon={DividerIcon} />
               <AppTab value="ACTIONS" label="ACTIONS" />
               <AppTab disabled className="divider" icon={DividerIcon} />
               <AppTab value="FLOWS" label="FLOWS" />
               <AppTab disabled className="divider" icon={DividerIcon} />
-              <AppTab value="TEST_CASES" label="TEST_CASES" />
+              <AppTab value="TEST_CASES" label="TEST CASES" />
+              <AppTab disabled className="divider" icon={DividerIcon} />
+              <AppTab value="TEST_SUITE" label="TEST SUITE" />
             </AppTabs>
           </Box>
           {/* <Typography
@@ -86,7 +88,7 @@ const Header: React.FC<{
 Header.propTypes = {
   projectName: PropTypes.string.isRequired,
   onProjectNameUpdate: PropTypes.func.isRequired,
-  activeTab: PropTypes.oneOf(["TEST_CASES", "FLOWS", "ACTIONS", "XPATHS"]).isRequired,
+  activeTab: PropTypes.oneOf(["TEST_CASES", "FLOWS", "ACTIONS", "XPATH", "TAGS", "TEST_SUITE"]).isRequired,
   count: PropTypes.number.isRequired,
 };
 

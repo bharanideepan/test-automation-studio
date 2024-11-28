@@ -24,7 +24,7 @@ export default function (app: Application): typeof Model {
       type: DataTypes.STRING(5000),
       allowNull: true,
     },
-    testSuitRunId: {
+    testSuiteRunId: {
       type: DataTypes.BIGINT,
       allowNull: true
     }
@@ -33,7 +33,7 @@ export default function (app: Application): typeof Model {
     testCaseRun.belongsTo(models["testCase"], { foreignKey: "testCaseId" });
     testCaseRun.hasMany(models["testCaseFlowSequenceHistory"], { foreignKey: "testCaseRunId" });
     testCaseRun.hasMany(models["flowActionSequenceHistory"], { foreignKey: "testCaseRunId" });
-    testCaseRun.belongsTo(models["testSuitRun"], { foreignKey: "testSuitRunId" });
+    testCaseRun.belongsTo(models["testSuiteRun"], { foreignKey: "testSuiteRunId" });
   };
   return testCaseRun;
 }

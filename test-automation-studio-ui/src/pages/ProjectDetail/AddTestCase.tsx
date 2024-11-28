@@ -425,7 +425,7 @@ const AddTestCase: React.FC<{
         {data && (
           <Box mb={0.5}>
             <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-              <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+              <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} gap={2}>
                 <Box>
                   <AppTextbox
                     label="Test Case Name"

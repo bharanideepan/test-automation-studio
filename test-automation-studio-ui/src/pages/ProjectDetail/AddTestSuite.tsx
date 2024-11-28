@@ -1,13 +1,16 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { Typography, Button, Box, Tooltip, IconButton, SelectChangeEvent } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { Typography, Button, Box, Tooltip, TextField, IconButton, SelectChangeEvent } from "@mui/material";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
-import { Tag } from "../../declarations/interface";
-import { actions, createTag, updateTag } from "../../slices/tags";
-import { DEFAULT_TAG } from "../../util/constants";
+import { testSuite } from "../../declarations/interface";
+import { DEFAULT_PAGE } from "../../util/constants";
+import { RootState } from "../../store/rootReducer";
+import { actions, createtestSuite, updatetestSuite } from "../../slices/testSuites";
+import MultipleSelectChip from "../../components/AppMultipleSelectChip";
+import AddTag from "./AddTag";
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -17,10 +20,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 const MAX_LIMIT = 250;
-type TagErrorKey = "REQUIRED" | "MAX_LIMIT";
+type testSuiteErrorKey = "REQUIRED" | "MAX_LIMIT";
 
 type NameError = {
-  [key in TagErrorKey]?: string;
+  [key in testSuiteErrorKey]?: string;
 };
 
 type ErrorMsg = {
@@ -34,31 +37,34 @@ const errorMsg: ErrorMsg = {
   },
 };
 
-const AddTag: React.FC<{
-  tag?: Tag;
+const AddtestSuite: React.FC<{
+  testSuite?: testSuite;
   projectId: string;
   onModalClose: () => void;
-}> = ({ tag, projectId, onModalClose }) => {
+}> = ({ testSuite, projectId, onModalClose }) => {
   const classes = useStyles();
-  const [data, setData] = useState<Tag | undefined>();
+  const [data, setData] = useState<testSuite | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
   const [nameError, setNameError] = useState<
-    TagErrorKey | undefined
+    testSuiteErrorKey | undefined
   >();
-  const [title, setTitle] = useState("Add Tag");
+  const [title, setTitle] = useState("Add testSuite");
+  const [selectedTags, setSelectedTags] = useState<string[] | undefined>([]);
+  const { testSuite: fetchedtestSuite } = useSelector((state: RootState) => state.testSuite);
+  const { tags, newTag } = useSelector((state: RootState) => state.tags);
 
   const dispatch = useDispatch();
 
   const handleModalOpen = () => {
-    setData({ ...DEFAULT_TAG, projectId: projectId });
+    setData({ ...DEFAULT_PAGE, projectId: projectId });
   };
   const handleModalClose = () => {
     setModalOpen(false);
     setNameError(undefined);
     onModalClose();
     setData(undefined)
+    setSelectedTags(undefined)
     dispatch(actions.clearStatus());
   };
   const handleSubmit = () => {
@@ -66,17 +72,29 @@ const AddTag: React.FC<{
     setSubmitted(true);
   };
   const submitData = () => {
-    setModalOpen(false);
     setSubmitted(false);
+    handleModalClose();
+    const fetchedTagIds = new Set(fetchedtestSuite?.tags?.map((tag) => tag.id));
+    const selectedTagIds = new Set(selectedTags);
+    const deletedTags = fetchedtestSuite?.tags
+      ?.filter((tag) => !selectedTagIds.has(tag.id))
+      .map((tag) => tag.testSuiteTag?.id);
+    const newTags = selectedTags
+      ?.filter((selectedTag) => !fetchedTagIds.has(selectedTag))
+      .map((newTag) => ({
+        tagId: newTag,
+        testSuiteId: fetchedtestSuite?.id,
+      }));
+    const tags = { deletedTags, newTags };
     if (data?.id.length) {
-      dispatch(updateTag(data));
+      dispatch(updatetestSuite({ testSuite: data, tags }));
     } else {
-      dispatch(createTag(data));
+      dispatch(createtestSuite({ testSuite: data, tags: selectedTags ?? [] }));
     }
   };
   const handleFieldChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent | any,
-    field: keyof Tag
+    field: keyof testSuite
   ) => {
     setSubmitted(false);
     const value = event.target.value;
@@ -103,8 +121,18 @@ const AddTag: React.FC<{
   };
 
   useEffect(() => {
-    setData(tag);
-  }, [tag]);
+    setData(testSuite);
+    setSelectedTags(fetchedtestSuite?.tags?.map(({ id }) => id) ?? []);
+  }, [testSuite]);
+
+  useEffect(() => {
+    if (newTag) {
+      setSelectedTags((prev) => {
+        if (prev) return [...prev, newTag.id];
+        return prev;
+      })
+    }
+  }, [newTag])
 
   useEffect(() => {
     if (data) {
@@ -114,9 +142,9 @@ const AddTag: React.FC<{
 
   useEffect(() => {
     if (data?.id.length) {
-      setTitle("Update Tag");
+      setTitle("Update Test Suite");
     } else {
-      setTitle("Add Tag");
+      setTitle("Add Test Suite");
     }
   }, [modalOpen, data]);
 
@@ -127,11 +155,11 @@ const AddTag: React.FC<{
 
   return (
     <Box>
-      <Tooltip title={"Add new tag"}>
+      <Tooltip title={"Add new test suite for this project"}>
         <IconButton
           sx={{ padding: 0.5 }}
           onClick={handleModalOpen}
-          data-testid="add-another-tag"
+          data-testid="add-another-testSuitee"
         >
           <img src={AddIcon} alt="close" />
         </IconButton>
@@ -166,6 +194,10 @@ const AddTag: React.FC<{
                 }
               />
             </Box>
+            <Box display={"flex"} alignItems={"center"} justifyContent={"start"} mt={2.75} gap={2}>
+              <MultipleSelectChip label={"Tags"} options={tags?.map((tag) => ({ label: tag.name, value: tag.id })) ?? []} selected={selectedTags} setSelected={setSelectedTags} />
+              <AddTag projectId={projectId} onModalClose={() => { console.log("Add tag modal closed") }} />
+            </Box>
             <Box mt={2.75}>
               <Button
                 variant="contained"
@@ -190,4 +222,4 @@ const AddTag: React.FC<{
   );
 };
 
-export default AddTag;
+export default AddtestSuite;

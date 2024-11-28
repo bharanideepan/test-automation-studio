@@ -90,8 +90,16 @@ export default {
   before: {
     all: [],
     find: [(hook: any) => {
+      const Sequelize = hook.app.get("sequelizeClient");
+      const { tag, testCaseSuit } = Sequelize.models;
       hook.params.sequelize = {
         raw: false,
+        include: [
+          {
+            model: tag,
+            through: { model: testCaseSuit }
+          }
+        ],
         order: [
           ['createdAt', 'ASC'],
         ],

@@ -25,8 +25,10 @@ import { getByProjectId as getActionsByProjectId, actions as actionsActions } fr
 import { getByProjectId as getTestCasesByProjectId, actions as testCasesActions } from "../../slices/testCases";
 import { getByProjectId as getPagesByProjectId, actions as pagesActions } from "../../slices/pages";
 import { getByProjectId as getTagsByProjectId, actions as tagsActions } from "../../slices/tags";
+import { getByProjectId as gettestSuitesByProjectId, actions as testSuitesActions } from "../../slices/testSuites";
+import TestSuiteContainer from "./TestSuitContainer";
 
-type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATHS" | "TAGS";
+type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATH" | "TAGS" | "TEST_SUITE";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -63,6 +65,7 @@ const ProjectDetail = () => {
   const { status: testCaseRunStatus } = useSelector((state: RootState) => state.testCaseRun);
   const { status: testCaseStatus } = useSelector((state: RootState) => state.testCase);
   const { status: tagsStatus } = useSelector((state: RootState) => state.tags);
+  const { testSuites, status: testSuitesStatus } = useSelector((state: RootState) => state.testSuites);
   const dispatch = useDispatch();
 
   const handleNameUpdate = (name: string) => {
@@ -72,7 +75,9 @@ const ProjectDetail = () => {
     const params = { tab: "TEST_CASES" };
     if (tab === "FLOWS") params.tab = "FLOWS";
     if (tab === "ACTIONS") params.tab = "ACTIONS";
-    if (tab === "XPATHS") params.tab = "XPATHS";
+    if (tab === "XPATH") params.tab = "XPATH";
+    if (tab === "TAGS") params.tab = "TAGS";
+    if (tab === "TEST_SUITE") params.tab = "TEST_SUITE";
     setSearchParams(params);
   };
   const getCount = () => {
@@ -94,6 +99,7 @@ const ProjectDetail = () => {
     dispatch(testCasesActions.clearStatus())
     dispatch(pagesActions.clearStatus())
     dispatch(tagsActions.clearStatus())
+    dispatch(testSuitesActions.clearStatus())
   };
 
   useEffect(() => {
@@ -104,10 +110,12 @@ const ProjectDetail = () => {
       setActiveTab("FLOWS");
     } else if (tab === "TEST_CASES") {
       setActiveTab("TEST_CASES");
-    } else if (tab === "XPATHS") {
-      setActiveTab("XPATHS");
+    } else if (tab === "XPATH") {
+      setActiveTab("XPATH");
     } else if (tab === "TAGS") {
       setActiveTab("TAGS");
+    } else if (tab === "TEST_SUITE") {
+      setActiveTab("TEST_SUITE");
     }
   }, [searchParams, setSearchParams, setActiveTab]);
 
@@ -122,6 +130,7 @@ const ProjectDetail = () => {
       dispatch(getPagesByProjectId(projectId));
       dispatch(getTestCasesByProjectId(projectId));
       dispatch(getTagsByProjectId(projectId));
+      dispatch(gettestSuitesByProjectId(projectId));
     }
   }, [projectId]);
 
@@ -137,6 +146,7 @@ const ProjectDetail = () => {
       ?? testCaseRunStatus
       ?? testCaseStatus
       ?? tagsStatus
+      ?? testSuitesStatus
 
     if (notifyStatus) {
       notify({
@@ -189,9 +199,15 @@ const ProjectDetail = () => {
               projectId={project.id}
             />
           )}
-          {activeTab === "XPATHS" && (
+          {activeTab === "XPATH" && (
             <SelectorContainer
               list={pages ?? []}
+              projectId={project.id}
+            />
+          )}
+          {activeTab === "TEST_SUITE" && (
+            <TestSuiteContainer
+              list={testSuites ?? []}
               projectId={project.id}
             />
           )}

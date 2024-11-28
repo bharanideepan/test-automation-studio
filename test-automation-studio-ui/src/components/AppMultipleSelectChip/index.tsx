@@ -82,7 +82,7 @@ const MultipleSelectChip: React.FC<{
 
     return (
         <div>
-            <FormControl sx={{ ml: 2, width: 300 }}>
+            <FormControl sx={{ width: 360 }}>
                 <InputLabel
                     classes={{
                         root: classes.label,

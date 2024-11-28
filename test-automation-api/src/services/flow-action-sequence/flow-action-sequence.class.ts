@@ -8,7 +8,7 @@ export class FlowActionSequence extends Service {
     super(options);
     this.app = app;
   }
-  
+
   async updateSequences(data: any, params: any) {
     try {
       let { removedSequences, updatedSequences, newSequences } = data as any;
@@ -25,7 +25,11 @@ export class FlowActionSequence extends Service {
       }
       if (newSequences && newSequences.length) {
         newSequences = await Promise.all(newSequences.map(async (sequence: any) => {
-          return await this.app.service('flow-action-sequence').create(sequence);
+          return await this.app.service('flow-action-sequence').create({
+            flowId: sequence.flowId,
+            actionId: sequence.actionId,
+            order: sequence.order
+          });
         }))
       }
       if (updatedSequences && updatedSequences.length) {
@@ -33,17 +37,21 @@ export class FlowActionSequence extends Service {
           return await this.app.service('flow-action-sequence').patch(sequence.id, sequence);
         }))
       }
-      return {removedSequences, newSequences, updatedSequences}
+      return { removedSequences, newSequences, updatedSequences }
     } catch (err) {
       throw new Error(`Error while updating flow-action-sequence list: ${err}`);
     }
   }
-  
+
   async createSequences(data: any, params: any) {
     try {
       if (data && data.length) {
         const newSequences = await Promise.all(data.map(async (sequence: any) => {
-          return await this.app.service('flow-action-sequence').create(sequence);
+          return await this.app.service('flow-action-sequence').create({
+            flowId: sequence.flowId,
+            actionId: sequence.actionId,
+            order: sequence.order
+          });
         }))
         return newSequences;
       }

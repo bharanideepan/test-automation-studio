@@ -202,7 +202,7 @@ const TestCasesListView: React.FC<{
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
                         setSelectedTestCase(row);
                       }} className={selectedTestCase?.id == row.id ? classes.active : ''}>
-                        <TableCell style={{ width: "80%" }} align="left">
+                        <TableCell style={{ width: "40%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             color="primary"
@@ -212,6 +212,19 @@ const TestCasesListView: React.FC<{
                           >
                             {row.name}
                           </Typography>
+                        </TableCell>
+                        <TableCell style={{ width: "40%" }} align="left">
+                          <Tooltip title={row.tags?.map(tag => tag.name).join(", ")}>
+                            <Typography
+                              variant="subtitle1"
+                              color="primary"
+                              overflow="hidden"
+                              textOverflow="ellipsis"
+                              maxWidth="300px"
+                            >
+                              {row.tags?.map(tag => tag.name).join(", ")}
+                            </Typography>
+                          </Tooltip>
                         </TableCell>
                         <TableCell style={{ width: "5%" }} align="left">
                           <Box

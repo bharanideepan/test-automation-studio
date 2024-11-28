@@ -1,19 +1,19 @@
 import BaseService from "./baseService";
 
-class TestCaseRunService extends BaseService {
+class TestSuiteRunService extends BaseService {
   constructor() {
-    super("/test-case-run");
+    super("/test-suite-run");
   }
 
-  async getTestCaseRunById(id: string) {
+  async getTestSuiteRunById(id: string) {
     return this.get(`/${id}`);
   }
 
   async executeRun(id: string) {
     return this.post('/execute', {
-      testCaseId: id
+      testSuiteId: id
     })
   }
 }
 
-export default new TestCaseRunService();
+export default new TestSuiteRunService();

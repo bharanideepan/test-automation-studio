@@ -12,7 +12,7 @@ export class TestCase extends Service {
   async updateTestCaseData(data: any, params: any) {
     try {
       let { testCase, sequences, assertions, tags } = data as any;
-      const updatedTestCase = await this.app.service('test-case').patch(testCase.id, testCase);
+      let updatedTestCase = await this.app.service('test-case').patch(testCase.id, testCase);
       if (assertions && assertions.length) {
         await Promise.all(assertions.filter((assertion: any) => (assertion.isRemoved)).map(async (assertion: any) => {
           return await this.app.service('assertion').remove(assertion.id);
@@ -98,6 +98,7 @@ export class TestCase extends Service {
           await this.app.service("test-case-tag").create(newTag)
         }))
       }
+      updatedTestCase = await this.app.service('test-case').get(testCase.id);
       return { testCase: updatedTestCase, sequences: { removedSequences: sequences.removedSequences, newSequences: sequences.newSequences, updatedSequences: sequences.updatedSequences }, assertions }
     } catch (err) {
       throw new Error(`Error while updating test-case-flow-sequence list: ${err}`);
@@ -107,7 +108,7 @@ export class TestCase extends Service {
   async createTestCaseData(data: any, params: any) {
     try {
       let { testCase, sequences, assertions, tags } = data as any;
-      const createdTestCase = await this.app.service('test-case').create(testCase);
+      let createdTestCase = await this.app.service('test-case').create(testCase);
       if (sequences && sequences.length) {
         sequences = await Promise.all(sequences.map(async (sequence: any) => {
           const createdSequence = await this.app.service('test-case-flow-sequence').create({ ...sequence, testCaseId: createdTestCase.id });
@@ -158,6 +159,7 @@ export class TestCase extends Service {
           })
         }))
       }
+      createdTestCase = await this.app.service('test-case').get(createdTestCase.id);
       return { testCase: createdTestCase, sequences, assertions, tags };
     } catch (err) {
       throw new Error(`Error while creating test-case-data: ${err}`);

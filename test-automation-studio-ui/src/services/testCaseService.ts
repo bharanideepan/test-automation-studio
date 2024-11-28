@@ -39,7 +39,13 @@ class TestCaseService extends BaseService {
   async updateTestCaseData(payload: {
     testCase: TestCase, sequences: {
       updatedSequences: TestCaseFlowSequence[], newSequences: TestCaseFlowSequence[], removedSequences: string[]
-    }, assertions: Assertion[]
+    }, assertions: Assertion[], tags: {
+      deletedTags: (string | undefined)[] | undefined;
+      newTags: {
+        tagId: string;
+        testCaseId: string | undefined;
+      }[] | undefined;
+    }
   }) {
     return this.post("/update", payload);
   }
