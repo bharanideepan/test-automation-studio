@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import Header from "./Header";
 import { RootState } from "../../store/rootReducer";
 import useSnackbar from "../../hooks/useSnackbar";
-import { getTestCaseById, actions as testCaseActions } from "../../slices/testCase";
+import { getTestCaseHistoryById, actions as testCaseActions } from "../../slices/testCase";
 import { actions as testCaseRunActions } from "../../slices/testCaseRun";
 import TestCaseRunContainer from "./TestCaseRunContainer";
 
@@ -41,8 +41,9 @@ const TestCaseDetail = () => {
   };
 
   useEffect(() => {
-    dispatch(getTestCaseById(testCaseId));
+    dispatch(getTestCaseHistoryById(testCaseId));
   }, [testCaseId]);
+
   useEffect(() => {
     const notifyStatus =
       testCaseRunStatus

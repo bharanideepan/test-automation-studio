@@ -10,6 +10,12 @@ export const getTestCaseById: any = createAsyncThunk(
     return TestCaseService.getTestCaseById(id);
   }
 );
+export const getTestCaseHistoryById: any = createAsyncThunk(
+  "testCase/getTestCaseById",
+  async (id: string) => {
+    return TestCaseService.getTestCaseHistoryById(id);
+  }
+);
 const DEFAULT: {
   testCase?: TestCase;
   status: {

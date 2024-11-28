@@ -7,6 +7,7 @@ import AppLayout from "./layouts/AppLayout";
 import ProjectDetail from "./pages/ProjectDetail";
 import AppLoader from "./components/AppLoader";
 import TestCaseDetail from "./pages/TestCaseDetail";
+import TestSuiteDetail from "./pages/TestSuiteDetail";
 
 const AppRouter = () => {
   const element = useRoutes([
@@ -21,6 +22,10 @@ const AppRouter = () => {
         {
           path: "/test-case/:testCaseId",
           element: <TestCaseDetail />,
+        },
+        {
+          path: "/test-suite/:testSuiteId",
+          element: <TestSuiteDetail />,
         },
       ],
     }

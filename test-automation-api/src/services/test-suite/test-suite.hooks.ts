@@ -18,10 +18,13 @@ const populateTags = (hook: any) => {
 
 const populateTestCases = (hook: any) => {
   const Sequelize = hook.app.get("sequelizeClient");
-  const { tag, testSuiteTag, testCase, testCaseTag } = Sequelize.models;
+  const { tag, testSuiteTag, testCase, testCaseTag, project } = Sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
+      {
+        model: project
+      },
       {
         model: tag,
         through: {
@@ -32,7 +35,15 @@ const populateTestCases = (hook: any) => {
             model: testCase,
             through: {
               model: testCaseTag
-            }
+            },
+            include: [
+              {
+                model: tag,
+                through: {
+                  model: testCaseTag
+                }
+              }
+            ]
           }
         ]
       }

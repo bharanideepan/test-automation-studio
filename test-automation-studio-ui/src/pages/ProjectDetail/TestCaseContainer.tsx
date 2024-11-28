@@ -154,13 +154,14 @@ const TestCaseContainer: React.FC<{
   );
 };
 
-const TestCasesListView: React.FC<{
+export const TestCasesListView: React.FC<{
   testCases: TestCase[];
-  setSelectedTestCase: (testCase?: TestCase) => void
-  selectedTestCase: TestCase | undefined;
+  setSelectedTestCase?: (testCase?: TestCase) => void
+  selectedTestCase?: TestCase | undefined;
   projectId: string;
+  readonly?: boolean;
 }> = ({
-  testCases, selectedTestCase, setSelectedTestCase, projectId
+  testCases, selectedTestCase, setSelectedTestCase, projectId, readonly
 }) => {
     const classes = useStyles();
     const [editTestCase, setEditTestCase] = useState<TestCase | undefined>(undefined);
@@ -177,18 +178,18 @@ const TestCasesListView: React.FC<{
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
               <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
-                <AddTestCase
+                {!readonly && <AddTestCase
                   testCase={editTestCase}
                   projectId={projectId}
                   onModalClose={() => { setEditTestCase(undefined) }}
-                />
+                />}
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                   Test Cases: {testCases.length}
                 </Typography>
               </Box>
-              <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+              {!readonly && <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                 Click a Test Case to view its flows in order
-              </Typography>
+              </Typography>}
             </Box>
           </Box>
         </Box>
@@ -200,7 +201,7 @@ const TestCasesListView: React.FC<{
                   {testCases.map((row, index) => {
                     return (
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
-                        setSelectedTestCase(row);
+                        if (setSelectedTestCase) setSelectedTestCase(row);
                       }} className={selectedTestCase?.id == row.id ? classes.active : ''}>
                         <TableCell style={{ width: "40%" }} align="left">
                           <Typography
@@ -226,7 +227,7 @@ const TestCasesListView: React.FC<{
                             </Typography>
                           </Tooltip>
                         </TableCell>
-                        <TableCell style={{ width: "5%" }} align="left">
+                        {!readonly && <TableCell style={{ width: "5%" }} align="left">
                           <Box
                             display={"flex"}
                             justifyContent={"start"}
@@ -250,8 +251,8 @@ const TestCasesListView: React.FC<{
                               </IconButton>
                             </Tooltip>
                           </Box>
-                        </TableCell>
-                        <TableCell style={{ width: "5%" }} align="left">
+                        </TableCell>}
+                        {!readonly && <TableCell style={{ width: "5%" }} align="left">
                           <Box
                             display={"flex"}
                             justifyContent={"start"}
@@ -275,8 +276,8 @@ const TestCasesListView: React.FC<{
                               </IconButton>
                             </Tooltip>
                           </Box>
-                        </TableCell>
-                        <TableCell style={{ width: "5%" }} align="left">
+                        </TableCell>}
+                        {!readonly && <TableCell style={{ width: "5%" }} align="left">
                           <Box
                             display={"flex"}
                             justifyContent={"start"}
@@ -300,8 +301,8 @@ const TestCasesListView: React.FC<{
                               </IconButton>
                             </Tooltip>
                           </Box>
-                        </TableCell>
-                        <TableCell style={{ width: "5%" }} align="left">
+                        </TableCell>}
+                        {!readonly && <TableCell style={{ width: "5%" }} align="left">
                           <Tooltip title={"View run history"}>
                             <Link
                               color="inherit"
@@ -326,7 +327,7 @@ const TestCasesListView: React.FC<{
                               </IconButton>
                             </Link>
                           </Tooltip>
-                        </TableCell>
+                        </TableCell>}
                       </TableRow>
                     );
                   })}

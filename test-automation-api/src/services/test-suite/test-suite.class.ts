@@ -9,7 +9,7 @@ export class testSuite extends Service {
     this.app = app;
   }
 
-  async updatetestSuiteData(data: any, params: any) {
+  async updateTestSuiteData(data: any, params: any) {
     try {
       let { testSuite, tags } = data as any;
       let updatedTestSuite = await this.app.service('test-suite').patch(testSuite.id, testSuite);
@@ -30,7 +30,7 @@ export class testSuite extends Service {
     }
   }
 
-  async createtestSuiteData(data: any, params: any) {
+  async createTestSuiteData(data: any, params: any) {
     try {
       let { testSuite, tags } = data as any;
       let createdTestSuite = await this.app.service('test-suite').create(testSuite);
@@ -66,6 +66,24 @@ export class testSuite extends Service {
       return { testSuite: newTestSuite };
     } catch (err) {
       throw new Error(`Error while creating test-suite-data: ${err}`);
+    }
+  }
+
+  async getTestSuiteHistory(id: any, params: any) {
+    try {
+      const testSuiteData = await this.app.service('test-suite').get(id, params);
+      const testSuiteRuns: any = await this.app.service("test-suite-run").find({
+        query: {
+          testSuiteId: testSuiteData.dataValues.id
+        },
+        sequelize: {
+          order: [["createdAt", "DESC"]]
+        },
+      })
+      testSuiteData.dataValues.testSuiteRuns = testSuiteRuns.data;
+      return testSuiteData
+    } catch (err) {
+      throw new Error(`Error while fetching executable test-suite-data: ${err}`);
     }
   }
 

@@ -57,6 +57,10 @@ class TestCaseService extends BaseService {
   async getTestCaseById(id: string) {
     return this.get(`/${id}`);
   }
+
+  async getTestCaseHistoryById(id: string) {
+    return this.get(`/history/${id}`);
+  }
 }
 
 export default new TestCaseService();

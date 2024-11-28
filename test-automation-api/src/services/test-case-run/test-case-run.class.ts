@@ -28,9 +28,10 @@ export class TestCaseRun extends Service {
 
   async execute(data: any, params: any) {
     try {
-      let { testCaseId } = data as any;
+      let { testCaseId, testSuiteRunId } = data as any;
       const testCaseRun = await this.app.service('test-case-run').create({
         testCaseId,
+        testSuiteRunId,
         status: "ADDED_TO_QUEUE"
       });
       const testCase = await this.app.service('test-case').get(testCaseId, params);

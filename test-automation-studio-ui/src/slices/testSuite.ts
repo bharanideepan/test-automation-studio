@@ -1,17 +1,23 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import testSuiteService from "../services/testSuiteService";
+import TestSuiteService from "../services/testSuiteService";
 import {
-  testSuite,
+  TestSuite,
 } from "../declarations/interface";
 
-export const gettestSuiteById: any = createAsyncThunk(
-  "testSuite/gettestSuiteById",
+export const getTestSuiteById: any = createAsyncThunk(
+  "testSuite/getTestSuiteById",
   async (id: string) => {
-    return testSuiteService.gettestSuiteById(id);
+    return TestSuiteService.getTestSuiteById(id);
+  }
+);
+export const getTestSuiteHistoryById: any = createAsyncThunk(
+  "testSuite/getTestSuiteById",
+  async (id: string) => {
+    return TestSuiteService.getTestSuiteHistoryById(id);
   }
 );
 const DEFAULT: {
-  testSuite?: testSuite;
+  testSuite?: TestSuite;
   status: {
     type: "SUCCESS" | "FAILURE" | "ERROR";
     message: string;
@@ -27,15 +33,15 @@ const slice = createSlice({
     clearStatus(state) {
       state.status = null;
     },
-    addtestSuiteRun(state, action) {
+    addTestSuiteRun(state, action) {
       state.testSuite?.testSuiteRuns?.unshift(action.payload)
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(gettestSuiteById.fulfilled, (state, action) => {
+    builder.addCase(getTestSuiteById.fulfilled, (state, action) => {
       state.testSuite = action.payload;
     })
-    builder.addCase(gettestSuiteById.rejected, (state) => {
+    builder.addCase(getTestSuiteById.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while fetching testSuite details",

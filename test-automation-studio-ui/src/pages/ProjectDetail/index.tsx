@@ -26,7 +26,7 @@ import { getByProjectId as getTestCasesByProjectId, actions as testCasesActions 
 import { getByProjectId as getPagesByProjectId, actions as pagesActions } from "../../slices/pages";
 import { getByProjectId as getTagsByProjectId, actions as tagsActions } from "../../slices/tags";
 import { getByProjectId as gettestSuitesByProjectId, actions as testSuitesActions } from "../../slices/testSuites";
-import TestSuiteContainer from "./TestSuitContainer";
+import TestSuiteContainer from "./TestSuiteContainer";
 
 type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATH" | "TAGS" | "TEST_SUITE";
 

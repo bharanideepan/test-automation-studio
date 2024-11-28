@@ -10,9 +10,7 @@ class TestSuiteRunService extends BaseService {
   }
 
   async executeRun(id: string) {
-    return this.post('/execute', {
-      testSuiteId: id
-    })
+    return this.post('/execute', { testSuiteId: id })
   }
 }
 

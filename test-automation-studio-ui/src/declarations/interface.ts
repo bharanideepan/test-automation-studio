@@ -144,7 +144,7 @@ export interface Tag {
   id: string;
   testCases?: TestCase[];
   testCaseTag?: TestCaseTag
-  testSuiteTag?: testSuiteTag
+  testSuiteTag?: TestSuiteTag
 }
 
 export interface TestCaseTag {
@@ -153,21 +153,25 @@ export interface TestCaseTag {
   tagId: string;
 }
 
-export interface testSuiteTag {
+export interface TestSuiteTag {
   id: string;
   testSuiteId: string;
   tagId: string;
 }
 
-export interface testSuite {
+export interface TestSuite {
   id: string;
   name: string;
   projectId: string;
-  testSuiteRuns?: TestCaseRun[];
+  testSuiteRuns?: TestSuiteRun[];
   tags?: Tag[];
+  testCases?: TestCase[];
+  project?: Project;
 }
 
 export interface TestSuiteRun {
   id: string;
   testSuiteId: string;
+  createdAt: string;
+  status: string;
 }

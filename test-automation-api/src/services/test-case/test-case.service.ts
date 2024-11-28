@@ -20,6 +20,12 @@ export default function (app: Application): void {
 
   // Initialize our service with any options it requires
   app.use('/test-case', new TestCase(options, app));
+
+  app.use('/test-case/history', {
+    async get(id: any, params: any) {
+      return await app.service('test-case').getTestCaseHistory(id, params);
+    },
+  });
   app.use('/test-case/executable', {
     async get(id: any, params: any) {
       return await app.service('test-case').getExecutableTestCaseData(id, params);

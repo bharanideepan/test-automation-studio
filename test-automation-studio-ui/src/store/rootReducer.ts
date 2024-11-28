@@ -11,6 +11,7 @@ import { reducer as testCasesReducer } from "../slices/testCases";
 import { reducer as tagsReducer } from "../slices/tags";
 import { reducer as testSuitesReducer } from "../slices/testSuites";
 import { reducer as testSuiteReducer } from "../slices/testSuite";
+import { reducer as testSuiteRunReducer } from "../slices/testSuiteRun";
 
 const rootReducer = combineReducers({
   projects: projectsReducer,
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   tags: tagsReducer,
   testSuites: testSuitesReducer,
   testSuite: testSuiteReducer,
+  testSuiteRun: testSuiteRunReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

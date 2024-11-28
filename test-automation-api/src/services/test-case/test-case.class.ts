@@ -238,4 +238,22 @@ export class TestCase extends Service {
       throw new Error(`Error while fetching executable test-case-data: ${err}`);
     }
   }
+
+  async getTestCaseHistory(id: any, params: any) {
+    try {
+      const testCaseData = await this.app.service('test-case').get(id, params);
+      const testCaseRuns: any = await this.app.service("test-case-run").find({
+        query: {
+          testCaseId: testCaseData.dataValues.id
+        },
+        sequelize: {
+          order: [["createdAt", "DESC"]]
+        },
+      })
+      testCaseData.dataValues.testCaseRuns = testCaseRuns.data;
+      return testCaseData
+    } catch (err) {
+      throw new Error(`Error while fetching executable test-case-data: ${err}`);
+    }
+  }
 }

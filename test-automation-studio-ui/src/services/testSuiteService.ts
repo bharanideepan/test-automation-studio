@@ -1,4 +1,4 @@
-import { testSuite } from "../declarations/interface";
+import { TestSuite } from "../declarations/interface";
 import BaseService from "./baseService";
 
 class TestSuiteService extends BaseService {
@@ -10,21 +10,21 @@ class TestSuiteService extends BaseService {
     return this.get("", { projectId })
   }
 
-  async duplicatetestSuite(id: string) {
+  async duplicateTestSuite(id: string) {
     return this.post("/duplicate", {
       testSuiteId: id,
     });
   }
 
-  async createtestSuiteData(payload: { testSuite: testSuite, tags: string[] }) {
+  async createTestSuiteData(payload: { testSuite: TestSuite, tags: string[] }) {
     return this.post("/create", {
       testSuite: { projectId: payload.testSuite.projectId, name: payload.testSuite.name },
       tags: payload.tags
     });
   }
 
-  async updatetestSuiteData(payload: {
-    testSuite: testSuite,
+  async updateTestSuiteData(payload: {
+    testSuite: TestSuite,
     tags: {
       deletedTags: (string | undefined)[] | undefined;
       newTags: {
@@ -36,12 +36,16 @@ class TestSuiteService extends BaseService {
     return this.post("/update", payload);
   }
 
-  async deletetestSuite(id: string) {
+  async deleteTestSuite(id: string) {
     return this.remove(`/${id}`);
   }
 
-  async gettestSuiteById(id: string) {
+  async getTestSuiteById(id: string) {
     return this.get(`/${id}`);
+  }
+
+  async getTestSuiteHistoryById(id: string) {
+    return this.get(`/history/${id}`);
   }
 }
 

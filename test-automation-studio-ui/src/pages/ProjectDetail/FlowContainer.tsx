@@ -81,7 +81,6 @@ const FlowContainer: React.FC<{
   const { flows: list } = useSelector((state: RootState) => state.flows);
 
   useEffect(() => {
-    console.log(selectedFlow)
     if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
   }, [selectedFlow]);
 

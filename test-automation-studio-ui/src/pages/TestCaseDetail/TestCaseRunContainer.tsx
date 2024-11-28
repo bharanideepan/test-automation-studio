@@ -205,12 +205,12 @@ const TestCaseRunContainer: React.FC<{
   );
 };
 
-const TestCaseRunsListView: React.FC<{
+export const TestCaseRunsListView: React.FC<{
   testCaseRuns: TestCaseRun[];
   setSelectedTestCaseRun: (testCaseRun?: TestCaseRun) => void
   selectedTestCaseRun: TestCaseRun | undefined;
-  testCaseId: string;
-  handleRun: (id: string) => void;
+  testCaseId?: string;
+  handleRun?: (id: string) => void;
 }> = ({
   testCaseRuns, selectedTestCaseRun, setSelectedTestCaseRun, testCaseId, handleRun
 }) => {
@@ -220,7 +220,7 @@ const TestCaseRunsListView: React.FC<{
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-              <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+              {(handleRun && testCaseId) && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
                 <Tooltip title={"Trigger New Run"}>
                   <IconButton
                     sx={{ padding: 0.5, opacity: 0.6 }}
@@ -240,7 +240,7 @@ const TestCaseRunsListView: React.FC<{
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                   Test Case Runs: {testCaseRuns.length}
                 </Typography>
-              </Box>
+              </Box>}
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                 Click a Run history to view in detail
               </Typography>

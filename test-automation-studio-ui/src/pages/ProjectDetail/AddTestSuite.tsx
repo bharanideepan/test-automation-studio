@@ -5,10 +5,10 @@ import AddIcon from "../../assets/images/add-icon-secondary.svg";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
-import { testSuite } from "../../declarations/interface";
+import { TestSuite } from "../../declarations/interface";
 import { DEFAULT_PAGE } from "../../util/constants";
 import { RootState } from "../../store/rootReducer";
-import { actions, createtestSuite, updatetestSuite } from "../../slices/testSuites";
+import { actions, createTestSuite, updateTestSuite } from "../../slices/testSuites";
 import MultipleSelectChip from "../../components/AppMultipleSelectChip";
 import AddTag from "./AddTag";
 
@@ -38,12 +38,12 @@ const errorMsg: ErrorMsg = {
 };
 
 const AddtestSuite: React.FC<{
-  testSuite?: testSuite;
+  testSuite?: TestSuite;
   projectId: string;
   onModalClose: () => void;
 }> = ({ testSuite, projectId, onModalClose }) => {
   const classes = useStyles();
-  const [data, setData] = useState<testSuite | undefined>();
+  const [data, setData] = useState<TestSuite | undefined>();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [nameError, setNameError] = useState<
@@ -87,14 +87,14 @@ const AddtestSuite: React.FC<{
       }));
     const tags = { deletedTags, newTags };
     if (data?.id.length) {
-      dispatch(updatetestSuite({ testSuite: data, tags }));
+      dispatch(updateTestSuite({ testSuite: data, tags }));
     } else {
-      dispatch(createtestSuite({ testSuite: data, tags: selectedTags ?? [] }));
+      dispatch(createTestSuite({ testSuite: data, tags: selectedTags ?? [] }));
     }
   };
   const handleFieldChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent | any,
-    field: keyof testSuite
+    field: keyof TestSuite
   ) => {
     setSubmitted(false);
     const value = event.target.value;

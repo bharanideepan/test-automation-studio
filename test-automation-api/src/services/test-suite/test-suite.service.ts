@@ -21,14 +21,20 @@ export default function (app: Application): void {
   // Initialize our service with any options it requires
   app.use('/test-suite', new testSuite(options, app));
 
+  app.use('/test-suite/history', {
+    async get(id: any, params: any) {
+      return await app.service('test-suite').getTestSuiteHistory(id, params);
+    },
+  });
+
   app.use('/test-suite/create', {
     async create(data: any, params: any) {
-      return await app.service('test-suite').createtestSuiteData(data, params);
+      return await app.service('test-suite').createTestSuiteData(data, params);
     },
   });
   app.use('/test-suite/update', {
     async create(data: any, params: any) {
-      return await app.service('test-suite').updatetestSuiteData(data, params);
+      return await app.service('test-suite').updateTestSuiteData(data, params);
     },
   });
   app.use('/test-suite/duplicate', {

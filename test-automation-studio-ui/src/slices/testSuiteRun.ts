@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import TestSuiteRunService from "../services/testSuiteRunService";
 import {
+  TestSuite,
   TestSuiteRun,
 } from "../declarations/interface";
 

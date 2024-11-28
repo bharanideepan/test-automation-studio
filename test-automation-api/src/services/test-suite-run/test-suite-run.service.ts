@@ -20,6 +20,11 @@ export default function (app: Application): void {
 
   // Initialize our service with any options it requires
   app.use('/test-suite-run', new testSuiteRun(options, app));
+  app.use('/test-suite-run/execute', {
+    async create(data: any, params: any) {
+      return await app.service('test-suite-run').execute(data, params);
+    },
+  });
 
   // Get our initialized service so that we can register hooks
   const service = app.service('test-suite-run');

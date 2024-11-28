@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import testSuiteService from "../services/testSuiteService";
 import {
-  testSuite,
+  TestSuite,
 } from "../declarations/interface";
 
 export const getByProjectId: any = createAsyncThunk(
@@ -11,17 +11,17 @@ export const getByProjectId: any = createAsyncThunk(
   }
 );
 
-export const createtestSuite: any = createAsyncThunk(
-  "testSuites/createtestSuite",
-  async (payload: { testSuite: testSuite, tags: string[] }) => {
-    return await testSuiteService.createtestSuiteData(payload);
+export const createTestSuite: any = createAsyncThunk(
+  "testSuites/createTestSuite",
+  async (payload: { testSuite: TestSuite, tags: string[] }) => {
+    return await testSuiteService.createTestSuiteData(payload);
   }
 );
 
-export const updatetestSuite: any = createAsyncThunk(
-  "testSuites/updatetestSuite",
+export const updateTestSuite: any = createAsyncThunk(
+  "testSuites/updateTestSuite",
   async (payload: {
-    testSuite: testSuite, tags: {
+    testSuite: TestSuite, tags: {
       deletedTags: (string | undefined)[] | undefined;
       newTags: {
         tagId: string;
@@ -29,19 +29,19 @@ export const updatetestSuite: any = createAsyncThunk(
       }[] | undefined;
     }
   }) => {
-    return await testSuiteService.updatetestSuiteData(payload);
+    return await testSuiteService.updateTestSuiteData(payload);
   }
 );
 
-export const duplicatetestSuite: any = createAsyncThunk(
-  "testSuites/duplicatetestSuite",
+export const duplicateTestSuite: any = createAsyncThunk(
+  "testSuites/duplicateTestSuite",
   async (id: string) => {
-    return testSuiteService.duplicatetestSuite(id);
+    return testSuiteService.duplicateTestSuite(id);
   }
 )
 
 const DEFAULT: {
-  testSuites?: testSuite[];
+  testSuites?: TestSuite[];
   status: {
     type: "SUCCESS" | "FAILURE" | "ERROR";
     message: string;
@@ -68,7 +68,7 @@ const slice = createSlice({
         message: "Error while fetching Test Suits by project id",
       };
     })
-    builder.addCase(createtestSuite.fulfilled, (state, action) => {
+    builder.addCase(createTestSuite.fulfilled, (state, action) => {
       const testSuiteData = action.payload.testSuite;
       if (state.testSuites) {
         state.testSuites = [...state.testSuites, testSuiteData];
@@ -78,13 +78,13 @@ const slice = createSlice({
         message: "Test Suite created successfully",
       };
     })
-    builder.addCase(createtestSuite.rejected, (state) => {
+    builder.addCase(createTestSuite.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while creating Test Suite",
       };
     })
-    builder.addCase(duplicatetestSuite.fulfilled, (state, action) => {
+    builder.addCase(duplicateTestSuite.fulfilled, (state, action) => {
       const testSuiteData = action.payload.testSuite;
       if (state.testSuites) {
         state.testSuites = [...state.testSuites, testSuiteData];
@@ -94,17 +94,17 @@ const slice = createSlice({
         message: "Test Suite duplicated successfully",
       };
     })
-    builder.addCase(duplicatetestSuite.rejected, (state) => {
+    builder.addCase(duplicateTestSuite.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while duplicating Test Suite",
       };
     })
-    builder.addCase(updatetestSuite.fulfilled, (state, action) => {
+    builder.addCase(updateTestSuite.fulfilled, (state, action) => {
       const updatedtestSuite = action.payload.testSuite;
       if (state.testSuites) {
         state.testSuites = state.testSuites.map(
-          (testSuite: testSuite) => {
+          (testSuite: TestSuite) => {
             if (testSuite.id === updatedtestSuite.id) {
               return updatedtestSuite;
             }
@@ -117,7 +117,7 @@ const slice = createSlice({
         message: "Test Suite updated successfully",
       };
     })
-    builder.addCase(updatetestSuite.rejected, (state) => {
+    builder.addCase(updateTestSuite.rejected, (state) => {
       state.status = {
         type: "FAILURE",
         message: "Error while updating Test Suite",
