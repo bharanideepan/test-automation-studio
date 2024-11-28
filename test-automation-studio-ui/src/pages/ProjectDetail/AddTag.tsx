@@ -127,7 +127,7 @@ const AddTag: React.FC<{
 
   return (
     <Box>
-      <Tooltip title={"Add new tag for this project"}>
+      <Tooltip title={"Add new tag"}>
         <IconButton
           sx={{ padding: 0.5 }}
           onClick={handleModalOpen}

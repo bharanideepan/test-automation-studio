@@ -1,21 +1,11 @@
 const populateFields = (hook: any) => {
   const Sequelize = hook.app.get("sequelizeClient");
-  const { flow, testCaseFlowSequence, testCaseFlowSequenceHistory, flowActionSequenceHistory } = Sequelize.models;
+  const { testCaseFlowSequenceHistory } = Sequelize.models;
   hook.params.sequelize = {
     raw: false,
     include: [
       {
         model: testCaseFlowSequenceHistory,
-        include: [
-          {
-            model: testCaseFlowSequence,
-            include: [
-              {
-                model: flow,
-              },
-            ],
-          },
-        ],
       },
     ],
     order: [

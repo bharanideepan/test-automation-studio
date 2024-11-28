@@ -38,7 +38,7 @@ export class TestCaseRun extends Service {
       testCaseData.testCaseFlowSequences = await Promise.all(testCaseData.testCaseFlowSequences.map(async (testCaseFlowSequence: any) => {
         const testCaseFlowSequenceHistory = await this.app.service('test-case-flow-sequence-history').create({
           testCaseRunId: testCaseRun.id,
-          testCaseFlowSequenceId: testCaseFlowSequence.id,
+          flowName: testCaseFlowSequence.flow.name,
           status: '',
           order: testCaseFlowSequence.order
         })
@@ -53,7 +53,6 @@ export class TestCaseRun extends Service {
             const flowActionSequenceHistory = await this.app.service('flow-action-sequence-history').create({
               testCaseRunId: testCaseRun.id,
               testCaseFlowSequenceHistoryId: testCaseFlowSequenceHistory.id,
-              flowActionSequenceId: flowActionSequence.id,
               status: '',
               actionName: flowActionSequence.action.name,
               actionType: flowActionSequence.action.type,

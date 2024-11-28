@@ -30,7 +30,6 @@ export default function (app: Application): typeof Model {
     flowActionSequence.belongsTo(models["action"], { foreignKey: "actionId", })
     flowActionSequence.belongsTo(models["flow"], { foreignKey: "flowId", })
     flowActionSequence.hasMany(models["testCaseFlowSequenceActionInput"], { foreignKey: "flowActionSequenceId", onDelete: 'CASCADE' })
-    flowActionSequence.hasMany(models["flowActionSequenceHistory"], { foreignKey: "flowActionSequenceId" })
   };
   return flowActionSequence;
 }

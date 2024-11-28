@@ -20,10 +20,6 @@ export default function (app: Application): typeof Model {
       type: DataTypes.BIGINT,
       allowNull: false
     },
-    flowActionSequenceId: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
     actionName: {
       type: DataTypes.STRING(5000),
       allowNull: true
@@ -60,7 +56,6 @@ export default function (app: Application): typeof Model {
   (flowActionSequenceHistory as any).associate = function (models: any): void {
     flowActionSequenceHistory.belongsTo(models["testCaseRun"], { foreignKey: "testCaseRunId" });
     flowActionSequenceHistory.belongsTo(models["testCaseFlowSequenceHistory"], { foreignKey: "testCaseFlowSequenceHistoryId" });
-    flowActionSequenceHistory.belongsTo(models["flowActionSequence"], { foreignKey: "flowActionSequenceId" });
   };
   return flowActionSequenceHistory;
 }

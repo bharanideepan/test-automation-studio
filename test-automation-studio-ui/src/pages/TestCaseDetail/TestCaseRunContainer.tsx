@@ -381,8 +381,8 @@ const TestCaseRunHistoryView: React.FC = () => {
                 nodeId={`${testCaseFlowSequenceHistory.id}`}
                 label={
                   <Item
-                    name={testCaseFlowSequenceHistory.testCaseFlowSequence?.flow.name ?? "Flow Name"}
-                    id={testCaseFlowSequenceHistory.testCaseFlowSequence?.id ?? `${new Date()}`}
+                    name={testCaseFlowSequenceHistory.flowName ?? "Flow Name"}
+                    id={testCaseFlowSequenceHistory.id ?? `${new Date()}`}
                     icon={ProjectIcon}
                     status={testCaseFlowSequenceHistory.status}
                   />

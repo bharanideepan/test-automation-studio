@@ -121,7 +121,7 @@ export interface TestCaseFlowSequenceHistory {
   status: string;
   errorMessage?: string;
   createdAt: string;
-  testCaseFlowSequence?: TestCaseFlowSequence;
+  flowName: string;
   flowActionSequenceHistories?: FlowActionSequenceHistory[];
 }
 

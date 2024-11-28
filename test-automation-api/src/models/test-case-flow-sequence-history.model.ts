@@ -16,9 +16,9 @@ export default function (app: Application): typeof Model {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
-    testCaseFlowSequenceId: {
-      type: DataTypes.BIGINT,
-      allowNull: false
+    flowName: {
+      type: DataTypes.STRING(5000),
+      allowNull: false,
     },
     status: {
       type: DataTypes.STRING(5000),
@@ -35,7 +35,6 @@ export default function (app: Application): typeof Model {
   });
   (testCaseFlowSequenceHistory as any).associate = function (models: any): void {
     testCaseFlowSequenceHistory.belongsTo(models["testCaseRun"], { foreignKey: "testCaseRunId" });
-    testCaseFlowSequenceHistory.belongsTo(models["testCaseFlowSequence"], { foreignKey: "testCaseFlowSequenceId" });
     testCaseFlowSequenceHistory.hasMany(models["flowActionSequenceHistory"], { foreignKey: "testCaseFlowSequenceHistoryId" });
   };
   return testCaseFlowSequenceHistory;
