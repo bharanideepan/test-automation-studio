@@ -15,10 +15,6 @@ export default function (app: Application): typeof Model {
     testSuiteId: {
       type: DataTypes.BIGINT,
       allowNull: false
-    },
-    status: {
-      type: DataTypes.STRING,
-      allowNull: false
     }
   });
   (testSuiteRun as any).associate = function (models: any): void {

@@ -9,3 +9,8 @@ Selectors related TODO:
 
 Good to have TODO:
     placeholders in xpath (dynamic xpath)
+
+Redirect to action onclick
+Redirect to flow onclick
+Redirect to testcase onclick
+Testsuit name in testsuitecontainer

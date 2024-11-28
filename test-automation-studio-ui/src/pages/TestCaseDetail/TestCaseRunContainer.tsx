@@ -130,6 +130,7 @@ const TestCaseRunContainer: React.FC<{
   const [count, setCount] = useState(0);
   const [selectedTestCaseRun, setSelectedTestCaseRun] = useState<TestCaseRun | undefined>(undefined);
   const { addedTestCaseRun } = useSelector((state: RootState) => state.testCaseRun);
+  const { testCase } = useSelector((state: RootState) => state.testCase);
   const [updates, setUpdates] = useState<any>([]);
   const handleRun = (id: string) => {
     dispatch(executeRun(id))
@@ -197,7 +198,7 @@ const TestCaseRunContainer: React.FC<{
             <TestCaseRunsListView testCaseId={testCaseId} testCaseRuns={list} selectedTestCaseRun={list.find((testCaseRun: TestCaseRun) => testCaseRun.id == selectedTestCaseRun?.id)} setSelectedTestCaseRun={setSelectedTestCaseRun} handleRun={handleRun} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <TestCaseRunHistoryView />
+            <TestCaseRunHistoryView title={testCase?.name} />
           </Grid>
         </Grid>
       )}
@@ -220,8 +221,8 @@ export const TestCaseRunsListView: React.FC<{
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
           <Box flexGrow={1}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
-              {(handleRun && testCaseId) && <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
-                <Tooltip title={"Trigger New Run"}>
+              <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+                {(handleRun && testCaseId) && <Tooltip title={"Trigger New Run"}>
                   <IconButton
                     sx={{ padding: 0.5, opacity: 0.6 }}
                     onClick={() => {
@@ -236,14 +237,14 @@ export const TestCaseRunsListView: React.FC<{
                       width="20"
                     />
                   </IconButton>
-                </Tooltip>
+                </Tooltip>}
                 <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                   Test Case Runs: {testCaseRuns.length}
                 </Typography>
-              </Box>}
-              <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+              </Box>
+              {/* <Typography variant="h5" sx={{ marginTop: 0.25 }}>
                 Click a Run history to view in detail
-              </Typography>
+              </Typography> */}
             </Box>
           </Box>
         </Box>
@@ -253,12 +254,12 @@ export const TestCaseRunsListView: React.FC<{
               <Table stickyHeader aria-label="sticky table">
                 <TableHead>
                   <TableRow>
-                    <TableCell style={{ width: "30%" }} align="left">
+                    <TableCell style={{ width: "40%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Triggered on
                       </Typography>
                     </TableCell>
-                    <TableCell style={{ width: "30%" }} align="left">
+                    <TableCell style={{ width: "20%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Status
                       </Typography>
@@ -345,10 +346,9 @@ const Item: React.FC<{
   );
 };
 
-const TestCaseRunHistoryView: React.FC = () => {
+export const TestCaseRunHistoryView: React.FC<{ title?: string }> = ({ title }) => {
   const classes = useStyles();
   const treeViewClasses = useTreeItemStyles();
-  const { testCase } = useSelector((state: RootState) => state.testCase);
   const { testCaseRun } = useSelector((state: RootState) => state.testCaseRun);
   return (
     <>
@@ -357,14 +357,14 @@ const TestCaseRunHistoryView: React.FC = () => {
           <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
             <Box>
               <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                {testCase?.name}
+                {title ?? 'Title'}
               </Typography>
             </Box>
           </Box>
         </Box>
       </Box>
       <Box className={classes.listContainer} pt={2}>
-        <Box className={classes.body} px={2}>
+        <Box className={classes.body} pr={2}>
           <MuiTreeView
             aria-label="multi-select"
             defaultCollapseIcon={

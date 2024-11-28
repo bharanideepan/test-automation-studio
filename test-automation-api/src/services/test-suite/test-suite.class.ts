@@ -71,15 +71,30 @@ export class testSuite extends Service {
 
   async getTestSuiteHistory(id: any, params: any) {
     try {
+      const Sequelize = this.app.get("sequelizeClient");
+      const { testCaseRun } = Sequelize.models;
       const testSuiteData = await this.app.service('test-suite').get(id, params);
       const testSuiteRuns: any = await this.app.service("test-suite-run").find({
         query: {
           testSuiteId: testSuiteData.dataValues.id
         },
         sequelize: {
+          raw: false,
+          include: [
+            {
+              model: testCaseRun
+            }
+          ],
           order: [["createdAt", "DESC"]]
         },
       })
+      // await Promise.all(testSuiteRuns.data.map(async (testSuitRun: any) => {
+      //   await this.app.service("test-case-run").find({
+      //     query: {
+
+      //     }
+      //   })
+      // }))
       testSuiteData.dataValues.testSuiteRuns = testSuiteRuns.data;
       return testSuiteData
     } catch (err) {

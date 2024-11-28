@@ -1,24 +1,21 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import TestSuiteRunService from "../services/testSuiteRunService";
-import {
-  TestSuite,
-  TestSuiteRun,
-} from "../declarations/interface";
+import { TestSuiteRun } from "../declarations/interface";
 
 export const getTestSuiteRunById: any = createAsyncThunk(
-  "TestSuiteRun/getTestSuiteRunById",
+  "testSuiteRun/getTestSuiteRunById",
   async (id: string) => {
     return TestSuiteRunService.getTestSuiteRunById(id);
   }
 );
 export const executeRun: any = createAsyncThunk(
-  "TestSuiteRun/executeRun",
+  "testSuiteRun/executeRun",
   async (id: string) => {
     return TestSuiteRunService.executeRun(id);
   }
 )
 const DEFAULT: {
-  TestSuiteRun?: TestSuiteRun;
+  testSuiteRun?: TestSuiteRun;
   addedTestSuiteRun?: TestSuiteRun;
   status: {
     type: "SUCCESS" | "FAILURE" | "ERROR";
@@ -38,7 +35,7 @@ const slice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getTestSuiteRunById.fulfilled, (state, action) => {
-      state.TestSuiteRun = action.payload;
+      state.testSuiteRun = action.payload;
     })
     builder.addCase(getTestSuiteRunById.rejected, (state) => {
       state.status = {

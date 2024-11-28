@@ -113,7 +113,8 @@ export interface TestCaseRun {
   errorMessage?: string;
   createdAt: string;
   testCaseId: string;
-  testCaseFlowSequenceHistories?: TestCaseFlowSequenceHistory[]
+  testCaseFlowSequenceHistories?: TestCaseFlowSequenceHistory[];
+  testCase?: TestCase;
 }
 
 export interface TestCaseFlowSequenceHistory {
@@ -174,4 +175,5 @@ export interface TestSuiteRun {
   testSuiteId: string;
   createdAt: string;
   status: string;
+  testCaseRuns?: TestCaseRun[];
 }

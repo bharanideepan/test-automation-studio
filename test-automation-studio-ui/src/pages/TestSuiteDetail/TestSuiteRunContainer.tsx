@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
-import { TestSuiteRun, } from "../../declarations/interface";
+import { TestCaseRun, TestSuiteRun, } from "../../declarations/interface";
 import clsx from "clsx";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
@@ -23,6 +23,8 @@ import moment from "moment";
 import PlayIcon from "../../assets/images/play-icon.png";
 // import { socket } from "../../services/util";
 import { actions } from "../../slices/testSuite";
+import { TestCaseRunHistoryView } from "../TestCaseDetail/TestCaseRunContainer";
+import { getTestCaseRunById } from "../../slices/testCaseRun";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -105,11 +107,17 @@ const TestSuiteRunContainer: React.FC<{
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
   const [selectedTestSuiteRun, setSelectedTestSuiteRun] = useState<TestSuiteRun | undefined>(undefined);
-  const { addedTestSuiteRun } = useSelector((state: RootState) => state.testSuiteRun);
+  const [selectedTestCaseRun, setSelectedTestCaseRun] = useState<TestCaseRun | undefined>(undefined);
+  const { addedTestSuiteRun, testSuiteRun: fetchedTestSuitRun } = useSelector((state: RootState) => state.testSuiteRun);
   const [updates, setUpdates] = useState<any>([]);
   const handleRun = (id: string) => {
     dispatch(executeRun(id))
   }
+
+  useEffect(() => {
+    if (selectedTestCaseRun) dispatch(getTestCaseRunById(selectedTestCaseRun?.id))
+  }, [selectedTestCaseRun]);
+
   useEffect(() => {
     if (selectedTestSuiteRun) dispatch(getTestSuiteRunById(selectedTestSuiteRun?.id))
   }, [selectedTestSuiteRun]);
@@ -117,6 +125,12 @@ const TestSuiteRunContainer: React.FC<{
   useEffect(() => {
     if (selectedTestSuiteRun) dispatch(getTestSuiteRunById(selectedTestSuiteRun?.id))
   }, [list]);
+
+  useEffect(() => {
+    if (fetchedTestSuitRun && fetchedTestSuitRun.testCaseRuns) {
+      setSelectedTestCaseRun(fetchedTestSuitRun.testCaseRuns[0])
+    }
+  }, [fetchedTestSuitRun])
 
   useEffect(() => {
     if (list) {
@@ -169,11 +183,25 @@ const TestSuiteRunContainer: React.FC<{
             height: "100%",
           }}
         >
-          <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <TestSuiteRunsListView testSuiteId={testSuiteId} testSuiteRuns={list} selectedTestSuiteRun={list.find((testSuiteRun: TestSuiteRun) => testSuiteRun.id == selectedTestSuiteRun?.id)} setSelectedTestSuiteRun={setSelectedTestSuiteRun} handleRun={handleRun} />
+          <Grid item xs={4} classes={{ item: classes.item }} py={2}>
+            <TestSuiteRunsListView
+              testSuiteId={testSuiteId}
+              testSuiteRuns={list}
+              selectedTestSuiteRun={list.find((testSuiteRun: TestSuiteRun) => testSuiteRun.id == selectedTestSuiteRun?.id)}
+              setSelectedTestSuiteRun={setSelectedTestSuiteRun}
+              handleRun={handleRun} />
           </Grid>
-          <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            {/* <TestSuiteRunHistoryView /> */}
+          <Grid item xs={5} classes={{ item: classes.item }} py={2}>
+            <TestCaseRunsListView
+              testCaseRuns={fetchedTestSuitRun?.testCaseRuns ?? []}
+              selectedTestCaseRun={fetchedTestSuitRun?.testCaseRuns?.find((testCaseRun: TestCaseRun) => testCaseRun.id == selectedTestCaseRun?.id)}
+              setSelectedTestCaseRun={setSelectedTestCaseRun} />
+          </Grid>
+          <Grid item xs={3} classes={{ item: classes.item }} py={2}>
+            <TestCaseRunHistoryView title={
+              fetchedTestSuitRun?.testCaseRuns?.find(
+                (testCaseRun: TestCaseRun) => testCaseRun.id == selectedTestCaseRun?.id
+              )?.testCase?.name ?? "Test case name"} />
           </Grid>
         </Grid>
       )}
@@ -191,6 +219,41 @@ const TestSuiteRunsListView: React.FC<{
   testSuiteRuns, selectedTestSuiteRun, setSelectedTestSuiteRun, testSuiteId, handleRun
 }) => {
     const classes = useStyles();
+    const getStatusElement = (testCaseRuns?: TestCaseRun[]) => {
+      if (!testCaseRuns) return <></>
+      const failCount = testCaseRuns.filter(x => x.status === 'FAIL').length;
+      const passCount = testCaseRuns.filter(x => x.status === 'PASS').length;
+      const inProgressCount = testCaseRuns.filter(x => (x.status === 'STARTED' || x.status === 'ADDED_TO_QUEUE')).length;
+      return <Box display={"flex"} alignItems="center" gap={1}>
+        {inProgressCount !== 0 && <Typography
+          variant="subtitle1"
+          className={getClassName(classes, 'PENDING')}
+          overflow="hidden"
+          textOverflow="ellipsis"
+          maxWidth="300px"
+        >
+          IN PROGRESS: {inProgressCount}
+        </Typography>}
+        {passCount !== 0 && <Typography
+          variant="subtitle1"
+          className={getClassName(classes, 'PASS')}
+          overflow="hidden"
+          textOverflow="ellipsis"
+          maxWidth="300px"
+        >
+          PASS: {passCount}
+        </Typography>}
+        {failCount !== 0 && <Typography
+          variant="subtitle1"
+          className={getClassName(classes, 'FAIL')}
+          overflow="hidden"
+          textOverflow="ellipsis"
+          maxWidth="300px"
+        >
+          FAIL: {failCount}
+        </Typography>}
+      </Box>
+    }
     return (
       <>
         <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -217,9 +280,9 @@ const TestSuiteRunsListView: React.FC<{
                   Test Suite Runs: {testSuiteRuns.length}
                 </Typography>
               </Box>
-              <Typography variant="h5" sx={{ marginTop: 0.25 }}>
-                Click a Run history to view in detail
-              </Typography>
+              {/* <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                Click a Test Suit Run to view in detail
+              </Typography> */}
             </Box>
           </Box>
         </Box>
@@ -229,19 +292,14 @@ const TestSuiteRunsListView: React.FC<{
               <Table stickyHeader aria-label="sticky table">
                 <TableHead>
                   <TableRow>
-                    <TableCell style={{ width: "30%" }} align="left">
+                    <TableCell style={{ width: "50%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Triggered on
                       </Typography>
                     </TableCell>
-                    <TableCell style={{ width: "30%" }} align="left">
+                    <TableCell style={{ width: "50%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Status
-                      </Typography>
-                    </TableCell>
-                    <TableCell style={{ width: "40%" }} align="left">
-                      <Typography variant="h5" color="primary">
-                        Error message
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -252,6 +310,127 @@ const TestSuiteRunsListView: React.FC<{
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
                         setSelectedTestSuiteRun(row);
                       }} className={selectedTestSuiteRun?.id == row.id ? classes.active : ''}>
+                        <TableCell style={{ width: "50%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {moment(row.createdAt).format(constants.dateDisplayFormat)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell style={{ width: "50%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            className={getClassName(classes, row.status)}
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {getStatusElement(row.testCaseRuns)}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
+      </>
+    );
+  };
+
+export const TestCaseRunsListView: React.FC<{
+  testCaseRuns: TestCaseRun[];
+  setSelectedTestCaseRun: (testCaseRun?: TestCaseRun) => void
+  selectedTestCaseRun: TestCaseRun | undefined;
+  testCaseId?: string;
+  handleRun?: (id: string) => void;
+}> = ({
+  testCaseRuns, selectedTestCaseRun, setSelectedTestCaseRun, testCaseId, handleRun
+}) => {
+    const classes = useStyles();
+    return (
+      <>
+        <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
+          <Box flexGrow={1}>
+            <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
+              <Box display={"flex"} gap={2} justifyContent={"center"} alignItems={"center"}>
+                {(handleRun && testCaseId) && <Tooltip title={"Trigger New Run"}>
+                  <IconButton
+                    sx={{ padding: 0.5, opacity: 0.6 }}
+                    onClick={() => {
+                      handleRun(testCaseId);
+                    }}
+                    data-testid="edit-testcase"
+                  >
+                    <img
+                      src={PlayIcon}
+                      alt="close"
+                      height="20"
+                      width="20"
+                    />
+                  </IconButton>
+                </Tooltip>}
+                <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                  Test Case Runs: {testCaseRuns.length}
+                </Typography>
+              </Box>
+              {/* <Typography variant="h5" sx={{ marginTop: 0.25 }}>
+                Click a Run history to view in detail
+              </Typography> */}
+            </Box>
+          </Box>
+        </Box>
+        <Box className={classes.listContainer}>
+          <Box className={classes.body}>
+            <TableContainer sx={{ maxHeight: "100%" }}>
+              <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={{ width: "20%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Test Case Name
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "30%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Triggered on
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "20%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Status
+                      </Typography>
+                    </TableCell>
+                    <TableCell style={{ width: "30%" }} align="left">
+                      <Typography variant="h5" color="primary">
+                        Error message
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {testCaseRuns.map((row, index) => {
+                    return (
+                      <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
+                        setSelectedTestCaseRun(row);
+                      }} className={selectedTestCaseRun?.id == row.id ? classes.active : ''}>
+                        <TableCell style={{ width: "20%" }} align="left">
+                          <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            maxWidth="300px"
+                          >
+                            {row.testCase?.name}
+                          </Typography>
+                        </TableCell>
                         <TableCell style={{ width: "30%" }} align="left">
                           <Typography
                             variant="subtitle1"
@@ -263,7 +442,7 @@ const TestSuiteRunsListView: React.FC<{
                             {moment(row.createdAt).format(constants.dateDisplayFormat)}
                           </Typography>
                         </TableCell>
-                        <TableCell style={{ width: "30%" }} align="left">
+                        <TableCell style={{ width: "20%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             className={getClassName(classes, row.status)}
@@ -274,8 +453,8 @@ const TestSuiteRunsListView: React.FC<{
                             {row.status}
                           </Typography>
                         </TableCell>
-                        <TableCell style={{ width: "40%" }} align="left">
-                          {/* {row.errorMessage && <Tooltip title={row.errorMessage}>
+                        <TableCell style={{ width: "30%" }} align="left">
+                          {row.errorMessage && <Tooltip title={row.errorMessage}>
                             <Typography
                               variant="subtitle1"
                               color="error"
@@ -285,7 +464,7 @@ const TestSuiteRunsListView: React.FC<{
                             >
                               {row.errorMessage}
                             </Typography>
-                          </Tooltip>} */}
+                          </Tooltip>}
                         </TableCell>
                       </TableRow>
                     );
