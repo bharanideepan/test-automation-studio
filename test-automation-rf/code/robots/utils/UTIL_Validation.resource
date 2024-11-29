@@ -1,9 +1,9 @@
 *** Settings ***
 Library     Collections
 Library     OperatingSystem
-
 Resource    exceptions/EX_Exception.resource
 Resource    UTIL_BrowserHelper.resource
+
 
 *** Keywords ***
 fail-keyword-if
@@ -25,6 +25,12 @@ fail-keyword-if
         EX_Exception.ex-fail    ${message}
     END
 
+fail-if-multiple-elements-found
+    [Documentation]    Throws error if multiple elements found for the given selector
+    [Arguments]    ${selector}    ${message}=FOUND_MULTIPLE_ELEMENTS
+    ${count}=    UTIL_BrowserHelper.get-element-count    ${selector}
+    fail-keyword-if    ${count >> ${1}}    ${message}
+
 fail-if-not-attached-after-wait
     [Documentation]    Throws error if the element is not attached to the DOM
     ...    after waiting for the element state
@@ -37,6 +43,7 @@ fail-if-not-attached-after-wait
     ...    ${message}/ELEMENT_NOT_ATTACHED
     [Tags]    util
     [Arguments]    ${selector}    ${message}=ELEMENT_NOT_ATTACHED
+    fail-if-multiple-elements-found    ${selector}
     ${is_attached}=    UTIL_BrowserHelper.is-attached-after-wait    ${selector}
     fail-keyword-if    ${is_attached == False}    ${message}
 
