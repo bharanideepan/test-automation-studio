@@ -70,7 +70,9 @@ const useStyles = makeStyles((theme) => ({
 
 const ActionContainer: React.FC<{
   projectId: string;
-}> = ({ projectId }) => {
+  selectedActionExternal?: Action;
+  setSelectedActionExternal?: React.Dispatch<React.SetStateAction<Action | undefined>>
+}> = ({ projectId, selectedActionExternal, setSelectedActionExternal }) => {
   const classes = useStyles();
   const [count, setCount] = useState(0);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -118,6 +120,12 @@ const ActionContainer: React.FC<{
   };
 
   useEffect(() => {
+    if (selectedActionExternal)
+      setSelectedAction(selectedActionExternal)
+  }, [selectedActionExternal])
+
+  useEffect(() => {
+    if (selectedActionExternal) return
     if (list) {
       if (list.length !== count) {
         setSelectedAction(list[list.length - 1])
@@ -150,7 +158,7 @@ const ActionContainer: React.FC<{
           }}
         >
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <ActionsListView projectId={projectId} actions={list} handleDeleteAction={handleDeleteAction} selectedAction={list.find((action: Action) => action.id == selectedAction?.id)} setSelectedAction={setSelectedAction} />
+            <ActionsListView projectId={projectId} actions={list} handleDeleteAction={handleDeleteAction} selectedAction={list.find((action: Action) => action.id == selectedAction?.id)} setSelectedAction={setSelectedAction} setSelectedActionExternal={setSelectedActionExternal} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
             <InputListView action={selectedAction} inputs={list.find((action: Action) => action.id == selectedAction?.id)?.inputs} handleDeleteInput={handleDeleteInput} selectedInput={selectedInput} setSelectedInput={setSelectedInput} />
@@ -287,8 +295,9 @@ const ActionsListView: React.FC<{
   setSelectedAction: (action?: Action) => void
   selectedAction: Action | undefined;
   projectId: string;
+  setSelectedActionExternal?: React.Dispatch<React.SetStateAction<Action | undefined>>
 }> = ({
-  actions, handleDeleteAction, selectedAction, setSelectedAction, projectId
+  actions, handleDeleteAction, selectedAction, setSelectedAction, projectId, setSelectedActionExternal
 }) => {
     const classes = useStyles();
     const [editAction, setEditAction] = useState<Action | undefined>(undefined);
@@ -329,16 +338,16 @@ const ActionsListView: React.FC<{
                         Type
                       </Typography>
                     </TableCell>
-                    <TableCell style={{ width: "20%" }} align="left">
+                    <TableCell style={{ width: "40%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Xpath
                       </Typography>
                     </TableCell>
-                    <TableCell style={{ width: "20%" }} align="left">
+                    {/* <TableCell style={{ width: "20%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Regex
                       </Typography>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell style={{ width: "10%" }} align="left">
                       <Typography variant="h5" color="primary">
                         Edit
@@ -350,6 +359,7 @@ const ActionsListView: React.FC<{
                   {actions.map((row, index) => {
                     return (
                       <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => {
+                        setSelectedActionExternal && setSelectedActionExternal(undefined)
                         setSelectedAction(row);
                       }} className={selectedAction?.id == row.id ? classes.active : ''}>
                         <TableCell style={{ width: "30%" }} align="left">
@@ -374,7 +384,7 @@ const ActionsListView: React.FC<{
                             {ACTION_TYPES.find((x) => x.value == row.type)?.label}
                           </Typography>
                         </TableCell>
-                        <TableCell style={{ width: "20%" }} align="left">
+                        <TableCell style={{ width: "40%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             color="primary"
@@ -382,10 +392,10 @@ const ActionsListView: React.FC<{
                             textOverflow="ellipsis"
                             maxWidth="300px"
                           >
-                            {row.selector?.xpath}
+                            {row.selector?.xpath ?? "NA"}
                           </Typography>
                         </TableCell>
-                        <TableCell style={{ width: "20%" }} align="left">
+                        {/* <TableCell style={{ width: "20%" }} align="left">
                           <Typography
                             variant="subtitle1"
                             color="primary"
@@ -395,7 +405,7 @@ const ActionsListView: React.FC<{
                           >
                             {row.valueRegex}
                           </Typography>
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell style={{ width: "10%" }} align="left">
                           <Box
                             display={"flex"}
@@ -554,7 +564,7 @@ const InputListView: React.FC<{
                             textOverflow="ellipsis"
                             maxWidth="300px"
                           >
-                            {row.value}
+                            {row.value?.length ? row.value : "NA"}
                           </Typography>
                         </TableCell>
                         <TableCell style={{ width: "20%" }} align="left">

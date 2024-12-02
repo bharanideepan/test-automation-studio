@@ -316,7 +316,7 @@ const AddAction: React.FC<{
                 }} />
               </Box>
             </Box>}
-            {(data.type !== "LAUNCH_BROWSER" && data.type !== "NEW_PAGE") && <Box mt={2}>
+            {/* {(data.type !== "LAUNCH_BROWSER" && data.type !== "NEW_PAGE") && <Box mt={2}>
               <AppTextbox
                 label="Value Regex"
                 placeholder="Enter Value Regex"
@@ -330,7 +330,7 @@ const AddAction: React.FC<{
                   valueRegexError ? errorMsg.valueRegex[valueRegexError] : ""
                 }
               />
-            </Box>}
+            </Box>} */}
             <Box mt={2.75}>
               <Button
                 variant="contained"

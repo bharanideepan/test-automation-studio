@@ -11,14 +11,14 @@ import {
   Grid,
   Link
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useSearchParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import NewTabIcon from "../../assets/images/new-tab-icon.png";
 import PlayIcon from "../../assets/images/play-icon.png";
 import DuplicateIcon from "../../assets/images/duplicate.png";
-import { TestCase, TestCaseFlowSequence, } from "../../declarations/interface";
+import { Flow, TestCase, TestCaseFlowSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import { getTestCaseById } from "../../slices/testCase";
 import { executeRun } from "../../slices/testCaseRun";
@@ -28,6 +28,7 @@ import AppCard from "../../components/cards/AppCard";
 import AddTestCase from "./AddTestCase";
 import io from 'socket.io-client';
 import { duplicateTestCase } from "../../slices/testCases";
+import { ProjectTab } from ".";
 
 // const socket = io('http://localhost:3030'); // Update with your server URL
 
@@ -80,7 +81,8 @@ const useStyles = makeStyles((theme) => ({
 
 const TestCaseContainer: React.FC<{
   projectId: string;
-}> = ({ projectId }) => {
+  setSelectedFlowExternal?: React.Dispatch<React.SetStateAction<Flow | undefined>>
+}> = ({ projectId, setSelectedFlowExternal }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
@@ -146,7 +148,7 @@ const TestCaseContainer: React.FC<{
             <TestCasesListView projectId={projectId} testCases={list} selectedTestCase={list.find((testCase: TestCase) => testCase.id == selectedTestCase?.id)} setSelectedTestCase={setSelectedTestCase} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <FlowListView testCaseName={fetchedTestCase?.name} testCaseFlowSequences={fetchedTestCase?.testCaseFlowSequences} />
+            <FlowListView testCaseName={fetchedTestCase?.name} testCaseFlowSequences={fetchedTestCase?.testCaseFlowSequences} setSelectedFlowExternal={setSelectedFlowExternal} />
           </Grid>
         </Grid>
       )}
@@ -339,8 +341,13 @@ export const TestCasesListView: React.FC<{
       </>
     );
   };
-const FlowListView: React.FC<{ testCaseName?: string; testCaseFlowSequences?: TestCaseFlowSequence[]; }> = ({ testCaseName, testCaseFlowSequences }) => {
+const FlowListView: React.FC<{
+  testCaseName?: string;
+  testCaseFlowSequences?: TestCaseFlowSequence[];
+  setSelectedFlowExternal?: React.Dispatch<React.SetStateAction<Flow | undefined>>
+}> = ({ testCaseName, testCaseFlowSequences, setSelectedFlowExternal }) => {
   const classes = useStyles();
+  const [_, setSearchParams] = useSearchParams();
   return (
     <>
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -367,7 +374,10 @@ const FlowListView: React.FC<{ testCaseName?: string; testCaseFlowSequences?: Te
         <Box className={classes.body} px={5}>
           {testCaseFlowSequences && testCaseFlowSequences.map((row, index) => (
             <Box mx={5} key={index}>
-              <AppCard id={`${index}`}>
+              <AppCard id={`${index}`} onClick={() => {
+                setSelectedFlowExternal && setSelectedFlowExternal(row.flow)
+                setSearchParams({ tab: "FLOWS" })
+              }}>
                 <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={5}>
                   <Typography
                     variant="subtitle1"

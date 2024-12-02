@@ -37,10 +37,13 @@ const useStyles = makeStyles((theme) => ({
 
 const AppCard: React.FC<{
   id: string;
-}> = ({ id, children }) => {
+  onClick?: () => void
+}> = ({ id, children, onClick }) => {
   const classes = useStyles();
   return (
-    <Box className={classes.container}>
+    <Box className={classes.container} onClick={() => {
+      onClick && onClick()
+    }}>
       <Card
         classes={{
           root: classes.root,

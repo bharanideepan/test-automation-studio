@@ -172,7 +172,7 @@ export class TestCase extends Service {
       let testCase = await this.app.service('test-case').get(testCaseId);
       testCase = JSON.parse(JSON.stringify(testCase));
       let [testCaseName] = testCase.name.split("::");
-      const newTestCase = await this.app.service("test-case").create({
+      let newTestCase = await this.app.service("test-case").create({
         name: `${testCaseName}::duplicate-${(new Date().toISOString())}`,
         projectId: testCase.projectId
       })
@@ -196,12 +196,15 @@ export class TestCase extends Service {
               b1 = newTestCaseFlowSequence.id
             }
             const source = `${a1}:${b1}::${y1}`;
-            const [x2, y2] = assertion.target.split("::");
-            let [a2, b2] = x2.split(":");
-            if (b2 == testCaseFlowSequence.id) {
-              b2 = newTestCaseFlowSequence.id
+            let target = "";
+            if (assertion.target) {
+              const [x2, y2] = assertion.target.split("::");
+              let [a2, b2] = x2.split(":");
+              if (b2 == testCaseFlowSequence.id) {
+                b2 = newTestCaseFlowSequence.id
+              }
+              target = `${a2}:${b2}::${y2}`;
             }
-            const target = `${a2}:${b2}::${y2}`;
             return { ...assertion, source, target, testCaseId: newTestCase.id };
           })
         }))
@@ -214,6 +217,7 @@ export class TestCase extends Service {
       await Promise.all(testCase.tags.map(async (tag: any) => {
         await this.app.service("test-case-tag").create({ tagId: tag.testCaseTag.tagId, testCaseId: newTestCase.id })
       }))
+      newTestCase = await this.app.service("test-case").get(newTestCase.id)
       return { testCase: newTestCase };
     } catch (err) {
       throw new Error(`Error while creating test-case-data: ${err}`);

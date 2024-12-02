@@ -95,13 +95,13 @@ const slice = createSlice({
       }
       state.status = {
         type: "SUCCESS",
-        message: "Test Case duplicated successfully",
+        message: "Test Case cloned successfully",
       };
     })
     builder.addCase(duplicateTestCase.rejected, (state) => {
       state.status = {
         type: "FAILURE",
-        message: "Error while duplicating Test Case",
+        message: "Error while cloning Test Case",
       };
     })
     builder.addCase(updateTestCase.fulfilled, (state, action) => {

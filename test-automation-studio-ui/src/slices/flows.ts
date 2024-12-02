@@ -113,13 +113,13 @@ const slice = createSlice({
       }
       state.status = {
         type: "SUCCESS",
-        message: "Test Case duplicated successfully",
+        message: "Flow cloned successfully",
       };
     })
     builder.addCase(duplicateFlow.rejected, (state) => {
       state.status = {
         type: "FAILURE",
-        message: "Error while duplicating Test Case",
+        message: "Error while cloning Flow",
       };
     })
     builder.addCase(updateFlow.fulfilled, (state, action) => {

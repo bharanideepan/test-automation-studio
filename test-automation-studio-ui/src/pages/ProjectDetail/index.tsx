@@ -27,8 +27,9 @@ import { getByProjectId as getPagesByProjectId, actions as pagesActions } from "
 import { getByProjectId as getTagsByProjectId, actions as tagsActions } from "../../slices/tags";
 import { getByProjectId as gettestSuitesByProjectId, actions as testSuitesActions } from "../../slices/testSuites";
 import TestSuiteContainer from "./TestSuiteContainer";
+import { Action, Flow } from "../../declarations/interface";
 
-type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATH" | "TAGS" | "TEST_SUITE";
+export type ProjectTab = "TEST_CASES" | "FLOWS" | "ACTIONS" | "XPATH" | "TAGS" | "TEST_SUITE";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -52,6 +53,8 @@ const ProjectDetail = () => {
   const { projectId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<ProjectTab>("TEST_CASES");
+  const [selectedFlowExternal, setSelectedFlowExternal] = useState<Flow | undefined>(undefined);
+  const [selectedActionExternal, setSelectedActionExternal] = useState<Action | undefined>(undefined);
 
   const { notify, hideNotification } = useSnackbar();
 
@@ -185,11 +188,16 @@ const ProjectDetail = () => {
             <FlowContainer
               // list={project.flows ?? []}
               projectId={project.id}
+              selectedFlowExternal={selectedFlowExternal}
+              setSelectedFlowExternal={setSelectedFlowExternal}
+              setSelectedActionExternal={setSelectedActionExternal}
             />
           )}
           {activeTab === "ACTIONS" && (
             <ActionContainer
               // list={project.actions ?? []}
+              selectedActionExternal={selectedActionExternal}
+              setSelectedActionExternal={setSelectedActionExternal}
               projectId={project.id}
             />
           )}
@@ -197,7 +205,7 @@ const ProjectDetail = () => {
             <TestCaseContainer
               // list={project.testCases ?? []}
               projectId={project.id}
-            />
+              setSelectedFlowExternal={setSelectedFlowExternal} />
           )}
           {activeTab === "XPATH" && (
             <SelectorContainer

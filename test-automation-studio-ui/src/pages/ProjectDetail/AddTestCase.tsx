@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Typography, Button, Box, Tooltip, IconButton, Grid, InputLabel, Checkbox } from "@mui/material";
+import { Typography, Button, Box, Tooltip, IconButton, Grid, InputLabel, Checkbox, InputBase } from "@mui/material";
 import {
   DragDropContext,
   Draggable,
@@ -8,6 +8,7 @@ import {
   Droppable,
 } from "react-beautiful-dnd";
 import AddIcon from "../../assets/images/add-icon-secondary.svg";
+import ClockIcon from "../../assets/images/clock-icon.svg";
 import { makeStyles } from "@mui/styles";
 import AppModal from "../../components/AppModal";
 import AppTextbox from "../../components/AppTextbox";
@@ -65,6 +66,27 @@ const useStyles = makeStyles((theme) => ({
     "&:last-child": {
       borderLeft: `0.5px solid ${theme.palette.primary40.main}`,
       // background: theme.palette.background.previewBg,
+    },
+  },
+  duration: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    "& .input": {},
+  },
+  durationInput: {
+    border: `2px dashed ${theme.palette.primary35.main}`,
+    borderRadius: 3,
+    fontWeight: "400 !important",
+    fontSize: "12px !important",
+    letterSpacing: "-2% !important",
+    lineHeight: "16px !important",
+    width: 90,
+    padding: `${theme.spacing(0.75)} ${theme.spacing(2)} !important`,
+    height: "28px !important",
+    "& input": {
+      padding: `2px !important`,
+      boxSizing: "border-box !important",
     },
   },
 }));
@@ -872,6 +894,15 @@ const SequenceInputForm: React.FC<{
     return inputs.find((input) => input.id === inputId)?.id ?? ""
   }
 
+  const getSelectedInputWaitDuration = (flowActionSequence: FlowActionSequence) => {
+    const duration = flowActionSequence.action.inputs?.find((input) => input.id == flowActionSequence.testCaseFlowSequenceActionInput?.inputId)?.waitAfterAction;
+    return duration ? Number(duration) : 0
+  }
+
+  const getSelectedInputValue = (flowActionSequence: FlowActionSequence) => {
+    return flowActionSequence.action.inputs?.find((input) => input.id == flowActionSequence.testCaseFlowSequenceActionInput?.inputId)?.value;
+  }
+
   useEffect(() => {
     if (newInput && selectedActionInput) {
       insertAddedInputInActions(newInput)
@@ -923,18 +954,30 @@ const SequenceInputForm: React.FC<{
                               textOverflow="ellipsis"
                               maxWidth="300px"
                             >
-                              {flowActionSequence.action.name}
+                              <b>{flowActionSequence.action.name}</b>
                             </Typography>
-                            <Typography
-                              variant="subtitle1"
-                              color="primary"
-                              overflow="hidden"
-                              textOverflow="ellipsis"
-                              maxWidth="300px"
-                              mt={2}
-                            >
-                              {flowActionSequence.action.selector?.xpath}
-                            </Typography>
+                            <Box display={"flex"} alignItems={"center"} justifyContent={"center"} gap={2} mb={2}>
+                              {flowActionSequence.action.selector?.xpath && <Typography
+                                variant="subtitle1"
+                                color="primary"
+                                overflow="hidden"
+                                textOverflow="ellipsis"
+                                maxWidth="300px"
+                                mt={2}
+                              >
+                                <b>Xpath:</b> {flowActionSequence.action.selector?.xpath}
+                              </Typography>}
+                              {getSelectedInputValue(flowActionSequence) && <Typography
+                                variant="subtitle1"
+                                color="primary"
+                                overflow="hidden"
+                                textOverflow="ellipsis"
+                                maxWidth="300px"
+                                mt={2}
+                              >
+                                <b>Value:</b> {getSelectedInputValue(flowActionSequence)}
+                              </Typography>}
+                            </Box>
                           </Box>
                         </Box>
                         <Grid container>
@@ -982,10 +1025,33 @@ const SequenceInputForm: React.FC<{
                         </Grid>
                       </Box>
                     </AppCard>
-                    {row.flow.flowActionSequences && row.flow.flowActionSequences.length - 1 > index &&
-                      <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
-                        <Box className={classes.vertLine} />
-                      </Box>}
+                    {row.flow.flowActionSequences && flowActionSequence.testCaseFlowSequenceActionInput?.inputId &&
+                      flowActionSequence.action.inputs &&
+                      <>
+                        <Box display={"flex"} alignItems={"center"} justifyContent={"center"}>
+                          {<Box className={classes.duration}>
+                            {(
+                              (row.flow.flowActionSequences.length - 1 > index && getSelectedInputWaitDuration(flowActionSequence) == 0)
+                              || (getSelectedInputWaitDuration(flowActionSequence) != 0)) &&
+                              <Box className={classes.vertLine} />}
+                            {getSelectedInputWaitDuration(flowActionSequence) != 0 && <InputBase
+                              value={`${getSelectedInputWaitDuration(flowActionSequence)} s`}
+                              onChange={() => { console.log("duration change") }}
+                              classes={{
+                                root: classes.durationInput,
+                              }}
+                              startAdornment={<img src={ClockIcon} alt="clock" />}
+                              disabled={true}
+                              inputProps={{
+                                "data-testid": "duration-input-test-id",
+                              }}
+                            />}
+                            {row.flow.flowActionSequences.length - 1 > index && getSelectedInputWaitDuration(flowActionSequence) != 0 &&
+                              <Box className={classes.vertLine} />}
+                          </Box>}
+                        </Box>
+                      </>
+                    }
                   </Box>))}
                 </Box>
               </Box>}

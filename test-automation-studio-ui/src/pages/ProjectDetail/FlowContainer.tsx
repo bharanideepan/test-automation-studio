@@ -14,7 +14,7 @@ import React, { useEffect, useState } from "react";
 import { makeStyles } from "@mui/styles";
 import EditIcon from "../../assets/images/edit-icon.svg";
 import DuplicateIcon from "../../assets/images/duplicate.png";
-import { Flow, FlowActionSequence, } from "../../declarations/interface";
+import { Action, Flow, FlowActionSequence, } from "../../declarations/interface";
 import clsx from "clsx";
 import AddFlow from "./AddFlow";
 import { getFlowById } from "../../slices/flow";
@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/rootReducer";
 import AppCard from "../../components/cards/AppCard";
 import { duplicateFlow } from "../../slices/flows";
+import { useSearchParams } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   body: {
@@ -72,7 +73,10 @@ const useStyles = makeStyles((theme) => ({
 
 const FlowContainer: React.FC<{
   projectId: string;
-}> = ({ projectId }) => {
+  selectedFlowExternal?: Flow;
+  setSelectedFlowExternal?: React.Dispatch<React.SetStateAction<Flow | undefined>>
+  setSelectedActionExternal?: React.Dispatch<React.SetStateAction<Action | undefined>>
+}> = ({ projectId, selectedFlowExternal, setSelectedFlowExternal, setSelectedActionExternal }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [count, setCount] = useState(0);
@@ -81,14 +85,23 @@ const FlowContainer: React.FC<{
   const { flows: list } = useSelector((state: RootState) => state.flows);
 
   useEffect(() => {
-    if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
+    if (selectedFlow) {
+      setSelectedFlowExternal && setSelectedFlowExternal(undefined)
+      dispatch(getFlowById(selectedFlow?.id))
+    }
   }, [selectedFlow]);
+
+  useEffect(() => {
+    if (selectedFlowExternal)
+      setSelectedFlow(selectedFlowExternal)
+  }, [selectedFlowExternal]);
 
   useEffect(() => {
     if (selectedFlow) dispatch(getFlowById(selectedFlow?.id))
   }, [list]);
 
   useEffect(() => {
+    if (selectedFlowExternal) return
     if (list) {
       if (list.length !== count) {
         setSelectedFlow(list[list.length - 1])
@@ -124,7 +137,7 @@ const FlowContainer: React.FC<{
             <FlowsListView projectId={projectId} flows={list} selectedFlow={list.find((flow: Flow) => flow.id == selectedFlow?.id)} setSelectedFlow={setSelectedFlow} />
           </Grid>
           <Grid item xs={6} classes={{ item: classes.item }} py={2}>
-            <ActionListView flowName={fetchedFlow?.name} actionSequences={fetchedFlow?.flowActionSequences} />
+            <ActionListView flowName={fetchedFlow?.name} actionSequences={fetchedFlow?.flowActionSequences} setSelectedActionExternal={setSelectedActionExternal} />
           </Grid>
         </Grid>
       )}
@@ -249,8 +262,13 @@ const FlowsListView: React.FC<{
       </>
     );
   };
-const ActionListView: React.FC<{ flowName?: string; actionSequences?: FlowActionSequence[]; }> = ({ flowName, actionSequences }) => {
+const ActionListView: React.FC<{
+  flowName?: string;
+  actionSequences?: FlowActionSequence[];
+  setSelectedActionExternal?: React.Dispatch<React.SetStateAction<Action | undefined>>
+}> = ({ flowName, actionSequences, setSelectedActionExternal }) => {
   const classes = useStyles();
+  const [_, setSearchParams] = useSearchParams();
   return (
     <>
       <Box gap={2} mb={2} px={2} className={classes.stickyContainer}>
@@ -277,7 +295,11 @@ const ActionListView: React.FC<{ flowName?: string; actionSequences?: FlowAction
         <Box className={classes.body} px={5}>
           {actionSequences && actionSequences.map((row, index) => (
             <Box mx={5} key={index}>
-              <AppCard id={`${index}`}>
+              <AppCard id={`${index}`} onClick={() => {
+                setSearchParams({ tab: "ACTIONS" })
+                setSelectedActionExternal && setSelectedActionExternal(row.action)
+              }
+              }>
                 <Box display={"flex"} alignItems={"center"} justifyContent={"center"} m={3}>
                   <Box display={"flex"} alignItems={"center"} justifyContent={"center"} flexDirection={"column"}>
                     <Typography
