@@ -271,10 +271,10 @@ assert
     [Documentation]    Method used to assert and return assertion message
     [Arguments]    ${source}    ${target}    ${operator}    ${errorMessage}
     IF    '${operator}' == 'SHOULD_BE_EQUAL_TO'
-        BuiltIn.Should Be Equal    ${source}    ${target}    ${errorMessage}: ${source} != ${target}
+        BuiltIn.Should Be Equal    ${source}    ${target}    ${errorMessage}
         RETURN    Assertion passed: ${source} == ${target}
     ELSE IF    '${operator}' == 'SHOULD_NOT_BE_EQUAL_TO'
-        BuiltIn.Should Not Be Equal    ${source}    ${target}    ${errorMessage}: ${source} == ${target}
+        BuiltIn.Should Not Be Equal    ${source}    ${target}    ${errorMessage}
         RETURN    Assertion passed: ${source} != ${target}
     ELSE IF    '${operator}' == 'CONTAINS'
         ${contains}=    UTIL_String.check-string-contains    ${source}    ${target}
